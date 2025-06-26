@@ -1,0 +1,22 @@
+<site-footer webc:nokeep>
+  <footer>
+    <ul>
+    <li webc:for="service, url in $data.schema.alternates"><a :href="url" rel="me external">
+      <img webc:is="eleventy-image" height="32" width="32" :src="`img/social/${service}.png`" :alt="`${service}'s logo`" :title="service">
+    </a></li>
+    <li><a href="mailto:{{metadata.author.email}}" rel="me external">
+      <img webc:is="eleventy-image" height="32" width="32" src="img/social/email.png" alt="email icon" title="email">
+    </a></li>
+    <ul>
+    
+    <p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/">
+    <a property="dct:title" rel="cc:attributionURL" :href="$data.site.url" @text="$data.site.title"></a> by 
+    <a rel="cc:attributionURL dct:creator author me" property="cc:attributionName" :href="$data.schema.url" @text="$data.schema.name"></a> is licensed under 
+    <a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative Commons Attribution 4.0 International
+      <img webc:is="eleventy-image" height="22" width="22" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt="Creative Commmons logo">
+      <img webc:is="eleventy-image" height="22" width="22" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="Attribution Required">
+    </a>
+  </p>
+  <img id="greenweb-badge" width="200" height="95" src="https://app.greenweb.org/api/v3/greencheckimage/dwk.io?nocache=true" alt="This website runs on green hosting - verified by thegreenwebfoundation.org">
+  </footer>
+</site-footer>

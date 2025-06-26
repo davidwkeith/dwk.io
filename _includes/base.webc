@@ -1,0 +1,42 @@
+<!doctype html>
+<html :lang="$data.lang ?? 'en'">
+  <head>
+    <!--- 
+      TODO: output Dublin Core https://en.wikipedia.org/wiki/Dublin_Core
+    --->
+    <title @text="$data.title ? `${$data.title} — ${$data.site.title}` : $data.site.title"></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" :content="$data.eleventy.generator">
+    <meta webc:if="$data.schema.fediverse" property="fediverse:creator" :content="$data.schema.fediverse">
+    <meta webc:if="$data.site.colorScheme" name="color-scheme" :content="$data.site.colorScheme">
+    <meta webc:if="$data.description" name="description" :content="$data.description">
+    <meta webc:if="$data.schema.name" property="og:title" :content="$data.schema.name">
+    <meta webc:if="$data.schema.description" property="og:description" :content="$data.schema.description">
+    <meta webc:if="$data.site.ogType" property="og:type" :content="$data.site.ogType">
+    <!--- FIXME: Social images plugin 
+    <meta property="og:image" content="{% GenerateSocialImage
+  schema.name, siteName=metadata.title, promoImage=logoPath, titleColor="#1095C1" %}"> --->
+    <link webc:if="$data.site.url" rel="canonical" :href="($data.site.url) + ($data.page.url ?? '')">
+    <link webc:if="$data.schema['@type']=='Person'" rel="me author" :href="$data.schema.email">
+    <link webc:if="$data.schema['@type']!='Person'" rel="author" :href="$data.schema.author.email">
+    <link webc:if="$data.schema['@type']!='Person'" rel="author" :href="$data.schema.author.url">
+    <link webc:if="$data.site.license" rel="licence" :href="$data.site.license">
+    <link webc:if="$data.site.favicon" rel="icon" :href="$data.site.favicon">
+    <link webc:if="$data.site.appleTouchIcon" rel="icon" :href="$data.site.appleTouchIcon">
+    <link webc:if="$data.site.headLinks" webc:for="rel, href in $data.site.headLinks" :href="href" :rel="rel">
+    <link webc:keep rel="stylesheet" :href="getBundleFileUrl('css')"></style>
+    <link rel="stylesheet" href="/css/index.css">
+    <script webc:keep type="application/ld+json" @raw="JSON.stringify($data.schema)"></script>
+    <script webc:keep :src="getBundleFileUrl('js')"></script>
+    <script src="/js/index.js"></script>
+  </head>
+  <body>
+    <site-header></site-header>
+    <main>
+      <template webc:nokeep @raw="this.content"></template>
+    </main>
+    <site-footer></site-footer>
+    <style webc:keep @raw="getBundle('css', 'defer')"></style>
+		<script webc:keep @raw="getBundle('js', 'defer')"></script>
+  </body>
+</html>
