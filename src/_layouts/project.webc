@@ -1,0 +1,43 @@
+---
+layout: base.webc
+---
+
+<h2 @text="title"></h2>
+<ul class="post-metadata">
+  <li><time :datetime="page.date.toISOString()" @text="page.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric'})"></time></li>
+</ul>
+
+<article>
+  <figure class="hero-image" webc:if="hero">
+    <img webc:is="eleventy-image"
+      :src="hero.src" 
+      :alt="hero.alt" 
+      :title="hero.title" 
+      eleventy:widths="128,64" 
+      eleventy:sizes="100vh">
+    <figcaption webc:if="hero.caption" @text="hero.caption"></figcaption>
+  </figure>
+  <div @html="content"></div>
+</article>
+
+<style>
+
+  .hero-image img {
+    height: 150px;
+    width: 150px;;
+  }
+
+  .hero-image figcaption {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 0.5em;
+  }
+
+  figure {
+    float: left;
+  }
+
+  article {
+    padding-top: 1em;
+  }
+</style>

@@ -1,0 +1,5 @@
+---
+eleventyExcludeFromCollections: true
+permalink: /_headers
+---
+# See https://developers.cloudflare.com/pages/configuration/headers/

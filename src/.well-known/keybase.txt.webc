@@ -1,0 +1,141 @@
+---
+eleventyExcludeFromCollections: true
+permalink: /.well-known/keybase.txt
+---
+==================================================================
+https://keybase.io/dwkeith
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://dwk.io
+  * I am dwkeith (https://keybase.io/dwkeith) on keybase.
+  * I have a public key ASD4Svhb_GwqT-WZVfHxwCksTXXOgifKGcGEBmEv2C0fIQo
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "01014101d6366d94379f9fa945e47d0253b3aa8efb935f6bbdc4f0b6cf52bd84868d0a",
+      "host": "keybase.io",
+      "kid": "0120f84af85bfc6c2a4fe59955f1f1c0292c4d75ce8227ca19c18406612fd82d1f210a",
+      "uid": "e9797f5b266ccbbae424323d29ce3819",
+      "username": "dwkeith"
+    },
+    "merkle_root": {
+      "ctime": 1715712575,
+      "hash": "80573e1bf8cc961b3c1c5a62048a9cf749a7ba88830bb302f86f39a07aeec514aba2bf1e6c4371b53c3862c2709a4230a616f814a3fb53320505b9897d2a4c11",
+      "hash_meta": "22e68165cce04b150cd13123950693511e3bd5971a7087428fa24a2936973e0c",
+      "seqno": 25724336
+    },
+    "service": {
+      "entropy": "PR+S10B91gx+1GfNgQxIe+Dj",
+      "hostname": "dwk.io",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 2
+  },
+  "client": {
+    "name": "keybase.io go client",
+    "version": "6.2.8"
+  },
+  "ctime": 1715712598,
+  "expire_in": 504576000,
+  "prev": "24b2045a94f0179c7041afc1b3a30bbd21a1ac9bd89e19161b930841606244ab",
+  "seqno": 98,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+hKRib2R5hqhkZXRhY2hlZMOpaGFzaF90eXBlCqNrZXnEIwEg+Er4W/xsKk/lmVXx8cApLE11zoInyhnBhAZhL9gtHyEKp3BheWxvYWTESpcCYsQgJLIEWpTwF5xwQa/Bs6MLvSGhrJvYnhkWG5MIQWBiRKvEIBJKwGUXlsht4Cfk7gkhGdox2jat0krl4oaKKPjT3uaxAgHCo3NpZ8RAEotGJcHyJZtJ1UaLlO0coAq8zVFYuwitkrqbKRFpf4kz9r7pM9rkADcQhi9E3qMYdiWijWU4jt08916+A199BahzaWdfdHlwZSCkaGFzaIKkdHlwZQildmFsdWXEINQ7hOlhmzWamWGvKl0jaWNlE/YESKrpdkeCq2XfQG4ho3RhZ80CAqd2ZXJzaW9uAQ==
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/dwkeith
+
+==================================================================
+==================================================================
+https://keybase.io/dwkeith
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://davidwkeith.com
+  * I am dwkeith (https://keybase.io/dwkeith) on keybase.
+  * I have a public key with fingerprint 8AEE 1308 A48E C6BE 885B  89CD 7208 DB57 1364 E5E5
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "01014101d6366d94379f9fa945e47d0253b3aa8efb935f6bbdc4f0b6cf52bd84868d0a",
+      "fingerprint": "8aee1308a48ec6be885b89cd7208db571364e5e5",
+      "host": "keybase.io",
+      "key_id": "7208db571364e5e5",
+      "kid": "01014101d6366d94379f9fa945e47d0253b3aa8efb935f6bbdc4f0b6cf52bd84868d0a",
+      "uid": "e9797f5b266ccbbae424323d29ce3819",
+      "username": "dwkeith"
+    },
+    "merkle_root": {
+      "ctime": 1595021658,
+      "hash_meta": "bdd227224a5830c736353a23e3532c38d3e4c8127104d8fcd5e200512517c129",
+      "seqno": 17001085
+    },
+    "revoke": {
+      "sig_ids": [
+        "f5511093f20268b822cfe5565593b79bbe238310b1aa17fef3607abaf9b000c20f"
+      ]
+    },
+    "service": {
+      "hostname": "davidwkeith.com",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 1
+  },
+  "ctime": 1595021680,
+  "expire_in": 157680000,
+  "prev": "6f0173acfb8bb6e677094653e94677d400ef54351176b2a20dab7f866343b493",
+  "seqno": 67,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+-----BEGIN PGP MESSAGE-----
+Version: Keybase OpenPGP v2.1.13
+Comment: https://keybase.io/crypto
+
+yMK8AnicrVNtaBxFGL7UNtbT1lIq0tZIXEVFYpid2fnYQ/FHWiEKkkJTBWOP+Xgn
+WS65vextrjlD0qDUYg0RisQf1qilEBps6YdI1UJLDG1pRKvEhIp/RGkFRUWx1ILo
+bGgRxJ8OzAwz87zP+7zPzMyuuimXbzgz9cPNw6M7aw1zM/WBXHHt+sqQp2JT9wpD
+XgmWJug1UE2Lpch4BQ/5yA9cN4wwZsKA8NCGVoYBhYAbhClRREoBVoWEWqaU0YFF
+imlLsTIiEEwYJL0Wz0blbkgqSVROHa2QAD5BQgYCNFMgBFUi1IZjJIyi3CcsAArU
+BfbE1SzCiVOyCq1R7Pbcorgk7z/w/7PugSU6CHnILVWYMa2VkhDggGBicKiBCD/M
+gFVIyrIPHNrsKEGU9njDLV4fJKVeKCZxnGbe6jTKED4NKcI+o8LVJ6s9xT5IpQtU
+xmDMMQ4kFQRpThihRGICbsKaCEMg0MLH3EeBEVYbChgh6mPqc+3jTEYV+suxy8CR
+s0BQJyGBWlyCLHs16na2Vb3Cs56l1PdRSCxGmAklMNYWKGWUhkTxUCnARBAfKV9K
+n1uwhCEulbShQghpjKz33HCWLalFeok8u6cb9ctadN2DVh33OVWVJE5jHfe6w540
+rVQLmTdpvZKhd4AqXucpqqhs3ENxETVIqlFcdpU45L9sE6jFg8FKlEAxyhCUuy3X
+sjxQc5TMIp8Tqa0SSjFgnKMwYJSAGzk3AUJgaUCcBZwpLDEyUnErGCMBUUFI/vGR
+cadTdjtOZ15ZpgMJeMMzp7uW5xryucYVy7IflMvfsubGv9rduTJ3aGzhhd8Xfylt
+P9XftZp8eOXRp74MOhaPmX0TF5vb76zdv+zjk+OHxeMz79ZvH21+b/Cdo43Jn21t
+Rxbzt37/zeUNswsbLk18fW7jvmvjY3NTI/iOl2hb57axhvy987Z958YV2/6w+1+d
+iB95a8+JAxc/48cGXvtr7+Htdz342Jbxuzsb+Rsv7rrt8wvzU1dP7f/ozNP4aOPP
+W3Y/sfmL5a1Ngw+9PLj1x7WXvooPfjsVr+p885N1m35jF9a3PCOamk+8vXnrB/Wz
+Xsf8w9+d23TllTWXT05PHygcnxw6uHBt7tef9lztyK1+/cjxkQcOTZw97e0d+fR8
+eM/7o2NN07smu+r9pGvd87Rdr3zy/OzkfX8D/FZ93w==
+=3gEk
+-----END PGP MESSAGE-----
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/dwkeith
+
+==================================================================

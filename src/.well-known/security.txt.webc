@@ -1,0 +1,8 @@
+---
+eleventyExcludeFromCollections: true
+permalink: /.well-known/security.txt
+---
+Contact: mailto:security@dwk.io
+Expires: <p webc:nokeep @text="new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()"></p>
+Preferred-Languages: en
+Canonical: https://dwk.io/.well-known/security.txt

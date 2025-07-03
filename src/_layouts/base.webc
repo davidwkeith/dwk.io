@@ -16,7 +16,7 @@
     <!--- FIXME: Social images plugin 
     <meta property="og:image" content="{% GenerateSocialImage
   schema.name, siteName=metadata.title, promoImage=logoPath, titleColor="#1095C1" %}"> --->
-    <link webc:if="$data.site.url" rel="canonical" :href="($data.site.url) + ($data.page.url ?? '')">
+    <link webc:if="$data.site.url && $data.page?.url && !$data.page.eleventyExcludeFromCollections" rel="canonical" :href="(new URL($data.page.url, $data.site.url)).href">
     <link webc:if="$data.schema['@type']=='Person'" rel="me author" :href="$data.schema.email">
     <link webc:if="$data.schema['@type']!='Person'" rel="author" :href="$data.schema.author.email">
     <link webc:if="$data.schema['@type']!='Person'" rel="author" :href="$data.schema.author.url">
@@ -24,19 +24,19 @@
     <link webc:if="$data.site.favicon" rel="icon" :href="$data.site.favicon">
     <link webc:if="$data.site.appleTouchIcon" rel="icon" :href="$data.site.appleTouchIcon">
     <link webc:if="$data.site.headLinks" webc:for="rel, href in $data.site.headLinks" :href="href" :rel="rel">
-    <link webc:keep rel="stylesheet" :href="getBundleFileUrl('css')"></style>
+    <link webc:keep rel="stylesheet" :href="getBundleFileUrl('css')">
     <link rel="stylesheet" href="/css/index.css">
-    <script webc:keep type="application/ld+json" @raw="JSON.stringify($data.schema)"></script>
+    <script webc:keep type="application/ld+json" @raw="getSchema(this.schema)"></script>
     <script webc:keep :src="getBundleFileUrl('js')"></script>
     <script src="/js/index.js"></script>
   </head>
   <body>
     <site-header></site-header>
     <main>
-      <template webc:nokeep @raw="this.content"></template>
+      <slot><template webc:nokeep @raw="this.content"></template></slot>
     </main>
     <site-footer></site-footer>
-    <style webc:keep @raw="getBundle('css', 'defer')"></style>
-		<script webc:keep @raw="getBundle('js', 'defer')"></script>
+    <!-- <style webc:keep @raw="getBundle('css', 'defer')"></style> -->
+		<!-- <script webc:keep @raw="getBundle('js', 'defer')"></script> -->
   </body>
 </html>

@@ -1,0 +1,17 @@
+<svg version="1.1"
+     baseProfile="full"
+     width="100%" height="100%"
+     viewBox="0 0 512 512"
+     xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="eye">
+      <rect x="0" y="0" width="100%" height="100%" fill="white" />
+      <circle cx="280" cy="230" r="50" fill="black" />
+    </mask>
+  </defs>
+  <polygon fill="#1095c1" points="45,95 110,95 110,0" />
+  <polygon fill="#1095c1" points="120,95 185,95 185,0" />
+  <polygon fill="#1095c1" points="195,95 260,95 260,0" />
+  <polygon fill="#1095c1" points="375,300 375,400 500,350" />
+  <rect id="head" y="110" x="10" width="350" height="390" ry="10%" rx="10%" fill="#1095c1" mask="url(#eye)" />
+</svg>
