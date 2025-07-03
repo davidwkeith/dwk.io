@@ -1,9 +1,11 @@
+import Ajv from "ajv";
 import dotenv from "dotenv"
-dotenv.config()
-
 import eleventyWebcPlugin from "@11ty/eleventy-plugin-webc";
+import schemaOrgContext from "./schemaorg-context.js";
 import { eleventyImagePlugin } from "@11ty/eleventy-img";
-// import pluginWebmentions from "@chrisburnell/eleventy-cache-webmentions"
+
+dotenv.config()
+const ajv = new Ajv({ strict: false });
 
 export default function(eleventyConfig) {
   // Workaround for https://github.com/11ty/eleventy-plugin-webc/issues/86
@@ -12,16 +14,6 @@ export default function(eleventyConfig) {
   eleventyConfig.addBundle("css");
   eleventyConfig.addBundle("js");
 
-
-  // eleventyConfig.addGlobalData("configWebmentions", {
-  //   ...pluginWebmentions.defaults,
-  //   domain: `dwk.io`,
-  //   token: process.env.WEBMENTION_IO_TOKEN,
-  //   feed: `https://webmention.io/api/mentions.jf2?domain=dwk.io&token=${process.env.WEBMENTION_IO_TOKEN}&per-page=9001`,
-  //   key: "children",
-  // });
-
-  // Add WebC plugin
   eleventyConfig.addPlugin(eleventyWebcPlugin, {
     components: [
       "src/_components/**/*.webc",
@@ -41,7 +33,15 @@ export default function(eleventyConfig) {
 	  	}
   });
 
+  /**
+   * Get schema.org JSON-LD data validates against the schema.org
+   * context and returns it as a JSON string.
+   */
   eleventyConfig.addJavaScriptFunction("getSchema", (schema) => {
+    const valid = ajv.validate(schemaOrgContext, schema);
+    if (!valid) {
+      console.error(ajv.errors);
+    }
     return JSON.stringify(schema);
   });
 

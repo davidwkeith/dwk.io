@@ -1,21 +1,12 @@
 <!doctype html>
 <html :lang="$data.lang ?? 'en'">
   <head>
-    <!--- 
-      TODO: output Dublin Core https://en.wikipedia.org/wiki/Dublin_Core
-    --->
     <title @text="$data.title ? `${$data.title} — ${$data.site.title}` : $data.site.title"></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" :content="$data.eleventy.generator">
     <meta webc:if="$data.schema.fediverse" property="fediverse:creator" :content="$data.schema.fediverse">
     <meta webc:if="$data.site.colorScheme" name="color-scheme" :content="$data.site.colorScheme">
-    <meta webc:if="$data.description" name="description" :content="$data.description">
-    <meta webc:if="$data.schema.name" property="og:title" :content="$data.schema.name">
-    <meta webc:if="$data.schema.description" property="og:description" :content="$data.schema.description">
-    <meta webc:if="$data.site.ogType" property="og:type" :content="$data.site.ogType">
-    <!--- FIXME: Social images plugin 
-    <meta property="og:image" content="{% GenerateSocialImage
-  schema.name, siteName=metadata.title, promoImage=logoPath, titleColor="#1095C1" %}"> --->
+    <meta webc:if="$data.description" name="description" :content="$data.description ?? $data.schema.description">
     <link webc:if="$data.site.url && $data.page?.url && !$data.page.eleventyExcludeFromCollections" rel="canonical" :href="(new URL($data.page.url, $data.site.url)).href">
     <link webc:if="$data.schema['@type']=='Person'" rel="me author" :href="$data.schema.email">
     <link webc:if="$data.schema['@type']!='Person'" rel="author" :href="$data.schema.author.email">
@@ -36,7 +27,7 @@
       <slot><template webc:nokeep @raw="this.content"></template></slot>
     </main>
     <site-footer></site-footer>
-    <!-- <style webc:keep @raw="getBundle('css', 'defer')"></style> -->
-		<!-- <script webc:keep @raw="getBundle('js', 'defer')"></script> -->
+    <style webc:keep @raw="getBundle('css', 'defer')"></style>
+		<script webc:keep @raw="getBundle('js', 'defer')"></script>
   </body>
 </html>

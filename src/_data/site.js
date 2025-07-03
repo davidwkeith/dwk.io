@@ -13,7 +13,7 @@ export default {
     alt: "Memoji of DWK's head",
   },
   url: "https://dwk.io",
-  favicon: "/img/memoji.png",
+  favicon: "img/memoji.png",
   license: "https://spdx.org/licenses/CC-BY-4.0.html",
   language: "en",
   colorScheme: "dark light",
@@ -22,9 +22,9 @@ export default {
    *                                the HTML, where the key is the relationship type and the value is the URL.
    */
   headLinks: {
-    "code-repository": "https://gitlab.com/davidwkeith/dwk.io.git",
-    "content-repository": "https://gitlab.com/davidwkeith/dwk.io.git",
-    "issues": "https://gitlab.com/davidwkeith/dwk.io/-/issues",
+    "code-repository": "https://gitlab.com/dwk-io/dwk.io.git",
+    "content-repository": "https://gitlab.com/dwk-io/dwk.io.git",
+    "issues": "https://gitlab.com/dwk-io/dwk.io/-/issues",
     "code-license": "https://opensource.org/license/isc-license-txt",
     "content-license": "https://spdx.org/licenses/CC-BY-4.0.html",
     "webmention": "https://webmention.io/dwk.io/webmention",
