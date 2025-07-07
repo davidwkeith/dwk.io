@@ -7,17 +7,17 @@
     <meta webc:if="$data.schema.fediverse" property="fediverse:creator" :content="$data.schema.fediverse">
     <meta webc:if="$data.site.colorScheme" name="color-scheme" :content="$data.site.colorScheme">
     <meta webc:if="$data.description" name="description" :content="$data.description ?? $data.schema.description">
-    <link webc:if="$data.site.url && $data.page?.url && !$data.page.eleventyExcludeFromCollections" rel="canonical" :href="(new URL($data.page.url, $data.site.url)).href">
+    <link webc:if="$data.schema?.url || $data.page?.url" rel="canonical" :href="$data.schema?.url ?? (new URL($data.page.url, $data.site.url)).href">
     <link webc:if="$data.schema['@type']=='Person'" rel="me author" :href="$data.schema.email">
-    <link webc:if="$data.schema['@type']!='Person'" rel="author" :href="$data.schema.author.email">
-    <link webc:if="$data.schema['@type']!='Person'" rel="author" :href="$data.schema.author.url">
-    <link webc:if="$data.site.license" rel="licence" :href="$data.site.license">
+    <link webc:if="$data.schema.author?.email" rel="author" :href="$data.schema.author.email">
+    <link webc:if="$data.schema.author?.url" rel="author" :href="$data.schema.author.url">
+    <link webc:if="$data.schema.license" rel="licence" :href="$data.site.license">
     <link webc:if="$data.site.favicon" rel="icon" :href="$data.site.favicon">
     <link webc:if="$data.site.appleTouchIcon" rel="icon" :href="$data.site.appleTouchIcon">
     <link webc:if="$data.site.headLinks" webc:for="rel, href in $data.site.headLinks" :href="href" :rel="rel">
     <link webc:keep rel="stylesheet" :href="getBundleFileUrl('css')">
     <link rel="stylesheet" href="/css/index.css">
-    <script webc:keep type="application/ld+json" @raw="getSchema(this.schema)"></script>
+    <script webc:if="$data.schema" webc:keep type="application/ld+json" @raw="getSchema($data.schema)"></script>
     <script webc:keep :src="getBundleFileUrl('js')"></script>
     <script src="/js/index.js"></script>
   </head>

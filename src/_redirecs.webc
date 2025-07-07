@@ -1,0 +1,6 @@
+---
+eleventyExcludeFromCollections: true
+permalink: /_redirects
+---
+
+# See https://developers.cloudflare.com/pages/configuration/redirects/

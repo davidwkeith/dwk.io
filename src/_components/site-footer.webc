@@ -1,11 +1,8 @@
 <site-footer webc:nokeep>
   <footer>
     <ul>
-    <li webc:for="service, url in $data.schema.alternates"><a :href="url" rel="me external">
-      <img webc:is="eleventy-image" height="32" width="32" :src="`img/social/${service}.png`" :alt="`${service}'s logo`" :title="service">
-    </a></li>
-    <li><a href="mailto:{{metadata.author.email}}" rel="me external">
-      <img webc:is="eleventy-image" height="32" width="32" src="img/social/email.png" alt="email icon" title="email">
+    <li webc:for="service, url in $data.site.social"><a :href="url" rel="me external">
+      <img webc:is="eleventy-image" height="32" width="32" :src="`img/social/${service}.png`" :alt="`${service} icon`" :title="service">
     </a></li>
     <ul>
     

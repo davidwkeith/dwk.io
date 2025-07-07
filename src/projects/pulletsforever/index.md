@@ -1,11 +1,16 @@
 ---
 title: Pullets Forever
 date: 2002-12-23T04:49:24.215Z
-layout: project.webc
-tags: project
+permalink: /pulletsforever/
+page:
+  url: /pulletsforever/
 hero:
-  src: src/pulletsforever/logo.svg
+  src: src/projects/pulletsforever/logo.svg
   alt: Pullets Forever's chicken head logo in blue
+schema:
+  "@type": Blog
+  name: Pullets Forever
+  url: https://pulletsforever.com
 ---
 
 Pullet surprise writing about my life.
