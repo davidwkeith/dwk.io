@@ -7,17 +7,6 @@ schema:
   url: https://dwk.io
   email: mailto:me@dwk.io
   fediverse: "@dwk@xn--4t8h.dwk.io"
-  alternates:
-    blog: https://pulletsforever.com
-    bluesky: https://bsky.app/profile/dwk.io
-    facebook: https://www.facebook.com/davidwkeith
-    github: https://github.com/davidwkeith
-    gitlab: https://gitlab.com/davidwkeith
-    keybase: https://keybase.io/dwkeith
-    linkedin: https://www.linkedin.com/in/davidwkeith
-    mastodon: https://xn--4t8h.dwk.io/@Dwk
-    reddit: https://www.reddit.com/user/dwkeith
-   # wikipedia: "https://meta.wikimedia.org/wiki/User:Davidwkeith"
   description: Cyberhome of David W. Keith,
   image:
     "@type": ImageObject
