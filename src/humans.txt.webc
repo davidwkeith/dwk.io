@@ -3,7 +3,7 @@ eleventyExcludeFromCollections: true
 permalink: /humans.txt
 ---
 /* TEAM */
-	David W. Keith me@dwk.io
+	<i webc:nokeep @text="$data.pkg.author.name"></i> <i webc:nokeep @text="$data.pkg.author.email"></i>
 
 /* THANKS */
 	Thanks to the Eleventy team for creating such a great static site generator.
@@ -14,12 +14,11 @@ permalink: /humans.txt
 
 /* SITE */
 
-Build Date: <pre webc:nokeep @text="new Intl.DateTimeFormat('en-US', {
+Build Date: <i webc:nokeep @text="new Intl.DateTimeFormat('en-US', {
     dateStyle: 'full',
     timeStyle: 'short',
     timeZone: 'UTC',
-  }).format(new Date()) + ' UTC'"></pre>
-
-Package Version: <pre webc:nokeep @text="$data.pkg.version"></pre>
-
-Commit Hash: <pre webc:nokeep @text="$data.buildInfo.hash ?? 'MISSING'"></pre>
+  }).format(new Date()) + ' UTC'"></i>
+Generator: <i webc:nokeep @text="$data.eleventy.generator"></i>
+Package Version: <i webc:nokeep @text="$data.pkg.version"></i>
+Commit Hash: <i webc:nokeep @text="$data.buildInfo.hash ?? 'MISSING'"></i>

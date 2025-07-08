@@ -1,5 +1,53 @@
 export default {
   "@context": "https://schema.org",
-  "@type": "WebSite",
-  url: "https://dwk.io",
+  "@type": "WebPage",
+  author: {
+    "@type": "Person",
+    name: "David W. Keith",
+    url: "https://dwk.io",
+    image: "https://dwk.io/icon-512.png",
+    email: "mailto:me@dwk.io",
+    description: "Cyberhome of David W. Keith",
+    alumniOf:[
+      { "@type": "CollegeOrUniversity",
+        name: "Cornell College",
+        url: "https://cornellcollege.edu/",
+      },
+      { "@type": "HighSchool",
+        name: "St. Johnsbury Academy",
+        url: "https://stjacademy.org"
+      }
+    ],
+    sameAs:[
+      "https://bsky.app/profile/dwk.io",
+      "https://github.com/davidwkeith",
+      "https://gitlab.com/davidwkeith",
+      "https://keybase.io/dwkeith",
+      "https://www.facebook.com/davidwkeith",
+      "https://www.linkedin.com/in/davidwkeith",
+      "https://www.reddit.com/user/dwkeith",
+      "https://xn--4t8h.dwk.io/@Dwk",
+    ],
+    affiliation: {
+      "@type": "Organization",
+      name: "Silicon Valley Bicycle Coalition",
+      url: "https://bikesiliconvalley.org"
+    },
+    birthDate: "1978-12-14",
+    birthPlace: {
+      "@type": "Place",
+      name: "Boston, MA"
+    },
+    callSign: "N1UEU",
+    familyName: "Keith",
+    givenName: "David",
+    additionalName: "William",
+    gender: "Male",
+    height: "173 cm",
+    nationality: {
+      "@type": "Country",
+      name: "United States of America",
+      url: "https://www.usa.gov"
+    }
+  }
 }

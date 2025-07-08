@@ -2,4 +2,7 @@
 eleventyExcludeFromCollections: true
 permalink: /robots.txt
 ---
+# https://www.robotstxt.org/
+User-agent: *
+Disallow:
 Sitemap: https://dwk.io/sitemap.xml

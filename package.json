@@ -19,7 +19,7 @@
     "@11ty/eleventy": "^3.1.2",
     "@11ty/eleventy-img": "^6.0.4",
     "@11ty/eleventy-plugin-webc": "^0.11.2",
-    "ajv": "^8.17.1",
-    "dotenv": "^16.6.1"
+    "dotenv": "^16.6.1",
+    "eleventy-plugin-gen-favicons": "^1.1.3"
   }
 }

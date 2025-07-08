@@ -1,0 +1,43 @@
+<!---
+  A basic site header component for Eleventy WebC.
+
+  This component displays the site logo and title, linking to the homepage.
+--->
+<header webc:root="override">
+  <h1>
+    <a href="/" class="hero-image">
+      <img webc:is="eleventy-image" width="64" :src="$data.site.logo.src" :alt="$data.site.logo.alt">
+    </a>
+    <span webc:nokeep @text="$data.title ?? $data.site.title"></span></h1>
+      <div class="feedicon"><a :href="new URL ('/feed.json', $data.site.url)" title="JSON Feed (RSS)"><img src="https://jsonfeed.org/graphics/icon.png" /></a></div>
+
+</header>
+
+<style webc:scoped>
+:root {
+    display: flex;
+    gap: 1em .5em;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 1em;
+}
+
+h1 img {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5em;
+}
+
+a.hero-image {
+    text-decoration: none;
+}
+
+.feedicon img {
+    width: 2em;
+    height: 2em;
+    position: absolute;
+    top: 1em;
+    right: 1em
+}
+
+</style>
