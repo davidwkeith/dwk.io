@@ -14,7 +14,7 @@
 </header>
 
 <style webc:scoped>
-:root {
+header {
     display: flex;
     gap: 1em .5em;
     flex-wrap: wrap;

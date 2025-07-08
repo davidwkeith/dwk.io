@@ -1,0 +1,10 @@
+---
+description: The Cyber Home of DWK
+layout: base.webc
+---
+<h2>Projects</h2>
+<ul>
+  <li webc:for="project of collections.project">
+    <a :href="project.page.url" @raw="project.data.title"></a>
+  </li>
+<ul>

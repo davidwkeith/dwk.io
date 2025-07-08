@@ -3,6 +3,7 @@ export default class JSONFeed {
   data() {
     return {
       permalink: "/feed.json",
+      eleventyExcludeFromCollections: true,
     }
   }
 
@@ -45,7 +46,7 @@ export default class JSONFeed {
         tags: item.data.tags ?? [],
         // TODO: add support for attachements (aka podcasts)
         // attachments: item.data.attachments ?? [],
-        
+
       });
     }
     return JSON.stringify(feed);

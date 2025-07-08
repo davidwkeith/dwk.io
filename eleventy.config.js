@@ -2,10 +2,11 @@ import dotenv from "dotenv"
 import eleventyWebcPlugin from "@11ty/eleventy-plugin-webc";
 import { eleventyImagePlugin } from "@11ty/eleventy-img";
 import faviconsPlugin from "eleventy-plugin-gen-favicons";
+import htmlmin from "html-minifier-terser";
 
 dotenv.config()
 
-export default function(eleventyConfig) {
+export default function (eleventyConfig) {
 
   // FIXME: Workaround for https://github.com/11ty/eleventy-plugin-webc/issues/86
   // In the front matter of a file with a permalink like `/404.html`, simply
@@ -31,14 +32,14 @@ export default function(eleventyConfig) {
   /**
    * Configure the Eleventy Image plugin to process images in web components.
    */
-  eleventyConfig.addPlugin(eleventyImagePlugin,{
-		formats: ["webp", "jpeg"],
-		outputDir: "./_site/img/",
+  eleventyConfig.addPlugin(eleventyImagePlugin, {
+    formats: ["webp", "jpeg"],
+    outputDir: "./_site/img/",
     urlPath: "/img/",
-		defaultAttributes: {
-			loading: "lazy",
-			decoding: "async",
-	  	}
+    defaultAttributes: {
+      loading: "lazy",
+      decoding: "async",
+    }
   });
 
   /**
@@ -48,7 +49,22 @@ export default function(eleventyConfig) {
   eleventyConfig.addJavaScriptFunction("getSchema", (schema) => {
     // TODO: Validate schema against schema.org context
     return JSON.stringify(schema);
-  });1
+  });
+
+  eleventyConfig.addTransform("htmlmin", function (content) {
+    if ((this.page.outputPath || "").endsWith(".html")) {
+      let minified = htmlmin.minify(content, {
+        useShortDoctype: true,
+        removeComments: true,
+        collapseWhitespace: true,
+      });
+
+      return minified;
+    }
+
+    // If not an HTML output, return content as-is
+    return content;
+  });
 
   /**
    * Standard template formats only.
@@ -68,7 +84,7 @@ export default function(eleventyConfig) {
       input: "src",
       output: "_site",
       includes: "_includes",
-      layouts: "_layouts"   
+      layouts: "_layouts"
     },
     markdownTemplateEngine: "webc",
     htmlTemplateEngine: "webc",

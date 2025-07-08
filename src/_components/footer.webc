@@ -46,11 +46,6 @@
     padding: 1rem;
   }
 
-  ul>li img {
-    width: 2rem;
-    height: 2rem;
-  }
-
   p {
     margin: 1rem auto;
     max-width: 25rem;
