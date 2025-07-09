@@ -16,9 +16,9 @@ export default {
 
   /***
    * @required
-   * @property {string} the URL of the site, used in the `<link rel="canonical">` tag and JSON Feed.
+   * @property {URL} the URL of the site, used in the `<link rel="canonical">` tag and JSON Feed.
    */
-  url: "https://dwk.io",
+  url: new URL("https://dwk.io"),
 
   /***
    * If present this will be used to generate the `<meta property="fediverse:creator">` tag.

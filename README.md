@@ -1,5 +1,5 @@
 # dwk.io
 
 ## TODO
-  - [ ] Web Mentions
-  - [ ] llms.txt
+  - [ ] [Web Mentions](https://webmention.io)
+  - [ ] [llms.txt](https://llmstxt.org/)

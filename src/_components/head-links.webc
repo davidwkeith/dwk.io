@@ -8,4 +8,5 @@
   <link rel="alternate" type="application/json" :href="new URL('/feed.json', $data.site.url)" />
   <link webc:keep rel="stylesheet" :href="getBundleFileUrl('css')">
   <link rel="stylesheet" href="../_layouts/css/index.css">
+  <link type="text/plain" rel="author" :href="new URL('/humans.txt', $data.site.url)" />
 </template>

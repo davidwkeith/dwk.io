@@ -1,6 +1,7 @@
 ---
 eleventyExcludeFromCollections: true
 permalink: /humans.txt
+_documentation: https://humanstxt.org
 ---
 /* TEAM */
 	<i webc:nokeep @text="$data.pkg.author.name"></i> <i webc:nokeep @text="$data.pkg.author.email"></i>
@@ -13,7 +14,6 @@ permalink: /humans.txt
 	Thanks to my family and friends for their support.
 
 /* SITE */
-
 Build Date: <i webc:nokeep @text="new Intl.DateTimeFormat('en-US', {
     dateStyle: 'full',
     timeStyle: 'short',

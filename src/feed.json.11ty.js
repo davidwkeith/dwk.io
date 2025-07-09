@@ -1,3 +1,15 @@
+import Image from "@11ty/eleventy-img";
+
+const imgConfig = {
+  formats: ["webp", "jpeg"],
+  outputDir: "./_site/img/",
+  urlPath: "/img/",
+  cacheOptions: {
+    cacheDir: ".cache/eleventy-img/"
+  }
+};
+
+
 export default class JSONFeed {
 
   data() {
@@ -7,7 +19,7 @@ export default class JSONFeed {
     }
   }
 
-  render(data) {
+  async render(data) {
     const feed = {
       version: "https://jsonfeed.org/version/1",
       title: data.site.title,
@@ -27,15 +39,17 @@ export default class JSONFeed {
 
     for (const item of data.collections.project) {
       const url = new URL(item.url, data.site.url);
+      const imgURL = item.data.hero?.src ? (await Image(item.data.hero.src, imgConfig)).webp[0]?.url : undefined;
+      const bannerImgURL = item.data.banner?.src ? (await Image(item.data.banner.src, imgConfig)).webp[0]?.url : undefined;
+  
       feed.items.push({
         id: url,
         title: item.data.title ?? "Untitled",
         url,
-        content_html: item.templateContent ?? item.data.content ?? "FIXME: No content",
+        content_html: item.templateContent ?? item.data.content ?? "ERROR: No content",
         summary: item.data.summary ?? item.data.description ?? undefined,
-        // FIXME: hero image is processed by eleventy-img, but not available in the data.
-        // image: item.data.hero.src,
-        // banner_image: item.data.banner.src
+        image: imgURL ? new URL(imgURL, data.site.url) : undefined,
+        banner_image: bannerImgURL ? new URL(bannerImgURL, data.site.url) : undefined,
         date_published: item.date.toISOString(),
         date_modified: item.date.toISOString(),
         author: {
