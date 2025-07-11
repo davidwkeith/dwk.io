@@ -1,13 +1,14 @@
 export default {
   "@context": "https://schema.org",
   "@type": "WebPage",
+  description: "Cyberhome of David W. Keith",
+  
   author: {
     "@type": "Person",
     name: "David W. Keith",
     url: "https://dwk.io",
     image: "https://dwk.io/icon-512.png",
     email: "mailto:me@dwk.io",
-    description: "Cyberhome of David W. Keith",
     alumniOf:[
       { "@type": "CollegeOrUniversity",
         name: "Cornell College",
@@ -26,7 +27,7 @@ export default {
       "https://www.facebook.com/davidwkeith",
       "https://www.linkedin.com/in/davidwkeith",
       "https://www.reddit.com/user/dwkeith",
-      "https://xn--4t8h.dwk.io/@Dwk",
+      "https://xn--4t8h.dwk.io/@dwk",
     ],
     affiliation: {
       "@type": "Organization",
@@ -36,7 +37,8 @@ export default {
     birthDate: "1978-12-14",
     birthPlace: {
       "@type": "Place",
-      name: "Boston, MA"
+      name: "Boston, MA",
+      url: "https://www.boston.gov"
     },
     callSign: "N1UEU",
     familyName: "Keith",

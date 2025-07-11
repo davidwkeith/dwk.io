@@ -1,8 +1,8 @@
 ---
 eleventyExcludeFromCollections: true
 permalink: /robots.txt
+_documentation: https://www.robotstxt.org/
 ---
-# https://www.robotstxt.org/
 User-agent: *
 Disallow:
-Sitemap: https://dwk.io/sitemap.xml
+Sitemap: <template webc:nokeep @raw="new URL('/sitemap.xml', $data.site.url)"></template>

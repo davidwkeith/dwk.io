@@ -1,9 +1,8 @@
 ---
 eleventyExcludeFromCollections: true
 permalink: /_headers
+_documentation: https://developers.cloudflare.com/pages/configuration/headers/
 ---
-# See https://developers.cloudflare.com/pages/configuration/headers/
-
-/
+/*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

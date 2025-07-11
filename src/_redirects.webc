@@ -1,6 +1,5 @@
 ---
 eleventyExcludeFromCollections: true
 permalink: /_redirects
+_documentation: https://developers.cloudflare.com/pages/configuration/redirects/
 ---
-
-# See https://developers.cloudflare.com/pages/configuration/redirects/

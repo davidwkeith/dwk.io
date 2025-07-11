@@ -1,0 +1,9 @@
+    <!---
+      Relys on the 11ty data cascade to generate a schema.org JSON-LD script tag from the `$data.schema` object.
+    --->
+    <script webc:if="$data.schema" webc:keep type="application/ld+json" @raw="getSchema({
+      ...$data.schema, 
+      url: (new URL($data.page.url, $data.site?.url)),
+    })"></script>
+    <script webc:keep :src="getBundleFileUrl('js')"></script>
+    <script src="../_layouts/js/index.js"></script>

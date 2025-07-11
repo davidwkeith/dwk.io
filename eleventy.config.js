@@ -3,6 +3,7 @@ import eleventyWebcPlugin from "@11ty/eleventy-plugin-webc";
 import { eleventyImagePlugin } from "@11ty/eleventy-img";
 import faviconsPlugin from "eleventy-plugin-gen-favicons";
 import htmlmin from "html-minifier-terser";
+import { lint } from "jsonld-lint";
 
 dotenv.config()
 
@@ -46,9 +47,14 @@ export default function (eleventyConfig) {
    * Get schema.org JSON-LD data validates against the schema.org
    * context and returns it as a JSON string.
    */
-  eleventyConfig.addJavaScriptFunction("getSchema", (schema) => {
-    // TODO: Validate schema against schema.org context
-    return JSON.stringify(schema);
+  eleventyConfig.addJavaScriptFunction("getSchema", async (schema) => {
+    const JSONSchema = JSON.stringify(schema)
+    const lintErrors = await lint(JSONSchema);
+    if (lintErrors.length > 0) {
+      console.error(lintErrors);
+      throw "Invlaid Schema.org JSON-LD"
+    }
+    return JSONSchema;
   });
 
   eleventyConfig.addTransform("htmlmin", function (content) {
@@ -76,7 +82,7 @@ export default function (eleventyConfig) {
     "webc",
   ]);
 
-  eleventyConfig.addPassthroughCopy(`src/projects/**/*.{svg,webp,png,jpg,jpeg,gif,zip}`)
+  eleventyConfig.addPassthroughCopy("src/projects/**/*.{svg,webp,png,jpg,jpeg,gif,zip}")
 
   // Set input and output directories
   return {

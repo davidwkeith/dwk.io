@@ -1,1 +1,3 @@
-console.log("[WebC] JS Bundle Loaded from index.js");
+/**
+ * Global Javascript for this project
+ */

@@ -26,7 +26,17 @@ export default {
    * @optional
    * @property {string} fediverse_creator: the handle of the creator on the Fediverse.
    */
-  fediverseCreator: "@Dwk@xn--4t8h.dwk.io",
+  fediverseCreator: "@dwk@xn--4t8h.dwk.io",
+
+  /***
+   * A URL for security contacts
+   * 
+   * @see https://www.rfc-editor.org/rfc/rfc9116#section-2.5.3
+   * @optional
+   * @property {string} securityContact - The contact email for security issues, used
+   *                                      in /.well-known/security.txt.
+   */
+  securityContact: "mailto:security@dwk.io",
 
 /***
  * This uses [eleventy-plugin-gen-favicons](https://github.com/NJAldwin/eleventy-plugin-gen-favicons)
@@ -52,13 +62,19 @@ export default {
    */
   copyright: `CC-BY-4.0 David W. Keith ${(new Date()).getFullYear()}`,
 
-  /***
-   * @property {string} rating - The content rating of the site, used in the `<meta name="rating">` tag.
-   *                             This should be a valid content rating, either "general" or "adult"
+  /**
+   * The content rating of the site, used in the `<meta name="rating">` tag.
+   * If omitted the rating tag won't be output and is equivelent to "general"
+   * 
+   * @see https://developers.google.com/search/docs/specialty/explicit/guidelines?udm=14#mark-specific-pages
+   * @optional
+   * @property {string} rating - either "general" or "adult"
    */
   rating: "general",
   
   /***
+   * The language for the content of the site.
+   * 
    * @property {string} language - The primary language of the site, used in the `<html lang="">` attribute.
    *                                This should be a valid BCP 47 language tag.
    * @default "en"
