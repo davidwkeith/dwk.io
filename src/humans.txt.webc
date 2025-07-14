@@ -21,4 +21,4 @@ Build Date: <i webc:nokeep @text="new Intl.DateTimeFormat('en-US', {
   }).format(new Date()) + ' UTC'"></i>
 Generator: <i webc:nokeep @text="$data.eleventy.generator"></i>
 Package Version: <i webc:nokeep @text="$data.pkg.version"></i>
-Commit Hash: <i webc:nokeep @text="$data.buildInfo.hash ?? 'MISSING'"></i>
+Commit Hash: <i webc:nokeep @text="$data.site.hash ?? 'MISSING'"></i>

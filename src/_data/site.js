@@ -1,3 +1,11 @@
+import childProcess from 'node:child_process';
+
+const latestGitCommitHash =
+    childProcess
+    .execSync('git rev-parse --short HEAD')
+    .toString()
+    .trim();
+
 export default {
   /***
    * @required
@@ -14,27 +22,31 @@ export default {
    */
   description: "David W. Keith's personal website.",
 
-  /***
+  /**
+   * The URL is used in the `<link rel="canonical">` tag, JSON feed, and many other
+   * locations throughout the build. If you need to vary based on enviornment it would
+   * be best to store the value in an ENV variable so it can change by build.
+   * 
    * @required
-   * @property {URL} the URL of the site, used in the `<link rel="canonical">` tag and JSON Feed.
+   * @property {URL} the URL of the site.
    */
   url: new URL("https://dwk.io"),
 
-  /***
+  /**
    * If present this will be used to generate the `<meta property="fediverse:creator">` tag.
    * 
+   * @see https://blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/
    * @optional
-   * @property {string} fediverse_creator: the handle of the creator on the Fediverse.
+   * @property {string} fediverseCreator: the handle of the creator on the Fediverse.
    */
   fediverseCreator: "@dwk@xn--4t8h.dwk.io",
 
   /***
-   * A URL for security contacts
+   * A URI for security contacts used in `/.well-known/security.txt`.
    * 
    * @see https://www.rfc-editor.org/rfc/rfc9116#section-2.5.3
    * @optional
-   * @property {string} securityContact - The contact email for security issues, used
-   *                                      in /.well-known/security.txt.
+   * @property {string} securityContact - The contact URI for security issues
    */
   securityContact: "mailto:security@dwk.io",
 
@@ -55,10 +67,10 @@ export default {
   },
 
   /***
-   * If present this will be used to generate the `<meta name="description">` tag.
+   * If present this will be used to generate the `<meta name="copyright">` tag.
    * 
-   * @property {string} copyright - The copywrite string for the site, used in the 
-   *                                `<meta name="copyright">` tag.
+   * @optional
+   * @property {string} copyright - The copywrite string for the site
    */
   copyright: `CC-BY-4.0 David W. Keith ${(new Date()).getFullYear()}`,
 
@@ -73,18 +85,31 @@ export default {
   rating: "general",
   
   /***
-   * The language for the content of the site.
+   * The language for the content of the site, used in the `<html lang="">` attribute.
    * 
-   * @property {string} language - The primary language of the site, used in the `<html lang="">` attribute.
-   *                                This should be a valid BCP 47 language tag.
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/lang
+   * @property {string} language - a valid BCP 47 language string
    * @default "en"
    */
   language: "en",
   
+  /**
+   * Support for switching between dark and light mode in CSS.
+   * 
+   * TODO: support `media` attribute.
+   * 
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/color-scheme
+   * @property {string} colorScheme - a string that defines the site's prefered color scheme
+   */
   colorScheme: "dark light",
-  /***
-   * @property {object} headLinks - a key-value object of links to be included in the `<head>` section of
-   *                                the HTML, where the key is the relationship type and the value is the URL.
+
+  /**
+   * A quick and easy way to add addtional `<link>` tags to the site's `<head>`.
+   * 
+   * TODO: support all attributes
+   * 
+   * @optional
+   * @property {object} headLinks - a key-value object where the key is the relationship type and the value is the URI.
    */
   headLinks: {
     "code-repository": "https://gitlab.com/dwk-io/dwk.io.git",
@@ -98,6 +123,17 @@ export default {
     "donation": "https://www.buymeacoffee.com/davidwkeith",
     "root": "https://dwk.io",
   },
+
+  /**
+   * used in the build report for `humans.txt`
+   * 
+   * @computed
+   * @property {string} The git hash of the current HEAD
+   */
+  hash: childProcess
+        .execSync('git rev-parse --short HEAD')
+        .toString()
+        .trim(),
 
   /// Header Web Component
 
