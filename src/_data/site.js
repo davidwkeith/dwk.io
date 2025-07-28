@@ -1,34 +1,36 @@
 import childProcess from 'node:child_process';
 
-const latestGitCommitHash =
-    childProcess
-    .execSync('git rev-parse --short HEAD')
-    .toString()
-    .trim();
-
+/**
+ * These are all the site-level variables. Often used as fallback for page-level data.
+ */
 export default {
-  /***
+
+  /**
+   * The title of the site, used in the `<title>` tag and as the main heading.
+   * Also used in the JSON (RSS) Feed. See the `base.webc` template for individual
+   * page title computation.
+   * 
    * @required
-   * @property {string} title - The title of the site, used in the `<title>` tag and as the main heading.
-   *                            Also used in the JSON Feed.
+   * @property {string} title - Site title
    */
   title: "DWK's Cyber Home",
 
-  /***
-   * @required
-   * @property {string} description - A short description of the site, used in the `<meta name="description">` tag.
-   *                                  if the description is not set in front matter.
-   *                                  This is also used in the JSON Feed.
+  /**
+   * Description is used in the `<meta name="description">` tag.
+   * if the description is not set in front matter for the individual page.
+   * This is also used in the JSON Feed.
+   * 
+   * @property {string} description - A short description of the site.
    */
   description: "David W. Keith's personal website.",
 
   /**
-   * The URL is used in the `<link rel="canonical">` tag, JSON feed, and many other
-   * locations throughout the build. If you need to vary based on enviornment it would
-   * be best to store the value in an ENV variable so it can change by build.
+   * The URL is used in the `<link rel="canonical">` tag, JSON feed, and sitemap.
+   * It should be the full URL to the site, including the protocol.
    * 
    * @required
-   * @property {URL} the URL of the site.
+   * @type {URL}
+   * @property {URL} url - The URL of the site.
    */
   url: new URL("https://dwk.io"),
 
@@ -41,38 +43,38 @@ export default {
    */
   fediverseCreator: "@dwk@xn--4t8h.dwk.io",
 
-  /***
-   * A URI for security contacts used in `/.well-known/security.txt`.
+  /**
+   * See [RFC9116 Section 2.5.3](https://www.rfc-editor.org/rfc/rfc9116#section-2.5.3) for options
    * 
    * @see https://www.rfc-editor.org/rfc/rfc9116#section-2.5.3
    * @optional
-   * @property {string} securityContact - The contact URI for security issues
+   * @property {string} securityContact - The contact email for security issues, used
+   *                                      in /.well-known/security.txt.
    */
   securityContact: "mailto:security@dwk.io",
 
-/***
- * This uses [eleventy-plugin-gen-favicons](https://github.com/NJAldwin/eleventy-plugin-gen-favicons)
- * 
- */
-  favicon: {
-    src: "img/memoji.png",
-    appleIconBgColor: "#000000",
-    appleIconPadding: 20,
-  },
-
-  manifest: { 
-    appName: "DWK's Cyber Home",
-    appDescription: "David W. Keith's personal website.", 
-    lang: "en",
-  },
-
-  /***
+  /**
    * If present this will be used to generate the `<meta name="copyright">` tag.
    * 
    * @optional
    * @property {string} copyright - The copywrite string for the site
    */
   copyright: `CC-BY-4.0 David W. Keith ${(new Date()).getFullYear()}`,
+
+  /**
+   * This is used to generate the favicons for the site.
+   * 
+   * @see https://github.com/NJAldwin/eleventy-plugin-gen-favicons
+   * @property {object} favicon - Favicon options.
+   * @property {string} favicon.src - Path to the source image.
+   * @property {string} favicon.appleIconBgColor - Background color for the Apple touch icon.
+   * @property {number} favicon.appleIconPadding - Padding for the Apple touch icon.
+   */
+  favicon: {
+    src: "img/memoji.png",
+    appleIconBgColor: "#000000",
+    appleIconPadding: 20,
+  },
 
   /**
    * The content rating of the site, used in the `<meta name="rating">` tag.
@@ -83,45 +85,85 @@ export default {
    * @property {string} rating - either "general" or "adult"
    */
   rating: "general",
-  
-  /***
-   * The language for the content of the site, used in the `<html lang="">` attribute.
+
+  /**
+   * The language for the content of the site, used in the `<html lang="">` attribute
+   * and any other place where language information is needed. (assumes the entire site
+   * is in the same language)
    * 
    * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/lang
    * @property {string} language - a valid BCP 47 language string
    * @default "en"
    */
   language: "en",
-  
+
+  /**
+   * Controls whether the main navigation is rendered on the site.
+   * Set to `false` for single-page sites or if navigation is handled differently.
+   * 
+   * @property {boolean} hasNavigation - Whether to render the main navigation.
+   * @default true
+   */
+  hasNavigation: true,
+
   /**
    * Support for switching between dark and light mode in CSS.
    * 
-   * TODO: support `media` attribute.
-   * 
    * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/color-scheme
-   * @property {string} colorScheme - a string that defines the site's prefered color scheme
+   * @property {object} colorScheme - an object that defines the site's prefered color scheme
+   * @property {string} colorScheme.content - the value of the content attribute
+   * @property {string} [colorScheme.media] - the value of the media attribute
    */
-  colorScheme: "dark light",
+  colorScheme: {
+    content: "dark light",
+    // media: "(prefers-color-scheme: dark)",
+  },
 
   /**
    * A quick and easy way to add addtional `<link>` tags to the site's `<head>`.
    * 
-   * TODO: support all attributes
-   * 
    * @optional
-   * @property {object} headLinks - a key-value object where the key is the relationship type and the value is the URI.
+   * @property {object[]} headLinks - an array of objects, each representing a `<link>` tag.
+   * @property {string} headLinks[].rel - the relationship of the link
+   * @property {string} headLinks[].href - the URL of the link
    */
-  headLinks: {
-    "code-repository": "https://gitlab.com/dwk-io/dwk.io.git",
-    "content-repository": "https://gitlab.com/dwk-io/dwk.io.git",
-    "issues": "https://gitlab.com/dwk-io/dwk.io/-/issues",
-    "code-license": "https://opensource.org/license/isc-license-txt",
-    "content-license": "https://spdx.org/licenses/CC-BY-4.0.html",
-    // "webmention": "https://webmention.io/dwk.io/webmention",
-    // http://www.hixie.ch/specs/pingback/pingback
-    // "pingback": "https://webmention.io/dwk.io/xmlrpc",
-    "donation": "https://www.buymeacoffee.com/davidwkeith",
-    "root": "https://dwk.io",
+  headLinks: [
+    { rel: "code-repository", href: "https://gitlab.com/dwk-io/dwk.io.git" },
+    { rel: "content-repository", href: "https://gitlab.com/dwk-io/dwk.io.git" },
+    { rel: "issues", href: "https://gitlab.com/dwk-io/dwk.io/-/issues" },
+    { rel: "code-license", href: "https://opensource.org/license/isc-license-txt" },
+    { rel: "content-license", href: "https://spdx.org/licenses/CC-BY-4.0.html" },
+    { rel: "donation", href: "https://www.buymeacoffee.com/davidwkeith" },
+    { rel: "root", href: "https://dwk.io" },
+  ],
+
+  /**
+   * The default Open Graph image for social sharing.
+   * This will be used if no specific Open Graph image is defined for a page.
+   * 
+   * @computed
+   * @property {string} defaultOgImage - Path to the default Open Graph image.
+   */
+  get defaultOgImage() {
+    return this.favicon.src;
+  },
+
+  /**
+   * This gets mixed into the web-manifest for the site.
+   * 
+   * @see https://github.com/NJAldwin/eleventy-plugin-gen-favicons
+   * @computed
+   * @property {object} manifest - Web manifest options.
+   * @property {string} manifest.appName - The name of the application.
+   * @property {string} manifest.appDescription - A description of the application.
+   * @property {string} manifest.lang - The language of the application.
+   */
+  get manifest() {
+    return {
+      appName: this.title,
+      appDescription: this.description,
+      lang: this.language,
+    };
   },
 
   /**
@@ -130,10 +172,12 @@ export default {
    * @computed
    * @property {string} The git hash of the current HEAD
    */
-  hash: childProcess
-        .execSync('git rev-parse --short HEAD')
-        .toString()
-        .trim(),
+  get hash() {
+    return childProcess
+      .execSync('git rev-parse --short HEAD')
+      .toString()
+      .trim()
+  },
 
   /// Header Web Component
 
@@ -162,6 +206,6 @@ export default {
     mastodon: "https://xn--4t8h.dwk.io/@Dwk",
     reddit: "https://www.reddit.com/user/dwkeith",
     email: "mailto:me@dwk.io",
-   // wikipedia: "https://meta.wikimedia.org/wiki/User:Davidwkeith"
+    // wikipedia: "https://meta.wikimedia.org/wiki/User:Davidwkeith"
   },
 }

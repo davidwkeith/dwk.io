@@ -11,11 +11,12 @@
     <title @text="$data.title ? `${$data.title} — ${$data.site.title}` : $data.site.title"></title>
     <meta webc:is="head-meta" />
     <link webc:is="head-link" />
-    <script webc:is="head-script"></script>
+    <script webc:is="head-js"></script>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header></header>
-    <main>
+    <main id="main-content">
       <slot><template webc:nokeep @raw="this.content"></template></slot>
     </main>
     <footer></footer>

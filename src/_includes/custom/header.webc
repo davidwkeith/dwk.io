@@ -1,8 +1,3 @@
-<!---
-  A basic site header component for Eleventy WebC.
-
-  This component displays the site logo and title, linking to the homepage.
---->
 <header webc:root="override">
   <h1>
     <a href="/" class="hero-image">

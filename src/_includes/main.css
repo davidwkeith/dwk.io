@@ -1,3 +1,25 @@
+/**
+ * This the the global CSS file.
+ * 
+ * With WebC you can add <style> tags to any template and have them scoped
+ * This is for more global styles.
+ * 
+ */
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
 /* Defaults */
 :root {
     --font-family: -apple-system, system-ui, sans-serif;
