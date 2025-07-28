@@ -72,20 +72,11 @@ export default function (eleventyConfig) {
     return content;
   });
 
-  /**
-   * Standard template formats only.
-   */
-  eleventyConfig.setTemplateFormats([
-    "11ty.js",
-    "html",
-    "md",
-    "webc",
-  ]);
-
   eleventyConfig.addPassthroughCopy("src/projects/**/*.{svg,webp,png,jpg,jpeg,gif,zip}")
 
   // Set input and output directories
   return {
+    templateFormats: [ "11ty.js", "webc", "md", "html" ],
     dir: {
       input: "src",
       output: "_site",

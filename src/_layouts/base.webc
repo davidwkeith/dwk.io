@@ -6,7 +6,7 @@
   Defers CSS and JS bundles are at the end of the document for better performance.
 
 --->
-<html :lang="$data.site.lang ?? 'en'">
+<html webc:root :lang="$data.site.language ?? 'en'">
   <head>
     <title @text="$data.title ? `${$data.title} — ${$data.site.title}` : $data.site.title"></title>
     <meta webc:is="head-meta" />
