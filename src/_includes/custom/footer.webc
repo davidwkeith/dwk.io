@@ -15,8 +15,8 @@
   <p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/">
     <a property="dct:title" rel="cc:attributionURL" :href="$data.site.url" @text="$data.site.title"></a>
     by
-    <a rel="cc:attributionURL dct:creator author me" property="cc:attributionName" :href="$data.schema.url"
-      @text="$data.schema.name"></a>
+    <a rel="cc:attributionURL dct:creator author me" property="cc:attributionName" :href="$data.schema.author.url"
+      @text="$data.schema.author.name"></a>
     is licensed under
     <a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank"
       rel="license noopener noreferrer" style="display:inline-block;">
@@ -36,19 +36,23 @@
 
 <style webc:scoped>
   ul {
-    display: flex;
-    justify-content: center;
+    list-style: none;
+    padding: 0;
+    text-align: center;
   }
 
-  ul>li {
+  ul > li {
     display: inline-block;
-    width: 4rem;
+  }
+
+  ul > li > a {
+    display: inline-block;
     padding: 1rem;
   }
 
   p {
     margin: 1rem auto;
-    max-width: 25rem;
+    max-width: 30rem;
     font-size: 0.9rem;
     line-height: 1.5;
     text-align: center;

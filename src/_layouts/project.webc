@@ -8,7 +8,7 @@ layout: base.webc
 </ul>
 
 <article>
-  <figure class="hero-image" webc:if="hero">
+  <figure class="project-hero-image" webc:if="hero">
     <img webc:is="eleventy-image"
       :src="hero.src" 
       :alt="hero.alt" 
@@ -22,12 +22,12 @@ layout: base.webc
 
 <style>
 
-  .hero-image img {
+  .project-hero-image img {
     height: 150px;
     width: 150px;;
   }
 
-  .hero-image figcaption {
+  .project-hero-image figcaption {
     font-size: 0.8em;
     color: #666;
     margin-top: 0.5em;

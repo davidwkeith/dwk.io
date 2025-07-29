@@ -3,36 +3,55 @@
     <a href="/" class="hero-image">
       <img webc:is="eleventy-image" width="64" :src="$data.site.logo.src" :alt="$data.site.logo.alt">
     </a>
-    <span webc:nokeep @text="$data.title ?? $data.site.title"></span></h1>
-      <div class="feedicon"><a :href="new URL ('/feed.json', $data.site.url)" title="JSON Feed (RSS)"><img src="https://jsonfeed.org/graphics/icon.png" /></a></div>
+    <span webc:nokeep @text="$data.site.title"></span>
+  </h1>
+  <div class="feedicon"><a :href="new URL ('/feed.json', $data.site.url)" title="JSON Feed (RSS)"><img webc:is="eleventy-image"
+        src="img/jsonfeed.svg" alt="JSON Feed"/></a></div>
 
 </header>
 
 <style webc:scoped>
-header {
+  header {
     display: flex;
     gap: 1em .5em;
     flex-wrap: wrap;
     align-items: center;
-    padding: 1em;
-}
+    border: 2px solid var(--border-color);
+    background-color: var(--header-background);
+    color: var(--header-text);
+    padding: 1rem;
+    text-align: center;
+  }
 
-h1 img {
+  header:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+  }
+
+  h1 img {
+    vertical-align: middle;
+  }
+
+  a.hero-image {
     display: inline-block;
     vertical-align: middle;
     margin-right: 0.5em;
-}
-
-a.hero-image {
     text-decoration: none;
-}
+  }
 
-.feedicon img {
+  .feedicon img {
     width: 2em;
     height: 2em;
     position: absolute;
     top: 1em;
     right: 1em
-}
-
+  }
 </style>

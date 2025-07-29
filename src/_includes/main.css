@@ -22,38 +22,33 @@
 
 /* Defaults */
 :root {
-    --font-family: -apple-system, system-ui, sans-serif;
-    --font-family-monospace: Menlo, Monaco, monospace;
+    --font-family: 'Courier New', Courier, monospace;
+    --font-family-monospace: 'Courier New', Courier, monospace;
 }
 
 /* Theme colors */
 :root {
-    --color-gray-20: #e0e0e0;
-    --color-gray-50: #C0C0C0;
-    --color-gray-90: #333;
-
-    --background-color: #fff;
-
-    --text-color: var(--color-gray-90);
-    --text-color-link: #082840;
-    --text-color-link-active: #5f2b48;
-    --text-color-link-visited: #17050F;
-
+    --background-color: #c0c0c0;
+    --text-color: #000000;
+    --text-color-link: #0000ff;
+    --text-color-link-active: #ff0000;
+    --text-color-link-visited: #800080;
+    --border-color: #000000;
+    --header-background: #808080;
+    --header-text: #000000;
     --syntax-tab-size: 2;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --color-gray-20: #e0e0e0;
-        --color-gray-50: #C0C0C0;
-        --color-gray-90: #dad8d8;
-
-        /* --text-color is assigned to --color-gray-_ above */
-        --text-color-link: #1493fb;
-        --text-color-link-active: #6969f7;
-        --text-color-link-visited: #a6a6f8;
-
-        --background-color: #15202b;
+        --background-color: #00001a;
+        --text-color: #00ffff;
+        --text-color-link: #ffff00;
+        --text-color-link-active: #ff00ff;
+        --text-color-link-visited: #ffa500;
+        --border-color: #00ffff;
+        --header-background: #000033;
+        --header-text: #00ffff;
     }
 }
 
@@ -77,7 +72,19 @@ html {
 }
 
 body {
-    max-width: 50em;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+@media (min-width: 40em) { /* ~640px */
+    body {
+        max-width: 50em;
+        border: 5px solid var(--border-color);
+        padding: 1rem;
+        margin: 1rem auto;
+        box-shadow: 5px 5px 0px var(--border-color);
+    }
 }
 
 /* https://www.a11yproject.com/posts/how-to-hide-content/ */
@@ -105,6 +112,7 @@ li {
 
 a[href] {
     color: var(--text-color-link);
+    text-decoration: underline;
 }
 
 a[href]:visited {
@@ -114,189 +122,127 @@ a[href]:visited {
 a[href]:hover,
 a[href]:active {
     color: var(--text-color-link-active);
+    background-color: var(--text-color);
+    color: var(--background-color);
 }
 
 main {
     padding: 1rem;
+    border: 2px dashed var(--border-color);
+    margin: 1rem;
 }
 
 main :first-child {
     margin-top: 0;
 }
 
-header {
-    border-bottom: 1px dashed var(--color-gray-20);
-}
-
-header:after {
-    content: "";
-    display: table;
-    clear: both;
-}
-
 .links-nextprev {
     list-style: none;
-    border-top: 1px dashed var(--color-gray-20);
+    border-top: 1px dashed var(--border-color);
     padding: 1em 0;
 }
 
 table {
     margin: 1em 0;
+    width: 100%;
+    border: 2px solid var(--border-color);
+    border-collapse: collapse;
 }
 
 table td,
 table th {
-    padding-right: 1em;
+    padding: 0.5em;
+    border: 1px solid var(--border-color);
 }
 
-/* Ensure borders collapse so stripes line up */
-table.zebra {
-  border-collapse: collapse;
-}
-
-/* Optional: add some padding & borders for clarity */
-table.zebra th,
-table.zebra td {
-  padding: 0.5em 1em;
-  border: 1px solid #ddd;
-}
-
-/* Zebra stripes on the body rows */
-table.zebra tbody tr:nth-child(odd) {
-  background-color: #ffffff;
-}
-table.zebra tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-/* Optional: keep header visually distinct */
-table.zebra thead th {
-  background-color: #333;
-  color: #fff;
+table th {
+    background-color: var(--header-background);
+    color: var(--header-text);
 }
 
 pre,
 code {
     font-family: var(--font-family-monospace);
+    background-color: #333;
+    color: #eee;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    border: 1px solid var(--border-color);
 }
 
-pre:not([class*="language-"]) {
-    margin: .5em 0;
-    line-height: 1.375;
-    /* 22px /16 */
-    -moz-tab-size: var(--syntax-tab-size);
-    -o-tab-size: var(--syntax-tab-size);
-    tab-size: var(--syntax-tab-size);
-    -webkit-hyphens: none;
-    -ms-hyphens: none;
-    hyphens: none;
-    direction: ltr;
-    text-align: left;
-    white-space: pre;
-    word-spacing: normal;
-    word-break: normal;
-}
-
-code {
-    word-break: break-all;
+pre {
+    padding: 1em;
+    overflow-x: auto;
 }
 
 /* Nav */
 .nav {
     display: flex;
+    justify-content: center;
     padding: 0;
-    margin: 0;
+    margin: 1rem 1rem 0 1rem;
     list-style: none;
+    border: 2px solid var(--border-color);
+    background-color: var(--header-background);
 }
 
 .nav-item {
-    display: inline-block;
-    margin-right: 1em;
+    margin: 0;
 }
 
-.nav-item a[href]:not(:hover) {
+.nav-item a {
+    display: block;
+    padding: 0.5em 1em;
+    color: var(--header-text);
     text-decoration: none;
+    border-right: 2px solid var(--border-color);
 }
 
-.nav a[href][aria-current="page"] {
-    text-decoration: underline;
+.nav-item:last-child a {
+    border-right: none;
+}
+
+.nav-item a:hover,
+.nav-item a[aria-current="page"] {
+    background-color: var(--text-color-link);
+    color: var(--background-color);
 }
 
 /* Posts list */
 .postlist {
     list-style: none;
     padding: 0;
-    padding-left: 0rem;
 }
 
 .postlist-item {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    counter-increment: start-from -1;
-    margin-bottom: 1em;
-}
-
-.postlist-item:before {
-    display: inline-block;
-    pointer-events: none;
-    line-height: 100%;
-    text-align: right;
-    margin-left: -1.5rem;
-}
-
-.postlist-date,
-.postlist-item:before {
-    font-size: 0.8125em;
-    /* 13px /16 */
-    color: var(--color-gray-90);
+    margin-bottom: 1.5em;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1em;
 }
 
 .postlist-date {
-    word-spacing: -0.5px;
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.8;
 }
 
 .postlist-link {
-    font-size: 1.1875em;
-    /* 19px /16 */
-    font-weight: 700;
-    flex-basis: calc(100% - 1.5rem);
-    padding-left: .25em;
-    padding-right: .5em;
-    text-underline-position: from-font;
-    text-underline-offset: 0;
-    text-decoration-thickness: 1px;
-}
-
-.postlist-item-active .postlist-link {
+    font-size: 1.5em;
     font-weight: bold;
+    display: block;
+    margin-top: 0.5em;
 }
 
 /* Tags */
 .post-tag {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-transform: capitalize;
-    font-style: italic;
-}
-
-.postlist-item>.post-tag {
-    align-self: center;
-}
-
-/* Tags list */
-.post-metadata {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: .5em;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.post-metadata time {
-    margin-right: 1em;
+    display: inline-block;
+    background-color: var(--header-background);
+    color: var(--header-text);
+    padding: 0.2em 0.5em;
+    border-radius: 5px;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    margin-right: 0.5em;
 }
 
 /* Direct Links / Markdown Headers */
@@ -319,17 +265,33 @@ a[href].header-anchor:hover {
 
 a[href].header-anchor:focus,
 :hover>a[href].header-anchor {
-    color: #aaa;
+    color: var(--text-color-link);
 }
 
-h2+.header-anchor {
-    font-size: 1.5em;
+h1, h2, h3, h4, h5, h6 {
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.3em;
+  margin-top: 1.5em;
 }
 
-/* 
-	The 🔗 emoji is used for header anchors links
-*/
-.header-anchor {
-	font-size: 0.5rem;
-	vertical-align: super;
+@media (max-width: 40em) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+    .nav {
+        flex-direction: column;
+        align-items: stretch;
+        margin: 1rem 1rem 0 1rem;
+    }
+    .nav-item a {
+        border-right: none;
+        border-bottom: 2px solid var(--border-color);
+        text-align: center;
+    }
+    .nav-item:last-child a {
+        border-bottom: none;
+    }
+    main {
+        margin: 1rem;
+    }
 }
