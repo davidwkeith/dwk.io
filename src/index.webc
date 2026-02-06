@@ -4,7 +4,7 @@ layout: base.webc
 ---
 <h2>Projects</h2>
 <ul>
-  <li webc:for="project of collections.project">
+  <li webc:for="project of [...collections.project].reverse()">
     <a :href="project.page.url" @raw="project.data.title"></a>
   </li>
 <ul>
