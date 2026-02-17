@@ -23,6 +23,7 @@
     "dotenv": "^17.2.0",
     "eleventy-plugin-gen-favicons": "^1.1.3",
     "html-minifier-terser": "^7.2.0",
-    "jsonld-lint": "^0.3.0"
+    "jsonld-lint": "^0.3.0",
+    "openpgp": "^6.3.0"
   }
 }

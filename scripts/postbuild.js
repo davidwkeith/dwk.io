@@ -1,7 +1,11 @@
+import dotenv from 'dotenv';
 import { promises as fs } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import * as cheerio from 'cheerio';
+import { readPrivateKey, decryptKey, createCleartextMessage, sign } from 'openpgp';
+
+dotenv.config();
 
 const buildDir = './_site';
 
@@ -53,6 +57,39 @@ async function processHtmlFile(filePath) {
   await fs.writeFile(filePath, $.html());
 }
 
+/**
+ * Signs the security.txt file with an OpenPGP cleartext signature per RFC 9116 Section 2.3.
+ * Requires the GPG_PRIVATE_KEY environment variable to contain the armored private key.
+ * If the key is passphrase-protected, GPG_PASSPHRASE must also be set.
+ * Skips signing gracefully if GPG_PRIVATE_KEY is not set.
+ */
+async function signSecurityTxt() {
+  const securityTxtPath = path.join(buildDir, '.well-known', 'security.txt');
+  const armoredKey = process.env.GPG_PRIVATE_KEY;
+
+  if (!armoredKey) {
+    console.warn('PGP: GPG_PRIVATE_KEY not set, skipping security.txt signing.');
+    return;
+  }
+
+  const content = await fs.readFile(securityTxtPath, 'utf8');
+
+  let privateKey = await readPrivateKey({ armoredKey });
+  if (!privateKey.isDecrypted()) {
+    const passphrase = process.env.GPG_PASSPHRASE;
+    if (!passphrase) {
+      throw new Error('PGP: Key is passphrase-protected but GPG_PASSPHRASE is not set.');
+    }
+    privateKey = await decryptKey({ privateKey, passphrase });
+  }
+
+  const message = await createCleartextMessage({ text: content });
+  const signedContent = await sign({ message, signingKeys: privateKey });
+
+  await fs.writeFile(securityTxtPath, signedContent);
+  console.log('PGP: Successfully signed security.txt.');
+}
+
 async function main() {
   try {
     const files = await fs.readdir(buildDir, { recursive: true });
@@ -62,8 +99,10 @@ async function main() {
       await processHtmlFile(htmlFile);
     }
     console.log('SRI: Successfully added integrity attributes to HTML files.');
+
+    await signSecurityTxt();
   } catch (e) {
-    console.error('SRI: Error during postbuild process:', e);
+    console.error('Postbuild error:', e);
     process.exit(1);
   }
 }

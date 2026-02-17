@@ -15,16 +15,11 @@ export default class Redirects {
    * @type {Array<Object>}
    */
   redirects = [
-    // {
-    //   source: "/old-page",
-    //   destination: "/new-page",
-    //   code: 301
-    // },
-    // {
-    //   source: "/another-old-page",
-    //   destination: "/another-new-page",
-    //   code: 302
-    // }
+    {
+      source: "/security.txt",
+      destination: "/.well-known/security.txt",
+      code: 301
+    },
   ];
 
   /**
