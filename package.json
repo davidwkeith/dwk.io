@@ -2,13 +2,13 @@
   "name": "@dwk/dwk.io",
   "version": "1.0.0",
   "scripts": {
-    "build": "NODE_OPTIONS=--experimental-strip-types npx @11ty/eleventy --config=eleventy.config.ts",
-    "postbuild": "node --experimental-strip-types scripts/postbuild.ts",
-    "start": "NODE_OPTIONS=--experimental-strip-types npx @11ty/eleventy --config=eleventy.config.ts --serve",
+    "build": "NODE_OPTIONS=--experimental-strip-types eleventy --config=eleventy.config.ts",
+    "postbuild": "NODE_OPTIONS=--experimental-strip-types node scripts/postbuild.ts",
+    "start": "NODE_OPTIONS=--experimental-strip-types eleventy --config=eleventy.config.ts --serve",
     "typecheck": "tsc --noEmit && tsc --noEmit --project worker/tsconfig.json",
-    "deploy": "npm run build && npx wrangler deploy",
-    "dev:worker": "npx wrangler dev",
-    "cf-typegen": "npx wrangler types"
+    "deploy": "npm run build && wrangler deploy",
+    "dev:worker": "wrangler dev",
+    "cf-typegen": "wrangler types"
   },
   "keywords": [],
   "author": {
@@ -19,21 +19,19 @@
   "license": "ISC",
   "description": "DWK's Cyber Home",
   "type": "module",
-  "dependencies": {
+  "devDependencies": {
     "@11ty/eleventy": "^3.1.2",
     "@11ty/eleventy-img": "^6.0.4",
     "@11ty/eleventy-plugin-webc": "^0.11.2",
-    "cheerio": "^1.1.0",
-    "dotenv": "^17.2.0",
-    "eleventy-plugin-gen-favicons": "^1.1.3",
-    "html-minifier-terser": "^7.2.0",
-    "jsonld-lint": "^0.3.0",
-    "openpgp": "^6.3.0"
-  },
-  "devDependencies": {
     "@types/html-minifier-terser": "^7.0.2",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^25.2.3",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.3.1",
+    "eleventy-plugin-gen-favicons": "^1.1.3",
+    "html-minifier-terser": "^7.2.0",
+    "jsonld-lint": "^0.3.0",
+    "openpgp": "^6.3.0",
     "typescript": "^5.9.3",
     "wrangler": "^4.66.0"
   }
