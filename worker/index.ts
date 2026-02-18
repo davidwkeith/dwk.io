@@ -68,6 +68,12 @@ export default {
   async fetch(request, env): Promise<Response> {
     const url = new URL(request.url);
 
+    // Canonical hostname redirect
+    if (url.hostname === "www.dwk.io") {
+      url.hostname = "dwk.io";
+      return Response.redirect(url.href, 301);
+    }
+
     // Handle redirects
     for (const redirect of REDIRECTS) {
       if (url.pathname === redirect.source) {
