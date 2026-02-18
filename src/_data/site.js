@@ -44,6 +44,41 @@ export default {
   fediverseCreator: "@dwk@xn--4t8h.dwk.io",
 
   /**
+   * AT Protocol DID for Bluesky handle verification.
+   * Served at /.well-known/atproto-did.
+   *
+   * @see https://atproto.com/specs/handle
+   * @optional
+   * @property {string} atprotoDid - The DID for AT Protocol handle resolution.
+   */
+  atprotoDid: "did:plc:rxtknc5m5ixmscnq3xdamqxc",
+
+  /**
+   * Mastodon / Fediverse configuration for WebFinger discovery.
+   * Allows searching @dwk@dwk.io to find the actual Mastodon account.
+   *
+   * @see https://docs.joinmastodon.org/spec/webfinger/
+   * @optional
+   * @property {object} mastodon
+   * @property {string} mastodon.handle - The local part of the Mastodon handle.
+   * @property {string} mastodon.instance - The hostname of the Mastodon instance.
+   */
+  mastodon: {
+    handle: "dwk",
+    instance: "xn--4t8h.dwk.io",
+  },
+
+  /**
+   * Nostr hex public key for NIP-05 identity verification.
+   * Served at /.well-known/nostr.json.
+   *
+   * @see https://github.com/nostr-protocol/nips/blob/master/05.md
+   * @optional
+   * @property {string} nostrPubkey - 64-character hex public key.
+   */
+  nostrPubkey: "096a5ff28249cae96026c34167163991fb6e9729fe6257c688b40fa7e684698c",
+
+  /**
    * See [RFC9116 Section 2.5.3](https://www.rfc-editor.org/rfc/rfc9116#section-2.5.3) for options
    * 
    * @see https://www.rfc-editor.org/rfc/rfc9116#section-2.5.3

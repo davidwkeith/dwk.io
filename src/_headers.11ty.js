@@ -16,14 +16,39 @@ export default class Headers {
    * @type {Array<Object>}
    */
   headers = [
-    // Global security headers example
     { source: "/*",
       headers: {
         "X-Frame-Options": "DENY",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "no-referrer-when-downgrade"
       }
-    }
+    },
+    { source: "/.well-known/webfinger",
+      headers: {
+        "Content-Type": "application/jrd+json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    { source: "/.well-known/host-meta",
+      headers: {
+        "Content-Type": "application/xrd+xml"
+      }
+    },
+    { source: "/.well-known/nostr.json",
+      headers: {
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    { source: "/.well-known/atproto-did",
+      headers: {
+        "Content-Type": "text/plain"
+      }
+    },
+    { source: "/.well-known/did.json",
+      headers: {
+        "Content-Type": "application/did+ld+json"
+      }
+    },
   ]
 
 

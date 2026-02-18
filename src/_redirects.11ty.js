@@ -20,6 +20,11 @@ export default class Redirects {
       destination: "/.well-known/security.txt",
       code: 301
     },
+    {
+      source: "/.well-known/avatar",
+      destination: "/icon-512.png",
+      code: 302
+    },
   ];
 
   /**
