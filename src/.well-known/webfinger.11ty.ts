@@ -21,7 +21,7 @@ export default class WebFinger {
     const { handle, instance } = data.site.mastodon;
 
     const webfinger = {
-      subject: `acct:${handle}@${new URL(data.site.url).hostname}`,
+      subject: `acct:${handle}@${instance}`,
       aliases: [
         `https://${instance}/@${handle}`,
         `https://${instance}/users/${handle}`,
