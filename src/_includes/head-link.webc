@@ -3,12 +3,15 @@
 --->
 <template webc:nokeep webc:component="head-link">
   <link webc:if="$data.page.url" rel="canonical" :href="new URL($data.page.url, $data.site.url)">
-  <link webc:if="$data.site.headLinks" webc:for="link in $data.site.headLinks" :...="link">
+  <template webc:nokeep webc:for="link of ($data.site.headLinks ?? [])">
+    <link :rel="link.rel" :href="link.href">
+  </template>
   <link webc:if="$data.site.favicon.src" webc:nokeep @raw="favicons($data.site.favicon.src, { 
     manifestData: $data.site?.manifest,
     appleIconBgColor: $data.site.favicon?.appleIconBgColor,
     appleIconPadding: $data.site.favicon?.appleIconPadding })">
-  <link rel="alternate" type="application/json" :href="new URL('/feed.json', $data.site.url)" />
+  <link rel="alternate" type="application/json" :href="new URL('/feed.json', $data.site.url)" title="JSON Feed" />
+  <link rel="alternate" type="application/atom+xml" :href="new URL('/feed.xml', $data.site.url)" title="Atom Feed" />
   <link webc:keep rel="stylesheet" :href="getBundleFileUrl('css')">
   <link rel="stylesheet" href="./main.css">
   <link type="text/plain" rel="author" :href="new URL('/humans.txt', $data.site.url)" />

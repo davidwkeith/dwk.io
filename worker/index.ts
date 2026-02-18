@@ -1,20 +1,20 @@
-interface Redirect {
+export interface Redirect {
   source: string;
   destination: string;
   code: 301 | 302;
 }
 
-const REDIRECTS: Redirect[] = [
+export const REDIRECTS: Redirect[] = [
   { source: "/security.txt", destination: "/.well-known/security.txt", code: 301 },
   { source: "/.well-known/avatar", destination: "/icon-512.png", code: 302 },
 ];
 
-interface HeaderRule {
+export interface HeaderRule {
   source: string;
   headers: Record<string, string>;
 }
 
-const HEADER_RULES: HeaderRule[] = [
+export const HEADER_RULES: HeaderRule[] = [
   {
     source: "/*",
     headers: {
@@ -54,9 +54,15 @@ const HEADER_RULES: HeaderRule[] = [
       "Content-Type": "application/did+ld+json",
     },
   },
+  {
+    source: "/feed.xml",
+    headers: {
+      "Content-Type": "application/atom+xml",
+    },
+  },
 ];
 
-function matchesPattern(pathname: string, pattern: string): boolean {
+export function matchesPattern(pathname: string, pattern: string): boolean {
   if (pattern === "/*") return true;
   if (pattern.endsWith("/*")) {
     return pathname.startsWith(pattern.slice(0, -1));
@@ -65,7 +71,7 @@ function matchesPattern(pathname: string, pattern: string): boolean {
 }
 
 export default {
-  async fetch(request, env): Promise<Response> {
+  async fetch(request, env, _ctx): Promise<Response> {
     const url = new URL(request.url);
 
     // Canonical hostname redirect

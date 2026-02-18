@@ -13,6 +13,10 @@
   <meta property="og:title" :content="$data.title ?? $data.site.title">
   <meta property="og:description" :content="$data.description ?? $data.schema?.description ?? $data.site.description">
   <meta property="og:image" :content="ogImage($data.page.ogImage ?? $data.site.defaultOgImage)">
+  <meta property="og:image:alt" :content="$data.title ?? $data.site.title">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:site_name" :content="$data.site.title">
+  <meta property="og:locale" content="en_US">
   <meta webc:if="$data.site.fediverseCreator" name="fediverse:creator" :content="$data.site.fediverseCreator">
   <meta webc:if="$data.site.copyright" name="copyright" :content="$data.site.copyright">
   <meta webc:if="$data.site.rating" name="rating" content="$data.site.rating">

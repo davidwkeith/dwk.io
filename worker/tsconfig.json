@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "types": []
+    "types": ["@cloudflare/vitest-pool-workers"]
   },
   "include": [
     "../worker-configuration.d.ts",

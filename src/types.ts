@@ -22,7 +22,7 @@ export interface SiteData {
   language: string;
   hasNavigation: boolean;
   colorScheme: { content: string; media?: string };
-  headLinks: Array<{ rel: string; href: string }>;
+  headLinks: Array<Record<string, string>>;
   defaultOgImage: string;
   manifest: { appName: string; appDescription: string; lang: string };
   hash: string;

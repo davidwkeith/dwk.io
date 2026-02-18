@@ -2,22 +2,25 @@
 layout: base.webc
 ---
 
-<h2 @text="title"></h2>
-<ul class="post-metadata">
-  <li><time :datetime="page.date.toISOString()" @text="page.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric'})"></time></li>
-</ul>
-
-<article>
+<article class="h-entry">
+  <h2 class="p-name" @text="title"></h2>
+  <ul class="post-metadata">
+    <li><time class="dt-published" :datetime="page.date.toISOString()" @text="page.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric'})"></time></li>
+  </ul>
   <figure class="project-hero-image" webc:if="hero">
     <img webc:is="eleventy-image"
-      :src="hero.src" 
-      :alt="hero.alt" 
-      :title="hero.title" 
-      eleventy:widths="128,64" 
+      :src="hero.src"
+      :alt="hero.alt"
+      :title="hero.title"
+      eleventy:widths="128,64"
       eleventy:sizes="100vh">
     <figcaption webc:if="hero.caption" @text="hero.caption"></figcaption>
   </figure>
-  <div @html="content"></div>
+  <div class="e-content" @html="content"></div>
+  <a class="u-url" :href="new URL(page.url, $data.site.url)" style="display:none"></a>
+  <span class="p-author h-card" style="display:none">
+    <a class="p-name u-url" :href="$data.schema.author.url" @text="$data.schema.author.name"></a>
+  </span>
 </article>
 
 <style>

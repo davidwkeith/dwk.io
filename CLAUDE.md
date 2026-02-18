@@ -15,8 +15,8 @@ Personal portfolio/project showcase website for dwk.io, built with Eleventy (11t
 - `npm run dev:worker` — Local Wrangler dev server (Workers + static assets)
 - `npm run deploy` — Build and deploy to Cloudflare Workers
 - `npm run cf-typegen` — Regenerate `worker-configuration.d.ts` types
-
-There are no tests or linting commands configured.
+- `npm test` — Run Worker tests (Vitest + `@cloudflare/vitest-pool-workers`)
+- `npm run test:watch` — Run tests in watch mode
 
 ## Architecture
 
@@ -49,7 +49,9 @@ There are no tests or linting commands configured.
 
 **Worker** (`worker/index.ts`): Cloudflare Worker that handles redirects, fetches static assets via `env.ASSETS.fetch()`, and applies custom response headers. Configured in `wrangler.jsonc` with `run_worker_first: true` so all requests pass through the Worker. Replaces the former `_headers` and `_redirects` Cloudflare Pages config files.
 
-**Generated files** in `src/`: `feed.json.11ty.ts` produces JSON Feed; `.well-known/` templates produce identity/discovery endpoints; `sitemap.xml.webc`, `robots.txt.webc`, `humans.txt.webc` produce standard web files.
+**Generated files** in `src/`: `feed.json.11ty.ts` produces JSON Feed; `feed.xml.11ty.ts` produces Atom feed; `.well-known/` templates produce identity/discovery endpoints; `sitemap.xml.webc`, `robots.txt.webc`, `humans.txt.webc` produce standard web files.
+
+**IndieWeb:** Homepage has a representative `h-card` (microformats2 identity) and `h-feed` wrapper. Project pages use `h-entry` markup. IndieAuth (`indieauth.com`) and Webmention (`webmention.io`) endpoints are advertised in `<head>` via `site.ts` headLinks. Homepage schema is `ProfilePage` with `mainEntity` (via `index.11tydata.ts` override).
 
 ## Key Conventions
 

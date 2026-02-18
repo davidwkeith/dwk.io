@@ -164,6 +164,9 @@ export default {
    * @property {string} headLinks[].href - the URL of the link
    */
   headLinks: [
+    { rel: "authorization_endpoint", href: "https://indieauth.com/auth" },
+    { rel: "token_endpoint", href: "https://tokens.indieauth.com/token" },
+    { rel: "webmention", href: "https://webmention.io/dwk.io/webmention" },
     { rel: "code-repository", href: "https://gitlab.com/dwk-io/dwk.io.git" },
     { rel: "content-repository", href: "https://gitlab.com/dwk-io/dwk.io.git" },
     { rel: "issues", href: "https://gitlab.com/dwk-io/dwk.io/-/issues" },
