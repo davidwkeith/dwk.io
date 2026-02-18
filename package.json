@@ -2,9 +2,9 @@
   "name": "@dwk/dwk.io",
   "version": "1.0.0",
   "scripts": {
-    "build": "npx @11ty/eleventy --config=eleventy.config.ts",
+    "build": "NODE_OPTIONS=--experimental-strip-types npx @11ty/eleventy --config=eleventy.config.ts",
     "postbuild": "node --experimental-strip-types scripts/postbuild.ts",
-    "start": "npx @11ty/eleventy --config=eleventy.config.ts --serve",
+    "start": "NODE_OPTIONS=--experimental-strip-types npx @11ty/eleventy --config=eleventy.config.ts --serve",
     "typecheck": "tsc --noEmit && tsc --noEmit --project worker/tsconfig.json",
     "deploy": "npm run build && npx wrangler deploy",
     "dev:worker": "npx wrangler dev",
