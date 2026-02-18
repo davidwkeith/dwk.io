@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "dwk-io",
+  "compatibility_date": "2026-02-18",
+  "main": "worker/index.ts",
+  "assets": {
+    "directory": "./_site",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    "run_worker_first": true
+  }
+}

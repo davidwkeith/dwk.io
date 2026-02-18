@@ -4,7 +4,7 @@ permalink: /humans.txt
 _documentation: https://humanstxt.org
 ---
 /* TEAM */
-	<i webc:nokeep @text="$data.pkg.author.name"></i> <i webc:nokeep @text="$data.pkg.author.email"></i>
+	David W. Keith @dwk.io
 
 /* THANKS */
 	Thanks to the Eleventy team for creating such a great static site generator.

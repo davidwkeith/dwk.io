@@ -1,6 +1,6 @@
 # dwk.io
 
-DWK's Cyber Home — built with [Eleventy](https://www.11ty.dev/) and hosted on [Cloudflare Pages](https://pages.cloudflare.com/).
+DWK's Cyber Home — built with [Eleventy](https://www.11ty.dev/) and deployed on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with [Static Assets](https://developers.cloudflare.com/workers/static-assets/).
 
 ## Setup
 
@@ -26,8 +26,12 @@ If `GPG_PRIVATE_KEY` is not set, the build succeeds with an unsigned `security.t
 ## Development
 
 ```sh
-npm run start    # Dev server with live reload
-npm run build    # Production build (outputs to _site/)
+npm run start        # Eleventy dev server with live reload
+npm run dev:worker   # Wrangler dev server (Workers + static assets)
+npm run build        # Production build (outputs to _site/)
+npm run typecheck    # Type check Eleventy and Worker code
+npm run deploy       # Build and deploy to Cloudflare Workers
+npm run cf-typegen   # Regenerate worker-configuration.d.ts
 ```
 
 The `postbuild` script runs automatically after `build` and handles:
@@ -36,5 +40,5 @@ The `postbuild` script runs automatically after `build` and handles:
 
 ## TODO
   - [ ] [IndieWebify.Me](https://indiewebify.me)
-  - [ ] [llms.txt](https://llmstxt.org/)
-  - [ ] [Support Pages Functions](https://developers.cloudflare.com/pages/functions/)
+  - [x] [llms.txt](https://llmstxt.org/)
+  - [x] ~~[Support Pages Functions](https://developers.cloudflare.com/pages/functions/)~~ Migrated to Workers
