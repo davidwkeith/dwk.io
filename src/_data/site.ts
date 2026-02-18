@@ -1,4 +1,5 @@
 import childProcess from 'node:child_process';
+import type { SiteData } from '../types.ts';
 
 /**
  * These are all the site-level variables. Often used as fallback for page-level data.
@@ -243,4 +244,4 @@ export default {
     email: "mailto:me@dwk.io",
     // wikipedia: "https://meta.wikimedia.org/wiki/User:Davidwkeith"
   },
-}
+} satisfies SiteData

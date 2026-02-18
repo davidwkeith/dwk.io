@@ -1,3 +1,10 @@
+import type { EleventyData } from './types.ts';
+
+interface HeaderConfig {
+  source: string;
+  headers: Record<string, string>;
+}
+
 /**
  * Represents the Headers configuration for Cloudflare Pages.
  *
@@ -5,17 +12,7 @@
  */
 export default class Headers {
 
-  /**
-   * Defines the headers to be output to the `_headers` file.
-   * Each object in the array can represent either a redirect or a set of HTTP response headers.
-   * 
-   * For HTTP response headers:
-   * @property {string} source - The URL path to apply the headers to (e.g., "/*").
-   * @property {object} headers - An object where keys are header names and values are header values.
-   *
-   * @type {Array<Object>}
-   */
-  headers = [
+  headers: HeaderConfig[] = [
     { source: "/*",
       headers: {
         "X-Frame-Options": "DENY",
@@ -51,11 +48,6 @@ export default class Headers {
     },
   ]
 
-
-  /**
-   * Eleventy data method to define permalink and exclude from collections.
-   * @returns {object}
-   */
   data() {
     return {
       permalink: "/_headers",
@@ -63,17 +55,11 @@ export default class Headers {
     }
   }
 
-  /**
-   * Renders the headers configuration into a string format for the `_headers` file.
-   * @param {object} data - Eleventy's data cascade.
-   * @returns {Promise<string>} The formatted headers string.
-   */
-  async render(data) {
-    let output = [];
+  async render(_data: EleventyData): Promise<string> {
+    const output: string[] = [];
 
     this.headers.forEach(headerConfig => {
       if (headerConfig.headers) {
-        // This is a set of HTTP response headers
         output.push(headerConfig.source);
         for (const [key, value] of Object.entries(headerConfig.headers)) {
           output.push(`  ${key}: ${value}`);

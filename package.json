@@ -2,9 +2,10 @@
   "name": "@dwk/dwk.io",
   "version": "1.0.0",
   "scripts": {
-    "build": "npx @11ty/eleventy",
-    "postbuild": "node scripts/postbuild.js",
-    "start": "npx @11ty/eleventy --serve"
+    "build": "npx @11ty/eleventy --config=eleventy.config.ts",
+    "postbuild": "node --experimental-strip-types scripts/postbuild.ts",
+    "start": "npx @11ty/eleventy --config=eleventy.config.ts --serve",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": {
@@ -25,5 +26,11 @@
     "html-minifier-terser": "^7.2.0",
     "jsonld-lint": "^0.3.0",
     "openpgp": "^6.3.0"
+  },
+  "devDependencies": {
+    "@types/html-minifier-terser": "^7.0.2",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^25.2.3",
+    "typescript": "^5.9.3"
   }
 }

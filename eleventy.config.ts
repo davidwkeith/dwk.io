@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url";
 import dotenv from "dotenv"
 import eleventyWebcPlugin from "@11ty/eleventy-plugin-webc";
 import { eleventyImagePlugin } from "@11ty/eleventy-img";
@@ -6,6 +7,7 @@ import faviconsPlugin from "eleventy-plugin-gen-favicons";
 import htmlmin from "html-minifier-terser";
 import markdownIt from "markdown-it";
 import { lint } from "jsonld-lint";
+import type UserConfig from "@11ty/eleventy/src/UserConfig";
 
 /**
  * Load environment variables from .env file.
@@ -14,10 +16,8 @@ dotenv.config()
 
 /**
  * Eleventy configuration function.
- * @param {import("@11ty/eleventy/src/UserConfig")} eleventyConfig
- * @returns {object}
  */
-export default function (eleventyConfig) {
+export default function (eleventyConfig: UserConfig) {
 
   // FIXME: Workaround for a known issue in eleventy-plugin-webc (https://github.com/11ty/eleventy-plugin-webc/issues/86).
   // When using `permalink` in front matter, especially with dynamic values or for non-HTML files,
@@ -36,6 +36,18 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addBundle("css");
   eleventyConfig.addBundle("js");
+
+  // Register .11ty.ts as equivalent to .11ty.js for TypeScript templates
+  eleventyConfig.addExtension("11ty.ts", { key: "11ty.js" });
+
+  // Register .ts data files (loaded via Node's native type stripping)
+  eleventyConfig.addDataExtension("ts", {
+    read: false,
+    parser: async (filePath: string) => {
+      const mod = await import(pathToFileURL(filePath).href);
+      return mod.default ?? mod;
+    },
+  });
 
   eleventyConfig.addPlugin(faviconsPlugin, {});
   eleventyConfig.addPlugin(eleventyWebcPlugin, {
@@ -60,21 +72,18 @@ export default function (eleventyConfig) {
 
   /**
    * Generates an optimized Open Graph image URL using Eleventy Image.
-   * @param {string} src - The path to the source image (relative to the input directory).
-   * @returns {Promise<string>} The URL of the optimized JPEG image.
    */
-  eleventyConfig.addShortcode("ogImage", async (src) => {
+  eleventyConfig.addShortcode("ogImage", async (src: string) => {
     if (!src) {
-      return ""; // Or handle error/default more robustly
+      return "";
     }
-    let metadata = await Image(src, {
+    const metadata = await Image(src, {
       widths: [1200],
       formats: ["jpeg"],
       outputDir: "./_site/img/og/",
       urlPath: "/img/og/",
-      filenameFormat: function (id, src, width, format, options) {
-        const originalExtension = src.split('.').pop();
-        return `${id}-${width}.${format}`;
+      filenameFormat: function (_id: string, _src: string, width: number, format: string) {
+        return `${_id}-${width}.${format}`;
       }
     });
     return metadata.jpeg[0].url;
@@ -82,30 +91,22 @@ export default function (eleventyConfig) {
 
   /**
    * Converts a date object to an HTML-friendly date string (YYYY-MM-DD).
-   * @param {Date} dateObj - The date object to format.
-   * @returns {string} The formatted date string.
    */
-  eleventyConfig.addFilter("htmlDateString", (dateObj) => {
+  eleventyConfig.addFilter("htmlDateString", (dateObj: Date) => {
     return dateObj.toISOString().slice(0, 10);
   });
 
   /**
    * Converts a date object to a human-readable date string.
-   * @param {Date} dateObj - The date object to format.
-   * @returns {string} The formatted date string.
    */
-  eleventyConfig.addFilter("readableDate", (dateObj) => {
+  eleventyConfig.addFilter("readableDate", (dateObj: Date) => {
     return dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   });
 
   /**
    * Generates a responsive <picture> element with optimized images.
-   * @param {string} src - The path to the source image (relative to the input directory).
-   * @param {string} alt - The alt text for the image.
-   * @param {string} [classes] - Optional CSS classes to apply to the <img> tag.
-   * @returns {Promise<string>} The HTML string for the <picture> element.
    */
-  eleventyConfig.addShortcode("image", async (src, alt, classes) => {
+  eleventyConfig.addShortcode("image", async (src: string, alt: string, classes?: string) => {
     if (!src) {
       throw new Error("Image shortcode requires a 'src' attribute.");
     }
@@ -113,7 +114,7 @@ export default function (eleventyConfig) {
       console.warn(`Image "${src}" is missing alt text.`);
     }
 
-    let metadata = await Image(src, {
+    const metadata = await Image(src, {
       widths: [400, 800, 1200, 1600],
       formats: ["webp", "jpeg"],
       outputDir: "./_site/img/",
@@ -124,9 +125,9 @@ export default function (eleventyConfig) {
       }
     });
 
-    let imageAttributes = {
+    const imageAttributes: Record<string, string> = {
       alt,
-      sizes: "(min-width: 1024px) 100vw, 50vw", // Example sizes, can be customized
+      sizes: "(min-width: 1024px) 100vw, 50vw",
       loading: "lazy",
       decoding: "async",
     };
@@ -141,11 +142,8 @@ export default function (eleventyConfig) {
   /**
    * Get schema.org JSON-LD data, validates against the schema.org
    * context and returns it as a JSON string.
-   * @param {object} schema - The schema object to validate and stringify.
-   * @returns {Promise<string>} The JSON-LD string.
-   * @throws {string} Throws an error if the schema is invalid.
    */
-  eleventyConfig.addJavaScriptFunction("getSchema", async (schema) => {
+  eleventyConfig.addJavaScriptFunction("getSchema", async (schema: unknown) => {
     const JSONSchema = JSON.stringify(schema)
     const lintErrors = await lint(JSONSchema);
     if (lintErrors.length > 0) {
@@ -161,12 +159,10 @@ export default function (eleventyConfig) {
   /**
    * Minify the HTML output using html-minifier-terser.
    * This transform is applied to all HTML files.
-   * @param {string} content - The HTML content to minify.
-   * @returns {string} The minified HTML content.
    */
   eleventyConfig.addTransform("htmlmin", function (content) {
     if ((this.page.outputPath || "").endsWith(".html")) {
-      let minified = htmlmin.minify(content, {
+      const minified = htmlmin.minify(content, {
         useShortDoctype: true,
         removeComments: true,
         collapseWhitespace: true,
@@ -179,24 +175,20 @@ export default function (eleventyConfig) {
     return content;
   });
 
-  
-
-
-  
   eleventyConfig.setLibrary("md", markdownIt({
     html: true,
     breaks: true,
     linkify: true
-  }).use(function(md) {
+  }).use(function(md: markdownIt) {
     // Override the default image renderer to use our `image` shortcode
-    md.renderer.rules.image = (tokens, idx, options, env, self) => {
+    md.renderer.rules.image = (tokens, idx) => {
       const token = tokens[idx];
       const src = token.attrGet('src');
       const alt = token.attrGet('alt');
       const classes = token.attrGet('class');
 
       // Get the image shortcode function
-      const imageShortcode = eleventyConfig.getFilter("image");
+      const imageShortcode = eleventyConfig.getFilter("image") as (...args: (string | null | undefined)[]) => string;
 
       // Call the image shortcode and return its output
       // Note: This is an async function, but markdown-it expects sync output.
@@ -206,7 +198,7 @@ export default function (eleventyConfig) {
   }));
 
   return {
-    templateFormats: [ "11ty.js", "webc", "md", "html" ],
+    templateFormats: [ "11ty.js", "11ty.ts", "webc", "md", "html" ],
     dir: {
       input: "src",
       output: "_site",

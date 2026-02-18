@@ -1,4 +1,5 @@
 import Image from "@11ty/eleventy-img";
+import type { EleventyData } from './types.ts';
 
 const imgConfig = {
   formats: ["webp", "jpeg"],
@@ -9,7 +10,6 @@ const imgConfig = {
   }
 };
 
-
 export default class JSONFeed {
 
   data() {
@@ -19,7 +19,7 @@ export default class JSONFeed {
     }
   }
 
-  async render(data) {
+  async render(data: EleventyData): Promise<string> {
     const feed = {
       version: "https://jsonfeed.org/version/1",
       title: data.site.title,
@@ -35,14 +35,14 @@ export default class JSONFeed {
         url: data.schema.author?.url,
         avatar: data.schema.author?.image
       },
-      items: [],
+      items: [] as Record<string, unknown>[],
     };
 
     for (const item of data.collections['project']) {
       const url = new URL(item.url, data.site.url);
       const imgURL = item.data.hero?.src ? (await Image(item.data.hero.src, imgConfig)).webp[0]?.url : undefined;
       const bannerImgURL = item.data.banner?.src ? (await Image(item.data.banner.src, imgConfig)).webp[0]?.url : undefined;
-  
+
       feed.items.push({
         id: url,
         title: item.data.title ?? "Untitled",

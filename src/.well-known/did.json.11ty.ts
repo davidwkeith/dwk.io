@@ -1,3 +1,5 @@
+import type { EleventyData } from '../types.ts';
+
 /**
  * W3C Decentralized Identifier (DID) document using the did:web method.
  * Establishes did:web:dwk.io as a decentralized identifier.
@@ -14,7 +16,7 @@ export default class DIDDocument {
     };
   }
 
-  render(data) {
+  render(data: EleventyData): string {
     const hostname = new URL(data.site.url).hostname;
     const did = `did:web:${hostname}`;
     const { handle, instance } = data.site.mastodon;

@@ -1,3 +1,5 @@
+import type { EleventyData } from '../types.ts';
+
 /**
  * WebFinger endpoint for Fediverse / Mastodon account discovery.
  * Allows searching @handle@dwk.io to find the actual Mastodon account.
@@ -15,7 +17,7 @@ export default class WebFinger {
     };
   }
 
-  render(data) {
+  render(data: EleventyData): string {
     const { handle, instance } = data.site.mastodon;
 
     const webfinger = {

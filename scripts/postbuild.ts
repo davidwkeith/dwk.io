@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
-import { promises as fs } from 'fs';
-import path from 'path';
-import crypto from 'crypto';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
 import * as cheerio from 'cheerio';
 import { readPrivateKey, decryptKey, createCleartextMessage, sign } from 'openpgp';
 
@@ -9,48 +9,33 @@ dotenv.config();
 
 const buildDir = './_site';
 
-/**
- * Generates a SHA-384 hash for the given file content.
- * @param {string} filePath - The absolute path to the file.
- * @returns {Promise<string>} The SHA-384 hash prefixed with 'sha384-'.
- */
-async function generateSriHash(filePath) {
+async function generateSriHash(filePath: string): Promise<string> {
   const fileContent = await fs.readFile(filePath);
   const hash = crypto.createHash('sha384').update(fileContent).digest('base64');
   return `sha384-${hash}`;
 }
 
-/**
- * Processes a single HTML file to add SRI attributes to its assets.
- * @param {string} filePath - The absolute path to the HTML file.
- */
-async function processHtmlFile(filePath) {
+async function processHtmlFile(filePath: string): Promise<void> {
   const htmlContent = await fs.readFile(filePath, 'utf8');
   const $ = cheerio.load(htmlContent);
 
-  /**
-   * Processes a single asset element (link or script) to add SRI attributes.
-   * @param {number} index - The index of the element in the selection.
-   * @param {cheerio.Element} element - The Cheerio element object.
-   */
-  const processAsset = async (index, element) => {
-    const srcAttr = $(element).attr('src') || $(element).attr('href');
-    if (srcAttr && !srcAttr.startsWith('http') && !srcAttr.startsWith('//')) {
-      // Only process local assets
-      const assetPath = path.join(buildDir, srcAttr);
-      try {
-        const integrity = await generateSriHash(assetPath);
-        $(element).attr('integrity', integrity);
-        $(element).attr('crossorigin', 'anonymous');
-      } catch (e) {
-        console.warn(`SRI: Could not process ${assetPath}: ${e.message}`);
-      }
-    }
-  };
+  const promises: Promise<void>[] = [];
 
-  const promises = [];
-  $('link[rel="stylesheet"]').each((i, el) => promises.push(processAsset(i, el)));
-  $('script').each((i, el) => promises.push(processAsset(i, el)));
+  $('link[rel="stylesheet"], script').each((_i, el) => {
+    const $el = $(el);
+    const srcAttr = $el.attr('src') || $el.attr('href');
+    if (srcAttr && !srcAttr.startsWith('http') && !srcAttr.startsWith('//')) {
+      const assetPath = path.join(buildDir, srcAttr);
+      promises.push(
+        generateSriHash(assetPath).then(integrity => {
+          $el.attr('integrity', integrity);
+          $el.attr('crossorigin', 'anonymous');
+        }).catch(e => {
+          console.warn(`SRI: Could not process ${assetPath}: ${(e as Error).message}`);
+        })
+      );
+    }
+  });
 
   await Promise.all(promises);
 
@@ -63,7 +48,7 @@ async function processHtmlFile(filePath) {
  * If the key is passphrase-protected, GPG_PASSPHRASE must also be set.
  * Skips signing gracefully if GPG_PRIVATE_KEY is not set.
  */
-async function signSecurityTxt() {
+async function signSecurityTxt(): Promise<void> {
   const securityTxtPath = path.join(buildDir, '.well-known', 'security.txt');
   const armoredKey = process.env.GPG_PRIVATE_KEY;
 
@@ -78,7 +63,7 @@ async function signSecurityTxt() {
   if (!privateKey.isDecrypted()) {
     const passphrase = process.env.GPG_PASSPHRASE;
     if (!passphrase) {
-      throw new Error('PGP: Key is passphrase-protected but GPG_PASSPHRASE is not set.');
+      throw new Error('PGP: Key is passphrase-protected but GPP_PASSPHRASE is not set.');
     }
     privateKey = await decryptKey({ privateKey, passphrase });
   }
@@ -86,14 +71,16 @@ async function signSecurityTxt() {
   const message = await createCleartextMessage({ text: content });
   const signedContent = await sign({ message, signingKeys: privateKey });
 
-  await fs.writeFile(securityTxtPath, signedContent);
+  await fs.writeFile(securityTxtPath, signedContent as string);
   console.log('PGP: Successfully signed security.txt.');
 }
 
-async function main() {
+async function main(): Promise<void> {
   try {
     const files = await fs.readdir(buildDir, { recursive: true });
-    const htmlFiles = files.filter(file => file.endsWith('.html')).map(file => path.join(buildDir, file));
+    const htmlFiles = files
+      .filter((file): file is string => typeof file === 'string' && file.endsWith('.html'))
+      .map(file => path.join(buildDir, file));
 
     for (const htmlFile of htmlFiles) {
       await processHtmlFile(htmlFile);

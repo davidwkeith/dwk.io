@@ -1,3 +1,5 @@
+import type { EleventyData } from './types.ts';
+
 /**
  * LLM-readable site summary.
  *
@@ -12,7 +14,7 @@ export default class LlmsTxt {
     };
   }
 
-  render(data) {
+  render(data: EleventyData): string {
     const projects = [...data.collections.project]
       .reverse()
       .map(p => {

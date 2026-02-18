@@ -1,3 +1,5 @@
+import type { EleventyData } from '../types.ts';
+
 /**
  * Nostr NIP-05 identity verification.
  * Maps handle@dwk.io to a Nostr public key.
@@ -13,8 +15,7 @@ export default class NostrJSON {
     };
   }
 
-  render(data) {
-    const hostname = new URL(data.site.url).hostname;
+  render(data: EleventyData): string {
     const handle = data.site.mastodon.handle;
 
     return JSON.stringify({

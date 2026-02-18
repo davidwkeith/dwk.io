@@ -13,7 +13,7 @@ export default class GPC {
     };
   }
 
-  render() {
+  render(): string {
     return JSON.stringify({
       gpc: true,
       lastUpdate: new Date().toISOString().slice(0, 10),

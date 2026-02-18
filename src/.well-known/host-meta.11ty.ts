@@ -1,3 +1,5 @@
+import type { EleventyData } from '../types.ts';
+
 /**
  * Host metadata for Fediverse WebFinger discovery bootstrap.
  *
@@ -13,7 +15,7 @@ export default class HostMeta {
     };
   }
 
-  render(data) {
+  render(data: EleventyData): string {
     const host = new URL(data.site.url).origin;
     return `<?xml version="1.0" encoding="UTF-8"?>
 <XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">

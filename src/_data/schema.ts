@@ -1,3 +1,5 @@
+import type { SchemaData } from '../types.ts';
+
 /**
  * Defines the base schema.org data for all pages.
  *
@@ -62,4 +64,4 @@ export default {
       url: "https://www.usa.gov"
     }
   }
-}
+} satisfies SchemaData

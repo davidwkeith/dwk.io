@@ -2,7 +2,7 @@ export default {
   layout: "project.webc",
   tags: ["project"],
   schema: {
-    "@type": "CeeativeWork",
+    "@type": "CreativeWork",
     license: "https://spdx.org/licenses/CC-BY-4.0.html",
     author: {
       "@type": "Person",
@@ -13,7 +13,7 @@ export default {
   },
   page: {
     eleventyComputed: {
-      url: (data) => `/${data.fileSlug}/`,
+      url: (data: { fileSlug: string }) => `/${data.fileSlug}/`,
     }
   }
 }
