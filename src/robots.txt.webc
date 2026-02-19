@@ -5,4 +5,5 @@ _documentation: https://www.robotstxt.org/
 ---
 User-agent: *
 Disallow:
+
 Sitemap: <template webc:nokeep @raw="new URL('/sitemap.xml', $data.site.url)"></template>

@@ -1,7 +1,7 @@
 <header webc:root="override">
   <h1>
     <a href="/" class="hero-image">
-      <img webc:is="eleventy-image" width="64" :src="$data.site.logo.src" :alt="$data.site.logo.alt">
+      <img webc:is="eleventy-image" width="64" :src="$data.site.logo.src" :alt="$data.site.logo.alt" loading="eager" fetchpriority="high">
     </a>
     <span webc:nokeep @text="$data.site.title"></span>
   </h1>

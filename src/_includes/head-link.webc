@@ -12,6 +12,7 @@
     appleIconPadding: $data.site.favicon?.appleIconPadding })">
   <link rel="alternate" type="application/json" :href="new URL('/feed.json', $data.site.url)" title="JSON Feed" />
   <link rel="alternate" type="application/atom+xml" :href="new URL('/feed.xml', $data.site.url)" title="Atom Feed" />
+  <link rel="dns-prefetch" href="https://app.greenweb.org">
   <link webc:keep rel="stylesheet" :href="getBundleFileUrl('css')">
   <link rel="stylesheet" href="./main.css">
   <link type="text/plain" rel="author" :href="new URL('/humans.txt', $data.site.url)" />

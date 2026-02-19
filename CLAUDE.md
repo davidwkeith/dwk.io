@@ -47,11 +47,13 @@ Personal portfolio/project showcase website for dwk.io, built with Eleventy (11t
 
 **Projects** live in `src/projects/<name>/` with an `index.md` and assets. Shared front matter is in `src/projects/projects.11tydata.ts` (sets layout, tags, schema type).
 
-**Worker** (`worker/index.ts`): Cloudflare Worker that handles redirects, fetches static assets via `env.ASSETS.fetch()`, and applies custom response headers. Configured in `wrangler.jsonc` with `run_worker_first: true` so all requests pass through the Worker. Replaces the former `_headers` and `_redirects` Cloudflare Pages config files.
+**Worker** (`worker/index.ts`): Cloudflare Worker that handles redirects, fetches static assets via `env.ASSETS.fetch()`, and applies custom response headers. Configured in `wrangler.jsonc` with `run_worker_first: true` so all requests pass through the Worker. Replaces the former `_headers` and `_redirects` Cloudflare Pages config files. Global headers include HSTS, CSP, Permissions-Policy, COOP, and CORP. The CSP allows `img-src 'self' https://app.greenweb.org` (the only runtime external image); all other external images are processed at build time by eleventy-image and served from self.
 
 **Generated files** in `src/`: `feed.json.11ty.ts` produces JSON Feed; `feed.xml.11ty.ts` produces Atom feed; `.well-known/` templates produce identity/discovery endpoints; `sitemap.xml.webc`, `robots.txt.webc`, `humans.txt.webc` produce standard web files.
 
 **IndieWeb:** Homepage has a representative `h-card` (microformats2 identity) and `h-feed` wrapper. Project pages use `h-entry` markup. IndieAuth (`indieauth.com`) and Webmention (`webmention.io`) endpoints are advertised in `<head>` via `site.ts` headLinks. Homepage schema is `ProfilePage` with `mainEntity` (via `index.11tydata.ts` override).
+
+**Web standards:** Twitter/X Card meta tags in `head-meta.webc`. Speculation Rules API (`type="speculationrules"`) in `base.webc` for moderate-eagerness prerender — requires `webc:keep` to survive WebC processing. `dns-prefetch` for `app.greenweb.org` in `head-link.webc`. LCP hero image uses `fetchpriority="high"` and `loading="eager"`. Accessibility: `prefers-reduced-motion`, `prefers-contrast`, and `forced-colors` media queries in `main.css`.
 
 ## Key Conventions
 

@@ -109,6 +109,19 @@ describe("header rules", () => {
     expect(response.headers.get("Referrer-Policy")).toBe(
       "no-referrer-when-downgrade",
     );
+    expect(response.headers.get("Strict-Transport-Security")).toBe(
+      "max-age=31536000; includeSubDomains; preload",
+    );
+    expect(response.headers.get("Content-Security-Policy")).toContain(
+      "default-src 'none'",
+    );
+    expect(response.headers.get("Permissions-Policy")).toContain("camera=()");
+    expect(response.headers.get("Cross-Origin-Opener-Policy")).toBe(
+      "same-origin",
+    );
+    expect(response.headers.get("Cross-Origin-Resource-Policy")).toBe(
+      "same-origin",
+    );
   });
 
   it("sets Content-Type and CORS for webfinger", async () => {

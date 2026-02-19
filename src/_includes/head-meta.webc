@@ -17,6 +17,12 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:site_name" :content="$data.site.title">
   <meta property="og:locale" content="en_US">
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" :content="$data.title ?? $data.site.title">
+  <meta name="twitter:description" :content="$data.description ?? $data.schema?.description ?? $data.site.description">
+  <meta name="twitter:image" :content="ogImage($data.page.ogImage ?? $data.site.defaultOgImage)">
+  <meta name="twitter:image:alt" :content="$data.title ?? $data.site.title">
   <meta webc:if="$data.site.fediverseCreator" name="fediverse:creator" :content="$data.site.fediverseCreator">
   <meta webc:if="$data.site.copyright" name="copyright" :content="$data.site.copyright">
   <meta webc:if="$data.site.rating" name="rating" content="$data.site.rating">

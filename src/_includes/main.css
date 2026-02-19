@@ -295,3 +295,29 @@ h1, h2, h3, h4, h5, h6 {
         margin: 1rem;
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@media (prefers-contrast: more) {
+    :root {
+        --border-color: #000000;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --border-color: #ffffff;
+        }
+    }
+}
+
+@media (forced-colors: active) {
+    a[href] {
+        text-decoration: underline;
+    }
+}

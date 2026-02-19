@@ -22,5 +22,10 @@
     <footer></footer>
     <style webc:keep @raw="getBundle('css', 'defer')"></style>
 		<script webc:keep @raw="getBundle('js', 'defer')"></script>
+    <script webc:keep type="speculationrules">
+    {
+      "prerender": [{ "where": { "href_matches": "/*" }, "eagerness": "moderate" }]
+    }
+    </script>
   </body>
 </html>
