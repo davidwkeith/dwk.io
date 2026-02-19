@@ -68,13 +68,3 @@ declare module "eleventy-plugin-gen-favicons" {
   const plugin: unknown;
   export default plugin;
 }
-
-declare module "jsonld-lint" {
-  interface LintError {
-    path: string;
-    message: string;
-    line: number;
-    column: number;
-  }
-  export function lint(json: string): Promise<LintError[]>;
-}

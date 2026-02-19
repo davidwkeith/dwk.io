@@ -4,7 +4,6 @@ import { eleventyImagePlugin } from "@11ty/eleventy-img";
 import Image from "@11ty/eleventy-img";
 import faviconsPlugin from "eleventy-plugin-gen-favicons";
 import markdownIt from "markdown-it";
-import { lint } from "jsonld-lint";
 import sharedPlugin, { getCommitHash } from "@dwk/eleventy-shared";
 import type UserConfig from "@11ty/eleventy/src/UserConfig";
 
@@ -128,23 +127,6 @@ export default function (eleventyConfig: UserConfig) {
     }
 
     return Image.generateHTML(metadata, imageAttributes);
-  });
-
-  /**
-   * Get schema.org JSON-LD data, validates against the schema.org
-   * context and returns it as a JSON string.
-   */
-  eleventyConfig.addJavaScriptFunction("getSchema", async (schema: unknown) => {
-    const JSONSchema = JSON.stringify(schema)
-    const lintErrors = await lint(JSONSchema);
-    if (lintErrors.length > 0) {
-      console.error("Schema.org JSON-LD validation errors:");
-      lintErrors.forEach(error => {
-        console.error(`  - ${error.path}: ${error.message} (Line: ${error.line}, Column: ${error.column})`);
-      });
-      throw new Error("Invalid Schema.org JSON-LD detected. See console for details.");
-    }
-    return JSONSchema;
   });
 
   eleventyConfig.setLibrary("md", markdownIt({
