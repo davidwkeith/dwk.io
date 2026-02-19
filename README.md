@@ -1,27 +1,6 @@
 # dwk.io
 
-DWK's Cyber Home — built with [Eleventy](https://www.11ty.dev/) and deployed on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with [Static Assets](https://developers.cloudflare.com/workers/static-assets/).
-
-## Setup
-
-```sh
-npm install
-```
-
-### security.txt signing (optional)
-
-The build can sign `/.well-known/security.txt` with an OpenPGP cleartext signature per [RFC 9116 Section 2.3](https://www.rfc-editor.org/rfc/rfc9116#section-2.3). To enable, add the following to a `.env` file or your CI environment:
-
-```sh
-GPG_PRIVATE_KEY="-----BEGIN PGP PRIVATE KEY BLOCK-----
-...
------END PGP PRIVATE KEY BLOCK-----"
-
-# Only needed if the key is passphrase-protected
-GPG_PASSPHRASE="your-passphrase"
-```
-
-If `GPG_PRIVATE_KEY` is not set, the build succeeds with an unsigned `security.txt`.
+DWK's Cyber Home — personal portfolio and project showcase.
 
 ## Development
 

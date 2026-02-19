@@ -1,7 +1,0 @@
----
-eleventyExcludeFromCollections: true
-eleventyAllowMissingExtension: true
-permalink: /.well-known/atproto-did
-_documentation: https://atproto.com/specs/handle
----
-<template webc:nokeep @text="$data.site.atprotoDid"></template>

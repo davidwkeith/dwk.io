@@ -22,6 +22,7 @@
   "description": "DWK's Cyber Home",
   "type": "module",
   "devDependencies": {
+    "@dwk/eleventy-shared": "*",
     "@11ty/eleventy": "^3.1.2",
     "@11ty/eleventy-img": "^6.0.4",
     "@11ty/eleventy-plugin-webc": "^0.11.2",

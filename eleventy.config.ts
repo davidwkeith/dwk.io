@@ -1,12 +1,11 @@
-import { pathToFileURL } from "node:url";
 import dotenv from "dotenv"
 import eleventyWebcPlugin from "@11ty/eleventy-plugin-webc";
 import { eleventyImagePlugin } from "@11ty/eleventy-img";
 import Image from "@11ty/eleventy-img";
 import faviconsPlugin from "eleventy-plugin-gen-favicons";
-import htmlmin from "html-minifier-terser";
 import markdownIt from "markdown-it";
 import { lint } from "jsonld-lint";
+import sharedPlugin, { getCommitHash } from "@dwk/eleventy-shared";
 import type UserConfig from "@11ty/eleventy/src/UserConfig";
 
 /**
@@ -34,19 +33,25 @@ export default function (eleventyConfig: UserConfig) {
   // This ensures that `page.url` is always available and correctly reflects the intended output URL.
   eleventyConfig.setFreezeReservedData(false);
 
-  eleventyConfig.addBundle("css");
-  eleventyConfig.addBundle("js");
-
-  // Register .11ty.ts as equivalent to .11ty.js for TypeScript templates
-  eleventyConfig.addExtension("11ty.ts", { key: "11ty.js" });
-
-  // Register .ts data files (loaded via Node's native type stripping)
-  eleventyConfig.addDataExtension("ts", {
-    read: false,
-    parser: async (filePath: string) => {
-      const mod = await import(pathToFileURL(filePath).href);
-      return mod.default ?? mod;
+  eleventyConfig.addPlugin(sharedPlugin, {
+    url: "https://dwk.io",
+    language: "en",
+    securityContact: "mailto:security@dwk.io",
+    sitemap: { permalink: "/sitemap.xml" },
+    robots: { permalink: "/robots.txt" },
+    humans: { commitHash: getCommitHash() },
+    fourOhFour: { layout: "base.webc", title: "404 Not Found" },
+    webfinger: { handle: "dwk", instance: "xn--4t8h.dwk.io" },
+    nostr: { handle: "dwk", pubkey: "096a5ff28249cae96026c34167163991fb6e9729fe6257c688b40fa7e684698c" },
+    didDocument: {
+      services: [
+        { id: "website", type: "LinkedDomains", endpoint: "https://dwk.io" },
+        { id: "mastodon", type: "LinkedDomains", endpoint: "https://xn--4t8h.dwk.io/@dwk" },
+        { id: "bluesky", type: "LinkedDomains", endpoint: "https://bsky.app/profile/dwk.io" },
+      ],
     },
+    atprotoDid: "did:plc:rxtknc5m5ixmscnq3xdamqxc",
+    dntPolicy: true,
   });
 
   eleventyConfig.addPlugin(faviconsPlugin, {});
@@ -87,20 +92,6 @@ export default function (eleventyConfig: UserConfig) {
       }
     });
     return metadata.jpeg[0].url;
-  });
-
-  /**
-   * Converts a date object to an HTML-friendly date string (YYYY-MM-DD).
-   */
-  eleventyConfig.addFilter("htmlDateString", (dateObj: Date) => {
-    return dateObj.toISOString().slice(0, 10);
-  });
-
-  /**
-   * Converts a date object to a human-readable date string.
-   */
-  eleventyConfig.addFilter("readableDate", (dateObj: Date) => {
-    return dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   });
 
   /**
@@ -154,25 +145,6 @@ export default function (eleventyConfig: UserConfig) {
       throw new Error("Invalid Schema.org JSON-LD detected. See console for details.");
     }
     return JSONSchema;
-  });
-
-  /**
-   * Minify the HTML output using html-minifier-terser.
-   * This transform is applied to all HTML files.
-   */
-  eleventyConfig.addTransform("htmlmin", function (content) {
-    if ((this.page.outputPath || "").endsWith(".html")) {
-      const minified = htmlmin.minify(content, {
-        useShortDoctype: true,
-        removeComments: true,
-        collapseWhitespace: true,
-      });
-
-      return minified;
-    }
-
-    // If not an HTML output, return content as-is
-    return content;
   });
 
   eleventyConfig.setLibrary("md", markdownIt({

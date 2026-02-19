@@ -12,10 +12,6 @@ export interface SiteData {
   description: string;
   url: URL;
   fediverseCreator: string;
-  atprotoDid: string;
-  mastodon: { handle: string; instance: string };
-  nostrPubkey: string;
-  securityContact: string;
   copyright: string;
   favicon: { src: string; appleIconBgColor: string; appleIconPadding: number };
   rating: string;
@@ -25,7 +21,6 @@ export interface SiteData {
   headLinks: Array<Record<string, string>>;
   defaultOgImage: string;
   manifest: { appName: string; appDescription: string; lang: string };
-  hash: string;
   logo: { src: string; alt: string };
   social: Record<string, string>;
 }

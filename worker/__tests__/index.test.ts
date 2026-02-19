@@ -3,7 +3,8 @@ import {
   createExecutionContext,
   waitOnExecutionContext,
 } from "cloudflare:test";
-import worker, { matchesPattern } from "../index";
+import worker from "../index";
+import { matchesPattern } from "@dwk/eleventy-shared/worker";
 
 // ─── matchesPattern ─────────────────────────────────────────
 
