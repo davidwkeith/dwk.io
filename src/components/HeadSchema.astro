@@ -1,0 +1,16 @@
+---
+interface Props {
+  schema: Record<string, unknown>;
+  pageUrl: string;
+}
+
+const { schema, pageUrl } = Astro.props;
+const schemaWithUrl = { ...schema, url: pageUrl };
+const jsonLd = JSON.stringify(schemaWithUrl);
+
+if (!schema['@type']) {
+  console.warn(`HeadSchema: missing @type for ${pageUrl}`);
+}
+---
+
+<script is:inline type="application/ld+json" set:html={jsonLd} />

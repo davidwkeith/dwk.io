@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { site } from '../data/site';
+import { schema } from '../data/schema';
+
+const projects = (await getCollection('projects')).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const pageSchema = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  mainEntity: schema.author,
+};
+---
+
+<BaseLayout description="The Cyber Home of DWK" schema={pageSchema}>
+  <div class="h-card">
+    <a class="p-name u-url u-uid" href={site.url}>{schema.author.name}</a>
+    <data class="u-photo" value={`${site.url}/icon-512.png`}></data>
+  </div>
+  <div class="h-feed">
+    <h2 class="p-name">Projects</h2>
+    <ul>
+      {projects.map(project => (
+        <li class="h-entry">
+          <a class="u-url p-name" href={`/${project.id}/`}>{project.data.title}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>

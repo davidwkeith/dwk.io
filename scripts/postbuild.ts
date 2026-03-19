@@ -1,7 +1,6 @@
-import "dotenv/config";
 import { addSriHashes, signSecurityTxt } from "@dwk/eleventy-shared/postbuild";
 
-const buildDir = "./_site";
+const buildDir = "./dist";
 
 try {
   await addSriHashes(buildDir);
