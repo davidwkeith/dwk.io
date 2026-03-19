@@ -1,0 +1,28 @@
+---
+interface Props {
+  canonicalUrl: string;
+}
+
+import { site } from '../data/site';
+
+const { canonicalUrl } = Astro.props;
+---
+
+<link rel="canonical" href={canonicalUrl}>
+{site.headLinks.map(link => (
+  <link rel={link.rel} href={link.href} />
+))}
+
+<!-- Favicons -->
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+
+<!-- Feeds -->
+<link rel="alternate" type="application/json" href={`${site.url}/feed.json`} title="JSON Feed" />
+<link rel="alternate" type="application/atom+xml" href={`${site.url}/feed.xml`} title="Atom Feed" />
+
+<!-- Other -->
+<link rel="dns-prefetch" href="https://app.greenweb.org">
+<link type="text/plain" rel="author" href={`${site.url}/humans.txt`} />
