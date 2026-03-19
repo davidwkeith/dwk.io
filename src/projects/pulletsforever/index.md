@@ -1,5 +1,6 @@
 ---
 title: Pullets Forever
+description: Pullet surprise writing about my life.
 date: 2002-12-23T04:49:24.215Z
 permalink: /pulletsforever/
 page:

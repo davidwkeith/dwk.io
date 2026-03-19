@@ -1,5 +1,6 @@
 ---
 title: Crontab Clock
+description: A web clock that displays the current time using the crontab date format.
 date: 2021-10-27T04:49:24.215Z
 permalink: /crontab-clock/
 page:

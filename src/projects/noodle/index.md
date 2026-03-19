@@ -1,5 +1,6 @@
 ---
 title: Noodle
+description: A self-hosted search engine powered by large language models — no ads, SEO spam, or affiliate content.
 date: 2026-02-04T00:00:00.000Z
 permalink: /noodle/
 page:

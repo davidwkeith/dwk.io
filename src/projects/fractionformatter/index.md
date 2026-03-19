@@ -1,5 +1,6 @@
 ---
 title: Swift FractionFormatter
+description: A Swift package that formats decimal numbers as typographically correct Unicode fractions.
 date: 2020-05-07T04:49:24.215Z
 permalink: /fractionformatter/
 page:
