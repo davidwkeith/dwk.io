@@ -1,0 +1,70 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { site } from '../data/site';
+import { schema as globalSchema } from '../data/schema';
+
+interface Props {
+  title: string;
+  description?: string;
+  date: Date;
+  hero?: { src: string; alt: string; title?: string; caption?: string };
+  schema: Record<string, unknown>;
+  slug: string;
+}
+
+const { title, description, date, hero, schema: projectSchema, slug } = Astro.props;
+
+const mergedSchema = {
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  license: "https://spdx.org/licenses/CC-BY-4.0.html",
+  author: globalSchema.author,
+  ...projectSchema,
+};
+
+const projectUrl = new URL(`/${slug}/`, site.url).toString();
+const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<BaseLayout title={title} description={description} schema={mergedSchema}>
+  <article class="h-entry">
+    <h2 class="p-name">{title}</h2>
+    <ul class="post-metadata">
+      <li><time class="dt-published" datetime={date.toISOString()}>{formattedDate}</time></li>
+    </ul>
+    {hero && (
+      <figure class="project-hero-image">
+        <img src={hero.src} alt={hero.alt} title={hero.title} width="150" height="150">
+        {hero.caption && <figcaption>{hero.caption}</figcaption>}
+      </figure>
+    )}
+    <div class="e-content">
+      <slot />
+    </div>
+    <a class="u-url" href={projectUrl} style="display:none"></a>
+    <span class="p-author h-card" style="display:none">
+      <a class="p-name u-url" href={globalSchema.author.url}>{globalSchema.author.name}</a>
+    </span>
+  </article>
+</BaseLayout>
+
+<style>
+  .project-hero-image img {
+    height: 150px;
+    width: 150px;
+  }
+
+  .project-hero-image figcaption {
+    font-size: 0.8em;
+    color: #444;
+    margin-top: 0.5em;
+  }
+
+  figure {
+    float: left;
+  }
+
+  article {
+    padding-top: 1em;
+  }
+</style>
