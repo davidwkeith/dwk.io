@@ -22,7 +22,7 @@
     "@astrojs/check": "^0.9.0",
     "@astrojs/sitemap": "^3.2.0",
     "@dwk/eleventy-shared": "^0.2.0",
-    "astro": "^5.7.0",
+    "astro": "^7.2.8",
     "cheerio": "^1.2.0",
     "openpgp": "^6.3.0",
     "typescript": "^5.9.3",
