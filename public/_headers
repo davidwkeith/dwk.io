@@ -25,6 +25,9 @@
 /.well-known/did.json
   Content-Type: application/did+ld+json; charset=utf-8
 
+/.well-known/dwk-ca.crt
+  Content-Type: application/x-x509-ca-cert
+
 /feed.xml
   Content-Type: application/atom+xml; charset=utf-8
 
