@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import BaseLayout from './BaseLayout.astro';
 import { site } from '../data/site';
 import { schema as globalSchema } from '../data/schema';
@@ -7,7 +9,7 @@ interface Props {
   title: string;
   description?: string;
   date: Date;
-  hero?: { src: string; alt: string; title?: string; caption?: string };
+  hero?: { src: ImageMetadata; alt: string; title?: string; caption?: string };
   schema: Record<string, unknown>;
   slug: string;
 }
@@ -34,7 +36,7 @@ const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month:
     </ul>
     {hero && (
       <figure class="project-hero-image">
-        <img src={hero.src} alt={hero.alt} title={hero.title} width="150" height="150">
+        <Image src={hero.src} alt={hero.alt} title={hero.title} width={150} height={150} />
         {hero.caption && <figcaption>{hero.caption}</figcaption>}
       </figure>
     )}
