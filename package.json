@@ -19,10 +19,10 @@
   "description": "DWK's Cyber Home",
   "type": "module",
   "devDependencies": {
-    "@astrojs/check": "^0.9.0",
-    "@astrojs/sitemap": "^3.2.0",
+    "@astrojs/check": "^0.9.10",
+    "@astrojs/sitemap": "^3.7.4",
     "@dwk/eleventy-shared": "^0.2.0",
-    "astro": "^5.7.0",
+    "astro": "^7.3.2",
     "cheerio": "^1.2.0",
     "openpgp": "^6.3.0",
     "typescript": "^5.9.3",
