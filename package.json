@@ -7,7 +7,7 @@
     "postbuild": "node --experimental-strip-types scripts/postbuild.ts",
     "preview": "astro preview",
     "check": "astro check",
-    "deploy": "npm run build && wrangler pages deploy dist/ --project-name dwk"
+    "deploy": "npm run build && wrangler pages deploy dist/ --project-name dwk-io"
   },
   "keywords": [],
   "author": {
