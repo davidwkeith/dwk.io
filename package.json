@@ -7,7 +7,7 @@
     "postbuild": "node --env-file-if-exists=.env --experimental-strip-types scripts/postbuild.ts",
     "preview": "astro preview",
     "check": "astro check",
-    "deploy": "npm run build && wrangler pages deploy dist/ --project-name dwk-io"
+    "deploy": "npm run build && wrangler deploy"
   },
   "keywords": [],
   "author": {

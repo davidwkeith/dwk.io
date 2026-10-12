@@ -9,7 +9,7 @@ Personal portfolio/project showcase website.
 - `npm run postbuild` — Adds SRI hashes and signs security.txt (runs automatically after build)
 - `npm run check` — TypeScript check
 - `npm run preview` — Preview production build locally
-- `npm run deploy` — Build and deploy to Cloudflare Pages
+- `npm run deploy` — Build and deploy to the `dwk` Cloudflare Worker (static assets)
 
 ## Architecture
 
@@ -42,9 +42,9 @@ Personal portfolio/project showcase website.
 
 **Endpoints:** Static `.ts` files in `src/pages/` generate feeds (`feed.xml`, `feed.json`), `llms.txt`, `robots.txt`, `humans.txt`, and `.well-known/` files (webfinger, host-meta, security.txt, etc.).
 
-**CSP and headers:** `public/_headers` file sets Content Security Policy and other security headers for Cloudflare Pages. The CSP allows `img-src 'self' https://app.greenweb.org` (the only runtime external image).
+**CSP and headers:** `public/_headers` file sets Content Security Policy and other security headers (read by Workers Static Assets). The CSP allows `img-src 'self' https://app.greenweb.org` (the only runtime external image).
 
-**Deploy:** Cloudflare Pages via `wrangler pages deploy dist/`.
+**Deploy:** Cloudflare Worker `dwk` (Workers Static Assets, config in `wrangler.jsonc`) via `wrangler deploy`. `worker.js` only handles the www → apex redirect and otherwise serves `dist/`. `public/_redirects` must use relative URLs only; cross-host redirects go in `worker.js`. There is no Pages project serving `dwk.io` (the old `dwk-io` Pages project is unused).
 
 **IndieWeb:** Homepage has a representative `h-card` (microformats2 identity) and `h-feed` wrapper. Project pages use `h-entry` markup. IndieAuth and Webmention endpoints advertised in `<head>` via `site.ts` headLinks.
 
