@@ -44,7 +44,7 @@ Personal portfolio/project showcase website.
 
 **CSP and headers:** `public/_headers` file sets Content Security Policy and other security headers (read by Workers Static Assets). The CSP allows `img-src 'self' https://app.greenweb.org` (the only runtime external image).
 
-**Deploy:** Cloudflare Worker `dwk` (Workers Static Assets, config in `wrangler.jsonc`) via `wrangler deploy`. `worker.js` only handles the www → apex redirect and otherwise serves `dist/`. `public/_redirects` must use relative URLs only; cross-host redirects go in `worker.js`. There is no Pages project serving `dwk.io` (the old `dwk-io` Pages project is unused).
+**Deploy:** Cloudflare Worker `dwk` (Workers Static Assets, config in `wrangler.jsonc`) via `wrangler deploy`. `worker.js` only handles the www → apex redirect and otherwise serves `dist/`. `public/_redirects` must use relative URLs only; cross-host redirects go in `worker.js`. This is a Worker, not a Pages project — don't use `wrangler pages deploy`.
 
 **IndieWeb:** Homepage has a representative `h-card` (microformats2 identity) and `h-feed` wrapper. Project pages use `h-entry` markup. IndieAuth and Webmention endpoints advertised in `<head>` via `site.ts` headLinks.
 
