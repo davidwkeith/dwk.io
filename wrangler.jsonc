@@ -10,12 +10,23 @@
     "not_found_handling": "404-page",
     "run_worker_first": true
   },
-  // Workers Logs and traces, queryable in the dashboard. Traffic is low
-  // enough to keep every request (head_sampling_rate 1 = 100%).
+  // Mirrors the dashboard's Observability settings so deploys don't revert
+  // them. Traffic is low enough to keep every request (sampling rate 1 = 100%).
+  // The dashboard snippet calls the last block "issue_detection"; wrangler's
+  // schema names it "issues".
   "observability": {
-    "enabled": true,
-    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    },
     "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true
+    },
+    "issues": {
       "enabled": true
     }
   },
