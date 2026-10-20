@@ -9,6 +9,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.astro",
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    "worker.ts"
   ]
 }
