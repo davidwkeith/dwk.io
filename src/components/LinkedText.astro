@@ -1,0 +1,18 @@
+---
+/**
+ * Renders a string, turning Markdown-style `[text](url)` spans into links.
+ * Everything else is emitted as escaped text.
+ */
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+const parts = text.split(/\[([^\]]+)\]\(([^)\s]+)\)/);
+---
+
+{parts.map((part, i) => {
+  if (i % 3 === 0) return part;
+  if (i % 3 === 1) return <a href={parts[i + 1]}>{part}</a>;
+  return null;
+})}
