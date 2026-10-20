@@ -1,0 +1,178 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site';
+import { schema } from '../data/schema';
+import { cv } from '../data/cv';
+
+const formatMonth = (ym: string) =>
+  new Date(`${ym}-01T00:00:00Z`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', timeZone: 'UTC' });
+
+const pageSchema = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  mainEntity: {
+    ...schema.author,
+    jobTitle: cv.headline,
+    description: cv.summary,
+    knowsAbout: cv.skills,
+    worksFor: cv.experience
+      .filter(job => job.url && job.roles.some(role => !role.end))
+      .map(job => ({ "@type": "Organization", name: job.org, ...(job.url && { url: job.url }) })),
+  },
+};
+---
+
+<BaseLayout title="CV" description={`${schema.author.name} — ${cv.headline}. ${cv.location}.`} schema={pageSchema}>
+  <article class="h-resume">
+    <h2 class="p-name">Curriculum Vitae</h2>
+    <div class="p-contact h-card">
+      <a class="p-name u-url" href={site.url}>{schema.author.name}</a>
+      — <span class="p-job-title">{cv.headline}</span>,
+      <span class="p-locality">{cv.location}</span>
+    </div>
+
+    <section>
+      <h3>Summary</h3>
+      <p class="p-summary">{cv.summary}</p>
+    </section>
+
+    <section>
+      <h3>Experience</h3>
+      {cv.experience.map(job => (
+        <div class="job">
+          <h4>{job.url ? <a href={job.url}>{job.org}</a> : job.org}</h4>
+          {job.roles.map(role => (
+            <div class="p-experience h-event">
+              <p class="role">
+                <strong class="p-name">{role.title}</strong>
+              </p>
+              <p class="dates">
+                <time class="dt-start" datetime={role.start}>{formatMonth(role.start)}</time>
+                {' – '}
+                {role.end
+                  ? <time class="dt-end" datetime={role.end}>{formatMonth(role.end)}</time>
+                  : 'Present'}
+                {role.location && <> · {role.location}</>}
+              </p>
+              <div class="p-description">
+                {role.summary && <p>{role.summary}</p>}
+                {role.highlights && (
+                  <ul>{role.highlights.map(item => <li>{item}</li>)}</ul>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </section>
+
+    <section>
+      <h3>Education</h3>
+      <ul class="plain">
+        {cv.education.map(school => (
+          <li class="p-education h-event">
+            <strong class="p-name">{school.url ? <a href={school.url}>{school.name}</a> : school.name}</strong>
+            {school.study && <> — <span class="p-description">{school.study}</span></>}
+            {' '}(<time class="dt-start" datetime={school.start}>{school.start}</time>–<time class="dt-end" datetime={school.end}>{school.end}</time>)
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section>
+      <h3>Skills</h3>
+      <ul class="tags">
+        {cv.skills.map(skill => <li class="p-skill post-tag">{skill}</li>)}
+      </ul>
+    </section>
+
+    <section>
+      <h3>Patents</h3>
+      <ul>
+        {cv.patents.map(patent => <li>{patent}</li>)}
+      </ul>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  article {
+    padding-top: 1em;
+  }
+
+  section {
+    margin-top: 2em;
+  }
+
+  .job {
+    margin-bottom: 1.5em;
+  }
+
+  .job h4 {
+    margin-bottom: 0.5em;
+  }
+
+  .role {
+    margin: 0.75em 0 0;
+  }
+
+  .dates {
+    margin: 0;
+    font-size: 0.9em;
+    opacity: 0.8;
+  }
+
+  ul.plain,
+  ul.tags {
+    list-style: none;
+    padding: 0;
+  }
+
+  ul.tags li {
+    display: inline-block;
+    margin-bottom: 0.5em;
+  }
+
+  @media print {
+    article {
+      padding-top: 0;
+    }
+
+    .job {
+      break-inside: avoid-page;
+    }
+  }
+</style>
+
+<style is:global>
+  @media print {
+    :root {
+      --background-color: #fff;
+      --text-color: #000;
+      --text-color-link: #000;
+      --text-color-link-visited: #000;
+      --border-color: #000;
+      --header-background: #fff;
+      --header-text: #000;
+    }
+
+    body {
+      border: 0 !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      max-width: none !important;
+    }
+
+    .skip-link,
+    .feedicon,
+    footer {
+      display: none;
+    }
+
+    main {
+      border: 0;
+      margin: 0;
+      padding: 0;
+    }
+  }
+</style>

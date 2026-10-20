@@ -19,6 +19,10 @@ export const GET: APIRoute = async () => {
 
 This site is built with Astro and hosted on Cloudflare Pages. It uses a 1990s retro aesthetic with monospace typography and supports both dark and light modes.
 
+## About
+
+- [CV](${site.url}/cv/): Curriculum vitae — experience, education, skills, and patents
+
 ## Projects
 
 ${projectList}
