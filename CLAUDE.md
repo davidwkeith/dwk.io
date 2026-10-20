@@ -5,8 +5,7 @@ Personal portfolio/project showcase website.
 ## Commands
 
 - `npm run dev` — Astro dev server with live reload
-- `npm run build` — Production build (outputs to `dist/`)
-- `npm run postbuild` — Adds SRI hashes and signs security.txt (runs automatically after build)
+- `npm run build` — Production build (outputs to `dist/`), including SRI hashing and security.txt signing
 - `npm run check` — TypeScript check
 - `npm run preview` — Preview production build locally
 - `npm run deploy` — Build and deploy to the `dwk` Cloudflare Worker (static assets)
@@ -20,7 +19,7 @@ Personal portfolio/project showcase website.
 1. Astro content collections with `glob` loader for projects (`src/content/` + `src/content.config.ts`)
 2. `.astro` components and pages processed by Astro
 3. Static images served from `public/img/` (no build-time optimization)
-4. Post-build: `scripts/postbuild.ts` adds SHA-384 SRI integrity attributes to local CSS/JS using `@dwk/eleventy-shared/postbuild`, and signs security.txt with OpenPGP
+4. Post-build: the `src/integrations/postbuild.ts` Astro integration (`astro:build:done` hook, registered last in `astro.config.ts`) adds SHA-384 SRI integrity attributes to local CSS/JS, then signs security.txt with OpenPGP when `GPG_PRIVATE_KEY` is set (env or `.env`)
 
 **Global data** (`src/data/`):
 
@@ -47,6 +46,8 @@ Personal portfolio/project showcase website.
 **Deploy:** Cloudflare Worker `dwk` (Workers Static Assets, config in `wrangler.jsonc`) via `wrangler deploy`. `worker.ts` handles the www → apex redirect, 302-redirects fediverse discovery (`/.well-known/webfinger`, `host-meta`(`.json`), `nodeinfo`) to the Mastodon instance (`site.identity.webfinger.instance`, which hosts `@dwk@dwk.io` with `LOCAL_DOMAIN=dwk.io`), and otherwise serves `dist/`. Worker-generated responses don't get `public/_headers` rules, and `npm run dev` doesn't serve these redirects; test them with `npx wrangler dev`. `public/_redirects` must use relative URLs only; cross-host redirects go in `worker.ts`. This is a Worker, not a Pages project — don't use `wrangler pages deploy`.
 
 **IndieWeb:** Homepage has a representative `h-card` (microformats2 identity) and `h-feed` wrapper. Project pages use `h-entry` markup. IndieAuth and Webmention endpoints advertised in `<head>` via `site.ts` headLinks.
+
+**IndieAuth:** Self-hosted via `@dwk/indieauth` in `worker.ts`: `/auth/authorize`, `/auth/token`, `/auth/revocation`, and `/.well-known/oauth-authorization-server`. Codes and tokens live in the `AUTH_DB` D1 database (schema created lazily); tokens are signed with the `TOKEN_SIGNING_KEY` secret. The owner logs in at `/auth/login` (`worker/login.ts`), which is guarded by a Cloudflare Access app (`ACCESS_TEAM_DOMAIN`/`ACCESS_AUD` vars). The Worker verifies the Access JWT itself, because `*.workers.dev` previews bypass Access, so login only works on dwk.io. Approval redirects back to `/auth/authorize` with an HMAC consent token covering the client, redirect URI, state, PKCE challenge, scopes and resources. Note that `/auth/token` requires DPoP, so most Micropub clients can sign in but can't get tokens. For local testing, put `TOKEN_SIGNING_KEY` in `.dev.vars` (gitignored).
 
 ## Key Conventions
 

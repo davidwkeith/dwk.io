@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import postbuild from './src/integrations/postbuild';
 
 export default defineConfig({
   site: 'https://dwk.io',
@@ -11,5 +12,7 @@ export default defineConfig({
   },
   integrations: [
     sitemap(),
+    // Keep last so it sees every file the other integrations write.
+    postbuild(),
   ],
 });

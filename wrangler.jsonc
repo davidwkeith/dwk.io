@@ -30,6 +30,19 @@
       "enabled": true
     }
   },
+  // IndieAuth (worker.ts). Also needs the TOKEN_SIGNING_KEY secret, and an
+  // Access app guarding dwk.io/auth/login whose AUD tag goes in ACCESS_AUD.
+  "d1_databases": [
+    {
+      "binding": "AUTH_DB",
+      "database_name": "dwk-indieauth",
+      "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f"
+    }
+  ],
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "dwk-io.cloudflareaccess.com",
+    "ACCESS_AUD": "62980e775a5f75c44ba9b496086f9aaf18a5d6d50b2622c5ca402ce77b721a24"
+  },
   // Required by `wrangler preview`, which Workers Builds runs for non-production branches.
   "previews": {}
 }

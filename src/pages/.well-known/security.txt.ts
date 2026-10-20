@@ -7,6 +7,6 @@ export const GET: APIRoute = () => {
 
   return new Response(`Contact: ${site.identity.securityContact}
 Expires: ${expires.toISOString()}
-Preferred-Languages: ${site.language}
+${site.identity.securityEncryption.map((uri) => `Encryption: ${uri}\n`).join('')}Preferred-Languages: ${site.language}
 Canonical: ${site.url}/.well-known/security.txt`);
 };
