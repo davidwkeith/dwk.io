@@ -40,7 +40,7 @@
     }
   ],
   "vars": {
-    "ACCESS_TEAM_DOMAIN": "623parkct.cloudflareaccess.com",
+    "ACCESS_TEAM_DOMAIN": "dwk-io.cloudflareaccess.com",
     "ACCESS_AUD": "62980e775a5f75c44ba9b496086f9aaf18a5d6d50b2622c5ca402ce77b721a24"
   },
   // Required by `wrangler preview`, which Workers Builds runs for non-production branches.
