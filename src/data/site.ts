@@ -3,7 +3,7 @@ export const site = {
   description: "David W. Keith's personal website.",
   url: "https://dwk.io",
   language: "en",
-  fediverseCreator: "@dwk@xn--4t8h.dwk.io",
+  fediverseCreator: "@dwk@dwk.io",
   copyright: `CC-BY-4.0 David W. Keith ${new Date().getFullYear()}`,
   rating: "general",
   colorScheme: { content: "dark light" },
