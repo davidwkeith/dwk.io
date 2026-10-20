@@ -31,7 +31,8 @@ async function hmac(key: string, fields: readonly string[]) {
   const cryptoKey = await crypto.subtle.importKey(
     "raw", encoder.encode(key), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
   );
-  return base64url(await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(fields.join("\n"))));
+  // JSON keeps field boundaries unambiguous even if a value contains a newline.
+  return base64url(await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(JSON.stringify(fields))));
 }
 
 function timingSafeEqual(a: string, b: string) {
@@ -57,7 +58,7 @@ async function verifyToken(key: string, purpose: string, token: string, fields: 
 // Everything the approval grants. Signing the scopes and resources (not just
 // the request identity) stops a parameter edited after consent from widening it.
 function grantFields(req: Pick<AuthorizationRequest, "clientId" | "redirectUri" | "state" | "codeChallenge" | "scopes" | "resources">) {
-  return [req.clientId, req.redirectUri, req.state, req.codeChallenge, req.scopes.join(" "), (req.resources ?? []).join(" ")];
+  return [req.clientId, req.redirectUri, req.state, req.codeChallenge, JSON.stringify(req.scopes), JSON.stringify(req.resources ?? [])];
 }
 
 export function verifyConsent(env: LoginEnv, token: string, req: AuthorizationRequest) {
@@ -173,11 +174,14 @@ export async function handleLogin(request: Request, env: LoginEnv, owner: Owner,
     const scopes = req.scopes.length
       ? `<ul>${req.scopes.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ul>`
       : "<p>No scopes: sign-in only.</p>";
+    const resources = req.resources.length
+      ? `<p>For use at:</p><ul>${req.resources.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>`
+      : "";
     return page(
       "Approve sign-in",
       `<h1>Approve sign-in</h1>
 <p><strong>${escapeHtml(req.clientId)}</strong> wants to sign you in as <strong>${escapeHtml(owner.me)}</strong>.</p>
-<p>Requested scopes:</p>${scopes}
+<p>Requested scopes:</p>${scopes}${resources}
 <p>You'll be sent back to ${escapeHtml(req.redirectUri)}</p>
 <p>Signed in through Cloudflare Access as ${escapeHtml(email)}.</p>
 <form method="post">
