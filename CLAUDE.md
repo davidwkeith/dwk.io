@@ -42,7 +42,7 @@ Personal portfolio/project showcase website.
 
 **Endpoints:** Static `.ts` files in `src/pages/` generate feeds (`feed.xml`, `feed.json`), `llms.txt`, `robots.txt`, `humans.txt`, and `.well-known/` files (webfinger, host-meta, security.txt, etc.).
 
-**CSP and headers:** `public/_headers` file sets Content Security Policy and other security headers (read by Workers Static Assets). The CSP allows `img-src 'self' https://app.greenweb.org` (the only runtime external image).
+**CSP and headers:** `public/_headers` file sets Content Security Policy and other security headers (read by Workers Static Assets). The CSP is `'self'`-only apart from: the Green Web badge (`app.greenweb.org`, which redirects to a presigned `s3.nl-ams.scw.cloud` URL), Cloudflare Web Analytics (auto-injected beacon), and `'inline-speculation-rules'`. No inline styles: `style="…"` attributes are blocked, and `build.inlineStylesheets: 'never'` keeps Astro from inlining small CSS as `<style>`.
 
 **Deploy:** Cloudflare Worker `dwk` (Workers Static Assets, config in `wrangler.jsonc`) via `wrangler deploy`. `worker.js` only handles the www → apex redirect and otherwise serves `dist/`. `public/_redirects` must use relative URLs only; cross-host redirects go in `worker.js`. This is a Worker, not a Pages project — don't use `wrangler pages deploy`.
 
