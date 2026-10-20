@@ -9,6 +9,6 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.astro",
-    "scripts/**/*.ts"
+    "astro.config.ts"
   ]
 }

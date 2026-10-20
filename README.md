@@ -14,6 +14,6 @@ npm run deploy       # Build and deploy to Cloudflare Workers
 npm run cf-typegen   # Regenerate worker-configuration.d.ts
 ```
 
-The `postbuild` script runs automatically after `build` and handles:
+The `src/integrations/postbuild.ts` Astro integration runs at the end of every build and handles:
 - SRI integrity hashes on CSS/JS assets
 - OpenPGP signing of `security.txt` (when `GPG_PRIVATE_KEY` is set)
