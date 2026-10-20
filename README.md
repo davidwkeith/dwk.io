@@ -14,7 +14,7 @@ npm run deploy       # Build and deploy to Cloudflare Workers
 npm run cf-typegen   # Regenerate worker-configuration.d.ts
 ```
 
-The `postbuild` script runs automatically after `build` and handles:
+The `src/integrations/postbuild.ts` Astro integration runs at the end of every build and handles:
 - SRI integrity hashes on CSS/JS assets
 - OpenPGP signing of `security.txt` (when `GPG_PRIVATE_KEY` is set)
 
@@ -25,8 +25,10 @@ Signing happens at build time, so `GPG_PRIVATE_KEY` (and `GPG_PASSPHRASE`, if th
 Runtime secrets (`wrangler secret put`) are only visible to `worker.js` and won't work. Production builds
 on `main` fail if the key is missing. For local `npm run deploy`, put the same values in `.env`.
 
-Use a signing-only subkey rather than the primary key:
+Variables are capped at 5 KB and the dashboard strips newlines, so store a minimal export of the
+Ed25519 signing subkey, base64-encoded on one line (`.env` may hold the armored key as-is):
 
 ```sh
-gpg --armor --export-secret-subkeys '<SIGNING_SUBKEY_ID>!'
+gpg --armor --export-options export-minimal --export-filter keep-uid='mbox = me@dwk.io' \
+  --export-secret-subkeys '859CD007DE0F1C29!' | base64 | tr -d '\n' | pbcopy
 ```

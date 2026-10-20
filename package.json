@@ -4,7 +4,6 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "postbuild": "node --env-file-if-exists=.env --experimental-strip-types scripts/postbuild.ts",
     "preview": "astro preview",
     "check": "astro check",
     "deploy": "npm run build && wrangler deploy"
@@ -24,7 +23,6 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@astrojs/sitemap": "^3.7.4",
-    "@dwk/eleventy-shared": "^0.2.0",
     "@dwk/host-meta": "1.0.0-beta.2",
     "@dwk/indieauth": "1.0.0-beta.2",
     "@dwk/log": "1.0.0-beta.1",

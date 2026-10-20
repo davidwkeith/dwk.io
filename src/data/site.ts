@@ -41,6 +41,11 @@ export const site = {
   },
   identity: {
     securityContact: "mailto:security@dwk.io",
+    // OpenPGP key that signs security.txt; each entry becomes an RFC 9116 Encryption: field.
+    securityEncryption: [
+      "https://keys.openpgp.org/vks/v1/by-fingerprint/DFE7AF6BB47A3B7580F50C1D2D75DC350399F54C",
+      "https://keybase.io/dwkeith/pgp_keys.asc?fingerprint=dfe7af6bb47a3b7580f50c1d2d75dc350399f54c",
+    ],
     webfinger: { handle: "dwk", instance: "xn--4t8h.dwk.io" },
     nostr: { handle: "dwk", pubkey: "096a5ff28249cae96026c34167163991fb6e9729fe6257c688b40fa7e684698c" },
     atprotoDid: "did:plc:rxtknc5m5ixmscnq3xdamqxc",

@@ -7,9 +7,10 @@
     }
   },
   "include": [
+    ".astro/types.d.ts",
     "src/**/*.ts",
     "src/**/*.astro",
-    "scripts/**/*.ts",
+    "astro.config.ts",
     "worker.ts",
     "worker/**/*.ts"
   ]
