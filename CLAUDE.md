@@ -47,6 +47,8 @@ Personal portfolio/project showcase website.
 
 **IndieWeb:** Homepage has a representative `h-card` (microformats2 identity) and `h-feed` wrapper. Project pages use `h-entry` markup. IndieAuth and Webmention endpoints advertised in `<head>` via `site.ts` headLinks.
 
+**IndieAuth:** Self-hosted via `@dwk/indieauth` in `worker.ts`: `/auth/authorize`, `/auth/token`, `/auth/revocation`, and `/.well-known/oauth-authorization-server`. Codes and tokens live in the `AUTH_DB` D1 database (schema created lazily); tokens are signed with the `TOKEN_SIGNING_KEY` secret. The owner logs in at `/auth/login` (`worker/login.ts`), which is guarded by a Cloudflare Access app (`ACCESS_TEAM_DOMAIN`/`ACCESS_AUD` vars). The Worker verifies the Access JWT itself, because `*.workers.dev` previews bypass Access, so login only works on dwk.io. Approval redirects back to `/auth/authorize` with an HMAC consent token covering the client, redirect URI, state, PKCE challenge, scopes and resources. Note that `/auth/token` requires DPoP, so most Micropub clients can sign in but can't get tokens. For local testing, put `TOKEN_SIGNING_KEY` in `.dev.vars` (gitignored).
+
 ## Key Conventions
 
 - Schema.org JSON-LD is validated at build time — invalid schema will fail the build.

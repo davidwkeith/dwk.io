@@ -1,9 +1,12 @@
 import { createHostMeta } from "@dwk/host-meta";
+import { createIndieAuth, type IndieAuthEnv, type IndieAuthHandler } from "@dwk/indieauth";
 import { consoleLogger } from "@dwk/log";
 import { createWebfinger } from "@dwk/webfinger";
+import { schema } from "./src/data/schema";
 import { site } from "./src/data/site";
+import { handleLogin, signLoginRequest, verifyConsent, type LoginEnv } from "./worker/login";
 
-interface Env {
+interface Env extends IndieAuthEnv, LoginEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
 }
 type Ctx = Parameters<ReturnType<typeof createWebfinger>>[2];
@@ -55,9 +58,55 @@ const hostMeta = createHostMeta({
   logger,
 });
 
+// IndieAuth server for https://dwk.io/. The owner signs in at /auth/login,
+// which sits behind Cloudflare Access (see worker/login.ts).
+const me = `${site.url}/`;
+const owner = { email: site.social.email.replace(/^mailto:/, ""), me, issuer: site.url };
+const auth = {
+  authorize: `${site.url}/auth/authorize`,
+  token: `${site.url}/auth/token`,
+  revocation: `${site.url}/auth/revocation`,
+  login: `${site.url}/auth/login`,
+};
+
+// `approveAuthorization` gets no `env`, so the handler is built on first use
+// with the bindings in scope; they don't change for the life of an isolate.
+let indieauth: IndieAuthHandler | undefined;
+function getIndieAuth(env: Env) {
+  return (indieauth ??= createIndieAuth({
+    baseUrl: site.url,
+    authorizationEndpoint: auth.authorize,
+    tokenEndpoint: auth.token,
+    revocationEndpoint: auth.revocation,
+    scopesSupported: ["profile", "email", "create", "update", "delete", "media"],
+    // Only issue tokens for resource servers on this site.
+    resourceIndicatorPolicy: (resource) => new URL(resource).origin === site.url,
+    async approveAuthorization(req, httpRequest) {
+      const url = new URL(httpRequest.url);
+      const consent = url.searchParams.get("consent");
+      if (consent && (await verifyConsent(env, consent, req))) {
+        return {
+          me,
+          scopes: req.scopes,
+          profile: {
+            name: schema.author.name,
+            url: me,
+            photo: schema.author.image,
+            ...(req.scopes.includes("email") ? { email: owner.email } : {}),
+          },
+        };
+      }
+      url.searchParams.delete("consent");
+      url.searchParams.set("login", await signLoginRequest(env, req));
+      return Response.redirect(`${auth.login}${url.search}`, 302);
+    },
+    logger,
+  }));
+}
+
 // Redirect www.dwk.io/* to dwk.io/* (a cross-host redirect, which the
 // Workers Static Assets `_redirects` file does not support), route the
-// discovery endpoints to the @dwk packages, then serve everything else from
+// discovery and IndieAuth endpoints to the @dwk packages, then serve everything else from
 // the static assets.
 export default {
   async fetch(request: Request, env: Env, ctx: Ctx) {
@@ -72,6 +121,13 @@ export default {
       case "/.well-known/host-meta":
       case "/.well-known/host-meta.json":
         return secure(hostMeta(request, {}, ctx));
+      case "/.well-known/oauth-authorization-server":
+      case new URL(auth.authorize).pathname:
+      case new URL(auth.token).pathname:
+      case new URL(auth.revocation).pathname:
+        return secure(getIndieAuth(env)(request, env, ctx));
+      case new URL(auth.login).pathname:
+        return handleLogin(request, env, owner, auth.authorize);
     }
     return env.ASSETS.fetch(request);
   },

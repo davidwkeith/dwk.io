@@ -11,6 +11,7 @@
     "src/**/*.ts",
     "src/**/*.astro",
     "astro.config.ts",
-    "worker.ts"
+    "worker.ts",
+    "worker/**/*.ts"
   ]
 }

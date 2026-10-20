@@ -14,8 +14,10 @@ export const site = {
   },
   defaultOgImage: "/img/memoji.png",
   headLinks: [
-    { rel: "authorization_endpoint", href: "https://indieauth.com/auth" },
-    { rel: "token_endpoint", href: "https://tokens.indieauth.com/token" },
+    // Served by @dwk/indieauth in worker.ts.
+    { rel: "indieauth-metadata", href: "https://dwk.io/.well-known/oauth-authorization-server" },
+    { rel: "authorization_endpoint", href: "https://dwk.io/auth/authorize" },
+    { rel: "token_endpoint", href: "https://dwk.io/auth/token" },
     { rel: "webmention", href: "https://webmention.io/dwk.io/webmention" },
     { rel: "code-repository", href: "https://github.com/davidwkeith/dwk.io.git" },
     { rel: "content-repository", href: "https://github.com/davidwkeith/dwk.io.git" },
