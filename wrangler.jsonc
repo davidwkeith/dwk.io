@@ -10,6 +10,15 @@
     "not_found_handling": "404-page",
     "run_worker_first": true
   },
+  // Workers Logs and traces, queryable in the dashboard. Traffic is low
+  // enough to keep every request (head_sampling_rate 1 = 100%).
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "traces": {
+      "enabled": true
+    }
+  },
   // Required by `wrangler preview`, which Workers Builds runs for non-production branches.
   "previews": {}
 }
