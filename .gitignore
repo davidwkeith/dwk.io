@@ -9,4 +9,4 @@ dist/
 .wrangler/
 .superpowers/
 .worktrees/
-.claude/
+.claude/.dev.vars
