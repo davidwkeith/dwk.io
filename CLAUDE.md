@@ -5,8 +5,7 @@ Personal portfolio/project showcase website.
 ## Commands
 
 - `npm run dev` — Astro dev server with live reload
-- `npm run build` — Production build (outputs to `dist/`)
-- `npm run postbuild` — Adds SRI hashes and signs security.txt (runs automatically after build)
+- `npm run build` — Production build (outputs to `dist/`), including SRI hashing and security.txt signing
 - `npm run check` — TypeScript check
 - `npm run preview` — Preview production build locally
 - `npm run deploy` — Build and deploy to the `dwk` Cloudflare Worker (static assets)
@@ -20,7 +19,7 @@ Personal portfolio/project showcase website.
 1. Astro content collections with `glob` loader for projects (`src/content/` + `src/content.config.ts`)
 2. `.astro` components and pages processed by Astro
 3. Static images served from `public/img/` (no build-time optimization)
-4. Post-build: `scripts/postbuild.ts` adds SHA-384 SRI integrity attributes to local CSS/JS using `@dwk/eleventy-shared/postbuild`, and signs security.txt with OpenPGP
+4. Post-build: the `src/integrations/postbuild.ts` Astro integration (`astro:build:done` hook, registered last in `astro.config.ts`) adds SHA-384 SRI integrity attributes to local CSS/JS, then signs security.txt with OpenPGP when `GPG_PRIVATE_KEY` is set (env or `.env`)
 
 **Global data** (`src/data/`):
 
