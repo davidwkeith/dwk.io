@@ -39,11 +39,11 @@ Personal portfolio/project showcase website.
 
 **Projects** live in `src/content/projects/<name>/` with an `index.md` and assets.
 
-**Endpoints:** Static `.ts` files in `src/pages/` generate feeds (`feed.xml`, `feed.json`), `llms.txt`, `robots.txt`, `humans.txt`, and `.well-known/` files (webfinger, host-meta, security.txt, etc.).
+**Endpoints:** Static `.ts` files in `src/pages/` generate feeds (`feed.xml`, `feed.json`), `llms.txt`, `robots.txt`, `humans.txt`, and `.well-known/` files (security.txt, did.json, etc.). WebFinger and host-meta are served dynamically by the Worker (see Deploy).
 
 **CSP and headers:** `public/_headers` file sets Content Security Policy and other security headers (read by Workers Static Assets). The CSP is `'self'`-only apart from: the Green Web badge (`app.greenweb.org`, which redirects to a presigned `s3.nl-ams.scw.cloud` URL), Cloudflare Web Analytics (auto-injected beacon), and `'inline-speculation-rules'`. No inline styles: `style="…"` attributes are blocked, and `build.inlineStylesheets: 'never'` keeps Astro from inlining small CSS as `<style>`.
 
-**Deploy:** Cloudflare Worker `dwk` (Workers Static Assets, config in `wrangler.jsonc`) via `wrangler deploy`. `worker.js` only handles the www → apex redirect and otherwise serves `dist/`. `public/_redirects` must use relative URLs only; cross-host redirects go in `worker.js`. This is a Worker, not a Pages project — don't use `wrangler pages deploy`.
+**Deploy:** Cloudflare Worker `dwk` (Workers Static Assets, config in `wrangler.jsonc`) via `wrangler deploy`. `worker.ts` handles the www → apex redirect, serves `/.well-known/webfinger` and `/.well-known/host-meta`(`.json`) via the `@dwk/webfinger` and `@dwk/host-meta` packages (config built from `src/data/site.ts`), and otherwise serves `dist/`. Worker-generated responses don't get `public/_headers` rules, and `npm run dev` doesn't serve these two endpoints; test them with `npx wrangler dev`. `public/_redirects` must use relative URLs only; cross-host redirects go in `worker.ts`. This is a Worker, not a Pages project — don't use `wrangler pages deploy`.
 
 **IndieWeb:** Homepage has a representative `h-card` (microformats2 identity) and `h-feed` wrapper. Project pages use `h-entry` markup. IndieAuth and Webmention endpoints advertised in `<head>` via `site.ts` headLinks.
 

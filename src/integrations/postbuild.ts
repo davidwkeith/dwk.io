@@ -65,7 +65,8 @@ async function addSriHashes(buildDir: string, logger: AstroIntegrationLogger) {
 
 /**
  * Sign .well-known/security.txt with an OpenPGP cleartext signature (RFC 9116 §2.3).
- * Uses GPG_PRIVATE_KEY and optional GPG_PASSPHRASE; skipped when no key is set.
+ * Uses GPG_PRIVATE_KEY and optional GPG_PASSPHRASE; skipped when no key is set,
+ * except on production Workers Builds, where a missing key fails the build.
  */
 async function signSecurityTxt(buildDir: string, logger: AstroIntegrationLogger) {
   try {
@@ -75,6 +76,11 @@ async function signSecurityTxt(buildDir: string, logger: AstroIntegrationLogger)
   }
 
   const armoredKey = process.env.GPG_PRIVATE_KEY;
+  // Workers Builds sets WORKERS_CI; the key must be a *build* secret there, not a runtime secret.
+  const isProductionCi = process.env.WORKERS_CI === '1' && process.env.WORKERS_CI_BRANCH === 'main';
+  if (!armoredKey && isProductionCi) {
+    throw new Error('PGP: GPG_PRIVATE_KEY build secret is not set; refusing to deploy unsigned security.txt.');
+  }
   if (!armoredKey) {
     logger.warn('PGP: GPG_PRIVATE_KEY not set, skipping security.txt signing.');
     return;
