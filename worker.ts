@@ -4,7 +4,7 @@ import { consoleLogger } from "@dwk/log";
 import { createWebfinger } from "@dwk/webfinger";
 import { schema } from "./src/data/schema";
 import { site } from "./src/data/site";
-import { handleLogin, verifyConsent, type LoginEnv } from "./worker/login";
+import { handleLogin, signLoginRequest, verifyConsent, type LoginEnv } from "./worker/login";
 
 interface Env extends IndieAuthEnv, LoginEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
@@ -97,6 +97,7 @@ function getIndieAuth(env: Env) {
         };
       }
       url.searchParams.delete("consent");
+      url.searchParams.set("login", await signLoginRequest(env, req));
       return Response.redirect(`${auth.login}${url.search}`, 302);
     },
     logger,

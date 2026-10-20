@@ -14,6 +14,8 @@ export interface LoginEnv {
 }
 
 const TOKEN_TTL_SECONDS = 300;
+// Long enough to finish the Access one-time-PIN email round trip.
+const LOGIN_TTL_SECONDS = 900;
 const encoder = new TextEncoder();
 
 function base64url(bytes: ArrayBuffer | Uint8Array) {
@@ -44,8 +46,8 @@ function timingSafeEqual(a: string, b: string) {
 
 // Tokens are `<expiry>.<hmac>`; the purpose is the first signed field so a
 // form token can never be replayed as a consent token or vice versa.
-async function signToken(key: string, purpose: string, fields: readonly string[]) {
-  const exp = String(Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS);
+async function signToken(key: string, purpose: string, fields: readonly string[], ttl = TOKEN_TTL_SECONDS) {
+  const exp = String(Math.floor(Date.now() / 1000) + ttl);
   return `${exp}.${await hmac(key, [purpose, exp, ...fields])}`;
 }
 
@@ -59,6 +61,16 @@ async function verifyToken(key: string, purpose: string, token: string, fields: 
 // the request identity) stops a parameter edited after consent from widening it.
 function grantFields(req: Pick<AuthorizationRequest, "clientId" | "redirectUri" | "state" | "codeChallenge" | "scopes" | "resources">) {
   return [req.clientId, req.redirectUri, req.state, req.codeChallenge, JSON.stringify(req.scopes), JSON.stringify(req.resources ?? [])];
+}
+
+/**
+ * Signed by `approveAuthorization` when it sends the browser to log in. Only a
+ * request @dwk/indieauth has already validated (redirect_uri allowed for the
+ * client, PKCE present) carries one, so the login page never acts on, or
+ * redirects to, parameters that skipped that check.
+ */
+export function signLoginRequest(env: LoginEnv, req: AuthorizationRequest) {
+  return signToken(env.TOKEN_SIGNING_KEY, "dwk-login", grantFields(req), LOGIN_TTL_SECONDS);
 }
 
 export function verifyConsent(env: LoginEnv, token: string, req: AuthorizationRequest) {
@@ -163,13 +175,12 @@ export async function handleLogin(request: Request, env: LoginEnv, owner: Owner,
 
   if (request.method === "GET") {
     const query = new URL(request.url).search.slice(1);
-    const req = requestFromQuery(new URLSearchParams(query));
-    let redirectOrigin: string;
-    try {
-      redirectOrigin = new URL(req.redirectUri).origin;
-    } catch {
-      return page("Bad request", "<h1>Bad request</h1><p>Missing or invalid redirect_uri.</p>", 400, "'none'");
+    const params = new URLSearchParams(query);
+    const req = requestFromQuery(params);
+    if (!(await verifyToken(env.TOKEN_SIGNING_KEY, "dwk-login", params.get("login") ?? "", grantFields(req)))) {
+      return page("Expired", "<h1>This request expired or is invalid</h1><p>Start the sign-in again from the app.</p>", 400, "'none'");
     }
+    const redirectOrigin = new URL(req.redirectUri).origin;
     const formToken = await signToken(env.TOKEN_SIGNING_KEY, "dwk-login-form", [query]);
     const scopes = req.scopes.length
       ? `<ul>${req.scopes.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ul>`
@@ -213,6 +224,7 @@ export async function handleLogin(request: Request, env: LoginEnv, owner: Owner,
     return Response.redirect(denied.toString(), 303);
   }
 
+  params.delete("login");
   params.set("consent", await signToken(env.TOKEN_SIGNING_KEY, "dwk-consent", grantFields(req)));
   return Response.redirect(`${authorizeUrl}?${params}`, 303);
 }
