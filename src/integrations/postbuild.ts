@@ -75,7 +75,12 @@ async function signSecurityTxt(buildDir: string, logger: AstroIntegrationLogger)
     // no .env file
   }
 
-  const armoredKey = process.env.GPG_PRIVATE_KEY;
+  // The dashboard's secret field strips newlines, which breaks ASCII armor, so the build
+  // secret holds the armored key base64-encoded on one line. Local .env can stay armored.
+  let armoredKey = process.env.GPG_PRIVATE_KEY?.trim();
+  if (armoredKey && !armoredKey.startsWith('-----BEGIN')) {
+    armoredKey = Buffer.from(armoredKey, 'base64').toString('utf8');
+  }
   // Workers Builds sets WORKERS_CI; the key must be a *build* secret there, not a runtime secret.
   const isProductionCi = process.env.WORKERS_CI === '1' && process.env.WORKERS_CI_BRANCH === 'main';
   if (!armoredKey && isProductionCi) {
