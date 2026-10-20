@@ -2,7 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../data/site';
 import { schema } from '../data/schema';
-import { cv } from '../data/cv';
+import { cv, stripLinks } from '../data/cv';
+import LinkedText from '../components/LinkedText.astro';
 
 const formatMonth = (ym: string) =>
   new Date(`${ym}-01T00:00:00Z`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -13,7 +14,7 @@ const pageSchema = {
   mainEntity: {
     ...schema.author,
     jobTitle: cv.headline,
-    description: cv.summary,
+    description: stripLinks(cv.summary),
     knowsAbout: cv.skills,
     worksFor: cv.experience
       .filter(job => job.url && job.roles.some(role => !role.end))
@@ -55,9 +56,9 @@ const pageSchema = {
                 {role.location && <> · {role.location}</>}
               </p>
               <div class="p-description">
-                {role.summary && <p>{role.summary}</p>}
+                {role.summary && <p><LinkedText text={role.summary} /></p>}
                 {role.highlights && (
-                  <ul>{role.highlights.map(item => <li>{item}</li>)}</ul>
+                  <ul>{role.highlights.map(item => <li><LinkedText text={item} /></li>)}</ul>
                 )}
               </div>
             </div>
@@ -89,7 +90,7 @@ const pageSchema = {
     <section>
       <h3>Patents</h3>
       <ul>
-        {cv.patents.map(patent => <li>{patent}</li>)}
+        {cv.patents.map(patent => <li><LinkedText text={patent} /></li>)}
       </ul>
     </section>
   </article>

@@ -1,6 +1,10 @@
 /**
  * Curriculum vitae content. Dates are ISO `YYYY-MM`; omit `end` for current roles.
+ * Summaries, highlights, and patents may contain Markdown-style `[text](url)` links.
  */
+
+/** Drops `[text](url)` link markup, keeping the text. */
+export const stripLinks = (text: string) => text.replace(/\[([^\]]+)\]\([^)\s]+\)/g, "$1");
 
 export interface Role {
   title: string;
@@ -42,9 +46,9 @@ export const cv: CV = {
     "Software engineer and educator with 30+ years of industry experience spanning individual contribution at Apple and senior engineering management at Nest (Google), with a focused practice in curriculum design, developer documentation, and technical education. Actively developing a framework for teaching Specification Literacy — the ability to write unambiguous requirements that AI and distributed engineering teams can implement without ambiguity — as an 8th-grade curriculum unit: Introduction to Problem Architecture: Specification Literacy Through Algorithms and AI. Currently applying spec-driven principles in high school CS instruction through TEALS and in production agentic engineering workflows.",
   skills: ["TypeScript", "Cloudflare", "Agentic AI Development"],
   patents: [
-    "Systems and methods of determining a type and feature set of a light source, and the control thereof",
-    "Rule-based rate limiting",
-    "Selectively restricting communications from third party applications/devices to electronic devices",
+    "[Systems and methods of determining a type and feature set of a light source, and the control thereof](https://patents.google.com/patent/US9894735)",
+    "[Rule-based rate limiting](https://patents.google.com/patent/US9660948)",
+    "[Selectively restricting communications from third party applications/devices to electronic devices](https://patents.google.com/patent/US10084783)",
   ],
   experience: [
     {
@@ -58,8 +62,8 @@ export const cv: CV = {
           summary:
             "Applied agentic engineering to reduce the organization's SaaS footprint and build custom tooling on free or low-cost infrastructure:",
           highlights: [
-            "Built lanes.bikesiliconvalley.org, a GIS-powered tool tracking bike lanes by class across two counties, presenting complex open data as readable tables for advocacy use",
-            "Replaced a paid event calendar SaaS product with a custom-built equivalent running on Cloudflare's free tier",
+            "Built [lanes.bikesiliconvalley.org](https://lanes.bikesiliconvalley.org), a GIS-powered tool tracking bike lanes by class across two counties, presenting complex open data as readable tables for advocacy use",
+            "Replaced a paid event calendar SaaS product with a [custom-built equivalent](https://events.bikesiliconvalley.org/widget) running on Cloudflare's free tier",
             "Built a Gemini-powered Help Desk agent with knowledge of SVBC's SaaS stack, enabling staff to self-serve technical support previously handled by volunteer time",
           ],
         },
@@ -73,12 +77,13 @@ export const cv: CV = {
           start: "2021-11",
           location: "Santa Clara, California",
           summary:
-            "Agentic engineering practice using Claude Code, Codex, and LM Studio. Development workflow has transitioned from code-first to specification-first: research and spec are built collaboratively with AI before generation begins, with human evaluation as the quality gate. Active contributor to open source civic technology, including Anglesite, an AI-powered webmaster for small organizations, candidates, and local governments.",
+            "Agentic engineering practice using Claude Code, Codex, and LM Studio. Development workflow has transitioned from code-first to specification-first: research and spec are built collaboratively with AI before generation begins, with human evaluation as the quality gate. Active contributor to open source civic technology, including [Anglesite](https://anglesite.dwk.io), an AI-powered webmaster for small organizations, candidates, and local governments.",
         },
       ],
     },
     {
       org: "Shiloh Ballard for Santa Clara Valley Water District, 2024",
+      url: "https://www.shilohballard.com",
       roles: [
         {
           title: "Information Technology Consultant",
@@ -91,6 +96,7 @@ export const cv: CV = {
     },
     {
       org: "TARA.AI",
+      url: "https://tara.ai",
       roles: [
         {
           title: "Lead Engineer",
@@ -107,6 +113,7 @@ export const cv: CV = {
     },
     {
       org: "DevSweet",
+      url: "https://web.archive.org/web/20180808081948/http://devsweet.com/",
       roles: [
         {
           title: "Co-Founder & CEO",
@@ -120,6 +127,7 @@ export const cv: CV = {
     },
     {
       org: "Google",
+      url: "https://about.google",
       roles: [
         {
           title: "Senior Engineering Manager — eCommerce & Works with Nest",
@@ -127,7 +135,7 @@ export const cv: CV = {
           end: "2017-06",
           location: "Palo Alto, CA",
           summary:
-            "Managed a team of 50 engineers and writers across Nest's web app, online store, marketing site, B2B portals, and developer programs. Co-designed the Works with Nest API — a behavior-driven specification for IoT device interoperability that became the conceptual model for Matter, the open industry standard for home automation. Owned all developer curriculum and documentation for the program.",
+            "Managed a team of 50 engineers and writers across Nest's web app, online store, marketing site, B2B portals, and developer programs. Co-designed the [Works with Nest API](https://web.archive.org/web/20160708075828/https://developers.nest.com/) — a behavior-driven specification for IoT device interoperability that became the conceptual model for [Matter](https://csa-iot.org/all-solutions/matter/), the open industry standard for home automation. Owned all developer curriculum and documentation for the program.",
           highlights: [
             "Built and managed the technical writing team responsible for educating hundreds of third-party engineers on a novel device-first home automation paradigm",
             "Iterated documentation from API reference to full theoretical framework after identifying that developers needed the why, not just the what — modeled on scrum's feedback-driven development cycle",
@@ -140,6 +148,7 @@ export const cv: CV = {
     },
     {
       org: "Nest Labs",
+      url: "https://web.archive.org/web/20131201155827/https://nest.com/",
       roles: [
         {
           title: "UX Engineer — eCommerce",
@@ -147,19 +156,20 @@ export const cv: CV = {
           end: "2013-12",
           location: "Palo Alto, CA",
           summary:
-            "Created various tools, including Support Admin and Troubleshooting Widget using SproutCore and Ember.js, respectively. Also developed the Nest Marketing Site using Middleman and Nest Community Boards with Jive. Contributed to the development of Energy Partners Signup and Nest Online Store utilizing Ember.js and Hybris.",
+            "Created various tools, including Support Admin and Troubleshooting Widget using SproutCore and Ember.js, respectively. Also developed the [Nest Marketing Site](https://web.archive.org/web/20131201155827/https://nest.com/) using Middleman and [Nest Community Boards](https://web.archive.org/web/20140923115450/https://community.nest.com/) with Jive. Contributed to the development of Energy Partners Signup and [Nest Online Store](https://web.archive.org/web/20130106193411/http://store.nest.com/) utilizing Ember.js and Hybris.",
         },
       ],
     },
     {
       org: "Apple Inc.",
+      url: "https://www.apple.com",
       roles: [
         {
           title: "UX Engineer — iCloud Calendar",
           start: "2011-09",
           end: "2011-11",
           location: "Cupertino, CA",
-          summary: "Improved iCloud Calendar's CSS Sprites, timezone calculations, and localization through work with SproutCore.",
+          summary: "Improved [iCloud Calendar](https://www.icloud.com/calendar/)'s CSS Sprites, timezone calculations, and localization through work with SproutCore.",
         },
         {
           title: "UX Engineer — Developer Publications",
@@ -202,6 +212,7 @@ export const cv: CV = {
     },
     {
       org: "IGG Software",
+      url: "https://www.iggsoftware.com",
       roles: [
         {
           title: "UX Engineer — iBank",
@@ -214,6 +225,7 @@ export const cv: CV = {
     },
     {
       org: "Ultimate Electronics",
+      url: "https://web.archive.org/web/20020523010818/http://www.ultimateelectronics.com/",
       roles: [
         {
           title: "Assistant Manager",
@@ -247,7 +259,7 @@ export const cv: CV = {
           end: "1997-08",
           location: "St Johnsbury, VT",
           summary:
-            "Managed and provided technical support for the Kingdom Connection dial-up internet service, while also designing and creating websites for clients.",
+            "Managed and provided technical support for the [Kingdom Connection](https://web.archive.org/web/19970107023506/http://www.kingcon.com/) dial-up internet service, while also designing and creating websites for clients.",
         },
       ],
     },
@@ -259,7 +271,7 @@ export const cv: CV = {
           start: "1997-06",
           end: "1997-06",
           location: "Willoughby, VT",
-          summary: 'Oversaw and maintained lenses for camera operator using 35MM during production of "Spin The Bottle".',
+          summary: 'Oversaw and maintained lenses for camera operator using 35MM during production of ["Spin The Bottle"](https://www.imdb.com/title/tt0131596/).',
         },
       ],
     },
