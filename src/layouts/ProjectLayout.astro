@@ -43,8 +43,8 @@ const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month:
     <div class="e-content">
       <slot />
     </div>
-    <a class="u-url" href={projectUrl} style="display:none"></a>
-    <span class="p-author h-card" style="display:none">
+    <a class="u-url" href={projectUrl} hidden></a>
+    <span class="p-author h-card" hidden>
       <a class="p-name u-url" href={globalSchema.author.url}>{globalSchema.author.name}</a>
     </span>
   </article>

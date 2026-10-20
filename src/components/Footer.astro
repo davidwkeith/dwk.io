@@ -18,10 +18,10 @@ import { schema } from '../data/schema';
     {' '}by{' '}
     <a rel="cc:attributionURL dct:creator author me" property="cc:attributionName" href={schema.author.url}>{schema.author.name}</a>
     {' '}is licensed under{' '}
-    <a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">
+    <a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" class="license">
       Creative Commons Attribution 4.0 International
-      <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt="Creative Commons logo" width="22" height="22" style="width:1rem;height:1rem;margin-left:0.5rem;vertical-align:text-bottom;">
-      <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="Attribution Required" width="22" height="22" style="width:1rem;height:1rem;margin-left:0.5rem;vertical-align:text-bottom;">
+      <img src="/img/cc/cc.svg" alt="Creative Commons logo" width="22" height="22">
+      <img src="/img/cc/by.svg" alt="Attribution Required" width="22" height="22">
     </a>
   </p>
   <div class="greenweb-wrapper">
@@ -53,6 +53,17 @@ import { schema } from '../data/schema';
     font-size: 0.9rem;
     line-height: 1.5;
     text-align: center;
+  }
+
+  .license {
+    display: inline-block;
+  }
+
+  .license img {
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.5rem;
+    vertical-align: text-bottom;
   }
 
   .greenweb-wrapper {
