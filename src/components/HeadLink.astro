@@ -6,6 +6,9 @@ interface Props {
 import { site } from '../data/site';
 
 const { canonicalUrl } = Astro.props;
+// The home page is a WebSub topic (the hub's allowedTopics in worker/config.ts);
+// other pages aren't, so they don't advertise the hub.
+const isHubTopic = canonicalUrl === new URL('/', site.url).toString();
 ---
 
 <link rel="canonical" href={canonicalUrl}>
@@ -18,6 +21,10 @@ const { canonicalUrl } = Astro.props;
 <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
+
+<!-- WebSub -->
+{isHubTopic && <link rel="hub" href={site.hub} />}
+{isHubTopic && <link rel="self" href={canonicalUrl} />}
 
 <!-- Feeds -->
 <link rel="alternate" type="application/json" href={`${site.url}/feed.json`} title="JSON Feed" />

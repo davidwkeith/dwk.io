@@ -25,6 +25,8 @@ const pageSchema = {
       {projects.map(project => (
         <li class="h-entry">
           <a class="u-url p-name" href={`/${project.id}/`}>{project.data.title}</a>
+          · <time class="dt-published" datetime={project.data.date.toISOString()}>{project.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+          {project.data.description && <p class="p-summary">{project.data.description}</p>}
         </li>
       ))}
     </ul>

@@ -9,6 +9,7 @@ import { createWebSubQueueConsumer } from "@dwk/websub";
 import * as config from "./worker/config";
 import type { Ctx, Env } from "./worker/env";
 import { dispatch, findMount } from "./worker/mounts";
+import { publishChangedTopics } from "./worker/publish";
 
 // The Durable Objects this Worker serves (`wrangler.jsonc` binds them to
 // these exports).
@@ -101,6 +102,8 @@ export default {
       "pod blob GC": () => createSolidPodGc(config.solidPod(env))(event, env, ctx),
       // Enqueue a poll job per followed Microsub feed.
       "microsub poll": () => createMicrosubPoller(config.microsub)(event as never, env, ctx as never),
+      // Ping the WebSub hub for each feed a deploy changed.
+      "websub publish": () => publishChangedTopics(env),
     };
     // Each job runs to completion whatever the other does; a failure is
     // logged, then rethrown so the invocation still reports it.

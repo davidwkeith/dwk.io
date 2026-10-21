@@ -13,6 +13,8 @@ export const site = {
     alt: "Memoji of DWK's head",
   },
   defaultOgImage: "/img/memoji.png",
+  // WebSub hub; only the home page and feeds are its topics (worker/config.ts).
+  hub: "https://dwk.io/websub",
   headLinks: [
     // Served by @dwk/indieauth in worker.ts.
     { rel: "indieauth-metadata", href: "https://dwk.io/.well-known/oauth-authorization-server" },
@@ -22,7 +24,6 @@ export const site = {
     { rel: "webmention", href: "https://dwk.io/webmention" },
     { rel: "micropub", href: "https://dwk.io/micropub" },
     { rel: "microsub", href: "https://dwk.io/microsub" },
-    { rel: "hub", href: "https://dwk.io/websub" },
     { rel: "code-repository", href: "https://github.com/davidwkeith/dwk.io.git" },
     { rel: "content-repository", href: "https://github.com/davidwkeith/dwk.io.git" },
     { rel: "issues", href: "https://github.com/davidwkeith/dwk.io/issues" },

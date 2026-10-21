@@ -12,6 +12,7 @@ export const GET: APIRoute = async () => {
     title: site.title,
     home_page_url: site.url,
     feed_url: `${site.url}/feed.json`,
+    hubs: [{ type: "WebSub", url: site.hub }],
     description: site.description,
     icon: `${site.url}/icon-512.png`,
     author: { name: author.name, url: author.url, avatar: author.image },
