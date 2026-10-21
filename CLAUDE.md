@@ -6,7 +6,8 @@ Personal portfolio/project showcase website.
 
 - `npm run dev` — Astro dev server with live reload
 - `npm run build` — Production build (outputs to `dist/`), including SRI hashing and security.txt signing
-- `npm run check` — TypeScript check
+- `npm run check` — TypeScript check (includes `test/`)
+- `npm test` — Build, then run the Vitest suite in `test/` inside workerd (`@cloudflare/vitest-plugin`, bindings from `wrangler.jsonc`); CI runs `check` and `test` on every PR (`.github/workflows/test.yml`)
 - `npm run preview` — Preview production build locally
 - `npm run deploy` — Build and deploy to the `dwk` Cloudflare Worker (static assets)
 
@@ -125,6 +126,13 @@ curl -X POST https://dwk.io/admin/init -H "Authorization: Bearer $OWNER_TOKEN"
 ```
 
 Previews do not inherit production secrets. Set a Preview's own with `npx wrangler preview secret put <NAME> --name <branch>` (same `<` / `printf` forms as above), or once for every future Preview with `npx wrangler preview base-config secret put <NAME>`.
+
+## Testing
+
+- Unit tests import `worker/` modules directly; integration tests drive the whole Worker through `SELF.fetch` with local D1 seeded via the packages' own stores. Local D1 persists across tests, so call `resetD1()` (`test/reset.ts`) in `beforeEach`.
+- `cloudflare:test` is typed by the minimal `test/cloudflare-test.d.ts`, not `@cloudflare/workers-types`: installing that package makes the `@dwk` packages' binding types disagree in `worker/env.ts`.
+- Spy on `env.WEBSUB_QUEUE.send` (see `test/publish.test.ts`) so the hub's queue consumer doesn't fetch the real dwk.io.
+- With npm 10, `npm install` of vitest packages fails with `Cannot read properties of null (reading 'edgesOut')` (an arborist bug); use `npx npm@11 install …`. `npm ci` is unaffected.
 
 ## Key Conventions
 
