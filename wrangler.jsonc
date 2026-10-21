@@ -30,28 +30,58 @@
       "enabled": true
     }
   },
-  // IndieAuth (worker.ts). Also needs the TOKEN_SIGNING_KEY secret, and an
-  // Access app guarding dwk.io/auth/login whose AUD tag goes in ACCESS_AUD.
-  // WEBMENTION_INBOX reuses this same D1 database (the D1 free-plan limit is
-  // maxed out) — @dwk/webmention creates its own `webmentions` table there,
-  // separate from IndieAuth's tables.
-  "d1_databases": [
+  // Every @dwk/workers endpoint package is composed into this Worker
+  // (worker.ts + worker/). Each binding below is one a package's Env fragment
+  // declares; the secrets are listed in CLAUDE.md.
+  "compatibility_flags": ["nodejs_compat"],
+  // The Durable Objects the packages ship, re-exported from worker.ts.
+  // ActivityPubObject was registered on the live Worker first (tag "v1", from
+  // a test deploy); the other four follow in "v2". If a deploy warns that the
+  // Worker's migration tag was not found here, rename "v1" to the tag named.
+  "durable_objects": {
+    "bindings": [
+      { "name": "ACTOR", "class_name": "ActivityPubObject" },
+      { "name": "POD", "class_name": "SolidPodObject" },
+      { "name": "STORAGE", "class_name": "RemoteStorageObject" },
+      { "name": "WEBAUTHN", "class_name": "WebAuthnObject" },
+      { "name": "REPO", "class_name": "AtprotoRepoObject" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["ActivityPubObject"] },
     {
-      "binding": "AUTH_DB",
-      "database_name": "dwk-indieauth",
-      "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f"
-    },
-    {
-      "binding": "WEBMENTION_INBOX",
-      "database_name": "dwk-indieauth",
-      "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f"
+      "tag": "v2",
+      "new_sqlite_classes": ["SolidPodObject", "RemoteStorageObject", "WebAuthnObject", "AtprotoRepoObject"]
     }
   ],
-  // Webmention async verification (worker.ts).
+  // Blob bodies for the pods / atproto (BLOBS) and Micropub media (MEDIA).
+  "r2_buckets": [
+    { "binding": "BLOBS", "bucket_name": "dwk-blobs" },
+    { "binding": "MEDIA", "bucket_name": "dwk-media" }
+  ],
+  // The D1 free-plan database limit is maxed out, so every D1 binding points
+  // at the one `dwk-indieauth` database: each package creates its own tables
+  // there (names checked disjoint across the cohort), so sharing is safe.
+  "d1_databases": [
+    { "binding": "AUTH_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+    { "binding": "WEBMENTION_INBOX", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+    { "binding": "MICROPUB_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+    { "binding": "MICROSUB_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+    { "binding": "WEBSUB_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+    { "binding": "VC_STATUS_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+    { "binding": "GC_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" }
+  ],
+  // Async work: Webmention verification, WebSub fan-out, Microsub polling.
   "queues": {
-    "producers": [{ "queue": "dwk-webmention-verify", "binding": "WEBMENTION_QUEUE" }],
-    "consumers": [{ "queue": "dwk-webmention-verify" }]
+    "producers": [
+      { "queue": "dwk-webmention-verify", "binding": "WEBMENTION_QUEUE" },
+      { "queue": "dwk-websub", "binding": "WEBSUB_QUEUE" },
+      { "queue": "dwk-microsub", "binding": "MICROSUB_QUEUE" }
+    ],
+    "consumers": [{ "queue": "dwk-webmention-verify" }, { "queue": "dwk-websub" }, { "queue": "dwk-microsub" }]
   },
+  // R2 orphan-blob GC for the pods and the Microsub feed poller (worker.ts `scheduled`).
+  "triggers": { "crons": ["*/15 * * * *"] },
   // Caps abuse of the public POST /webmention endpoint, which triggers an
   // outbound fetch per accepted request. namespace_id is an arbitrary
   // account-unique id, not a created resource.
