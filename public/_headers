@@ -21,8 +21,15 @@
 /.well-known/dwk-ca.crt
   Content-Type: application/x-x509-ca-cert
 
+/
+  Link: <https://dwk.io/websub>; rel="hub", <https://dwk.io/>; rel="self"
+
 /feed.xml
   Content-Type: application/atom+xml; charset=utf-8
+  Link: <https://dwk.io/websub>; rel="hub", <https://dwk.io/feed.xml>; rel="self"
+
+/feed.json
+  Link: <https://dwk.io/websub>; rel="hub", <https://dwk.io/feed.json>; rel="self"
 
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable

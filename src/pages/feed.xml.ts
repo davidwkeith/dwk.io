@@ -21,6 +21,7 @@ export const GET: APIRoute = async () => {
   <title>${escapeXml(site.title)}</title>
   <subtitle>${escapeXml(site.description)}</subtitle>
   <link href="${escapeXml(feedUrl)}" rel="self" type="application/atom+xml"/>
+  <link href="${escapeXml(site.hub)}" rel="hub"/>
   <link href="${escapeXml(site.url)}" rel="alternate" type="text/html"/>
   <id>${escapeXml(site.url)}</id>
   <updated>${mostRecent.toISOString()}</updated>

@@ -80,7 +80,8 @@
     ],
     "consumers": [{ "queue": "dwk-webmention-verify" }, { "queue": "dwk-websub" }, { "queue": "dwk-microsub" }]
   },
-  // R2 orphan-blob GC for the pods and the Microsub feed poller (worker.ts `scheduled`).
+  // R2 orphan-blob GC for the pods, the Microsub feed poller, and WebSub publish
+  // pings for changed feeds (worker.ts `scheduled`).
   "triggers": { "crons": ["*/15 * * * *"] },
   // Caps abuse of the public POST /webmention endpoint, which triggers an
   // outbound fetch per accepted request. namespace_id is an arbitrary
