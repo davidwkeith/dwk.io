@@ -3,7 +3,7 @@
 import { createD1Inbox } from "@dwk/webmention";
 import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { serveAvatar } from "../worker/webmentions";
+import { formResult, serveAvatar } from "../worker/webmentions";
 import { resetD1 } from "./reset";
 
 const TARGET = "https://dwk.io/anglesite/";
@@ -39,6 +39,13 @@ describe("the webmention form", () => {
   it("sends a target on another site home rather than off-site", async () => {
     const res = await submit({ source: "https://alice.example/reply", target: "https://elsewhere.example/" });
     expect(res.headers.get("location")).toBe("https://dwk.io/?webmention=target_not_supported#webmentions");
+  });
+
+  it("reports a refusal that isn't a bare error code as rejected", async () => {
+    const form = new FormData();
+    form.set("target", TARGET);
+    const res = await formResult(form, new Response("<html>Bad Request</html>", { status: 400 }));
+    expect(res.headers.get("location")).toBe(`${TARGET}?webmention=rejected#webmentions`);
   });
 
   it("leaves a sender's own (non-browser) request alone", async () => {

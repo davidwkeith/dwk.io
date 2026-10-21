@@ -70,8 +70,9 @@ export default {
 
     // A person submitting a page's "send a Webmention" form gets sent back to
     // that page with a notice, not the endpoint's bare 202 (worker/webmentions.ts).
-    const form =
-      url.pathname === "/webmention" && isFormSubmission(request) ? await request.clone().formData().catch(() => null) : null;
+    // The form is parsed only after the rate limiter has let the request through.
+    const browserForm = url.pathname === "/webmention" && isFormSubmission(request);
+    const readForm = () => request.clone().formData().catch(() => null);
 
     if (url.pathname === "/webmention") {
       // Each accepted request makes the queue consumer fetch an arbitrary
@@ -80,9 +81,11 @@ export default {
       const { success } = await env.WEBMENTION_RATE_LIMITER.limit({ key });
       if (!success) {
         const limited = new Response("Too Many Requests", { status: 429 });
+        const form = browserForm ? await readForm() : null;
         return secure(form ? await formResult(form, limited) : limited);
       }
     }
+    const form = browserForm ? await readForm() : null;
 
     try {
       const dispatched = await dispatch(mount, request, env, ctx);

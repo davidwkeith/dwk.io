@@ -137,6 +137,8 @@ export async function formResult(form: FormData, response: Response): Promise<Re
   let outcome = "received";
   if (response.status === 429) outcome = "rate_limited";
   else if (!response.ok) {
+    // @dwk/webmention answers a refused request 400 with its bare, stable error
+    // code (`invalid_source`, …); anything else is reported as `rejected`.
     const code = (await response.text()).trim();
     outcome = /^[a-z_]{1,40}$/.test(code) ? code : "rejected";
   }
@@ -183,6 +185,8 @@ export async function serveAvatar(request: Request, env: Env): Promise<Response>
   const target = url.searchParams.get("target") ?? "";
   const source = url.searchParams.get("source") ?? "";
   if (!target || !source) return notFound();
+  // Only validated avatars are cached, so the cache is checked first; a
+  // mention deleted since keeps its avatar served for up to a day.
   const cache = (caches as unknown as { default: Cache }).default;
   const cached = await cache.match(request);
   if (cached) return cached;
