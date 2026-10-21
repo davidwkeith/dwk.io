@@ -96,6 +96,54 @@
     "ACCESS_TEAM_DOMAIN": "dwk-io.cloudflareaccess.com",
     "ACCESS_AUD": "62980e775a5f75c44ba9b496086f9aaf18a5d6d50b2622c5ca402ce77b721a24"
   },
-  // Required by `wrangler preview`, which Workers Builds runs for non-production branches.
-  "previews": {}
+  // Worker Previews (`wrangler preview`, which Workers Builds runs for
+  // non-production branches) inherit nothing from the top level, so every
+  // binding the code reads from `env` is repeated here or the Preview answers
+  // 500/1101 on those paths. Each Preview gets its own Durable Object
+  // namespace automatically; the D1 database (free-plan limit), the R2
+  // buckets, and the queues are shared with production, whose Worker runs the
+  // queue consumers and the cron. Preview secrets are set once with
+  // `npx wrangler preview base-config secret put <NAME>` (see CLAUDE.md).
+  "previews": {
+    "vars": {
+      "ACCESS_TEAM_DOMAIN": "dwk-io.cloudflareaccess.com",
+      "ACCESS_AUD": "62980e775a5f75c44ba9b496086f9aaf18a5d6d50b2622c5ca402ce77b721a24"
+    },
+    "durable_objects": {
+      "bindings": [
+        { "name": "ACTOR", "class_name": "ActivityPubObject" },
+        { "name": "POD", "class_name": "SolidPodObject" },
+        { "name": "STORAGE", "class_name": "RemoteStorageObject" },
+        { "name": "WEBAUTHN", "class_name": "WebAuthnObject" },
+        { "name": "REPO", "class_name": "AtprotoRepoObject" }
+      ]
+    },
+    "r2_buckets": [
+      { "binding": "BLOBS", "bucket_name": "dwk-blobs" },
+      { "binding": "MEDIA", "bucket_name": "dwk-media" }
+    ],
+    "d1_databases": [
+      { "binding": "AUTH_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+      { "binding": "WEBMENTION_INBOX", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+      { "binding": "MICROPUB_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+      { "binding": "MICROSUB_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+      { "binding": "WEBSUB_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+      { "binding": "VC_STATUS_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" },
+      { "binding": "GC_DB", "database_name": "dwk-indieauth", "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f" }
+    ],
+    "queues": {
+      "producers": [
+        { "queue": "dwk-webmention-verify", "binding": "WEBMENTION_QUEUE" },
+        { "queue": "dwk-websub", "binding": "WEBSUB_QUEUE" },
+        { "queue": "dwk-microsub", "binding": "MICROSUB_QUEUE" }
+      ]
+    },
+    "ratelimits": [
+      {
+        "name": "WEBMENTION_RATE_LIMITER",
+        "namespace_id": "1",
+        "simple": { "limit": 30, "period": 60 }
+      }
+    ]
+  }
 }
