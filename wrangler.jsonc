@@ -32,11 +32,34 @@
   },
   // IndieAuth (worker.ts). Also needs the TOKEN_SIGNING_KEY secret, and an
   // Access app guarding dwk.io/auth/login whose AUD tag goes in ACCESS_AUD.
+  // WEBMENTION_INBOX reuses this same D1 database (the D1 free-plan limit is
+  // maxed out) — @dwk/webmention creates its own `webmentions` table there,
+  // separate from IndieAuth's tables.
   "d1_databases": [
     {
       "binding": "AUTH_DB",
       "database_name": "dwk-indieauth",
       "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f"
+    },
+    {
+      "binding": "WEBMENTION_INBOX",
+      "database_name": "dwk-indieauth",
+      "database_id": "1c0d0b8a-87e3-4858-89f9-0fea65dedf3f"
+    }
+  ],
+  // Webmention async verification (worker.ts).
+  "queues": {
+    "producers": [{ "queue": "dwk-webmention-verify", "binding": "WEBMENTION_QUEUE" }],
+    "consumers": [{ "queue": "dwk-webmention-verify" }]
+  },
+  // Caps abuse of the public POST /webmention endpoint, which triggers an
+  // outbound fetch per accepted request. namespace_id is an arbitrary
+  // account-unique id, not a created resource.
+  "ratelimits": [
+    {
+      "name": "WEBMENTION_RATE_LIMITER",
+      "namespace_id": "1",
+      "simple": { "limit": 30, "period": 60 }
     }
   ],
   "vars": {
