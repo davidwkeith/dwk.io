@@ -321,3 +321,28 @@ h1, h2, h3, h4, h5, h6 {
         text-decoration: underline;
     }
 }
+
+/* Responses (received webmentions) and Micropub posts, rendered by the Worker */
+.webmentions {
+    clear: both;
+    border-top: 2px solid var(--border-color);
+    margin-top: 2em;
+}
+
+.webmention-list {
+    padding-left: 1em;
+}
+
+.webmention-list .e-content {
+    margin: 0.25em 0 0.75em;
+}
+
+.webmention-form input[type="url"] {
+    font-family: var(--font-family);
+    width: min(100%, 30em);
+}
+
+.h-entry .u-photo {
+    max-width: 100%;
+    height: auto;
+}

@@ -20,6 +20,7 @@ import type { WebSubConfig } from "@dwk/websub";
 import { schema } from "../src/data/schema";
 import { site } from "../src/data/site";
 import type { Env } from "./env";
+import { generatePostUrl } from "./posts";
 import { signLoginRequest, verifyConsent, type GrantRequest } from "./login";
 import { isOwner } from "./owner";
 
@@ -157,6 +158,7 @@ export function micropub(env: Env): MicropubConfig {
   return {
     baseUrl: site.url,
     me,
+    generatePostUrl,
     syndicateTo: [{ uid: FEDIVERSE_TARGET_UID, name: `@${USERNAME}@${host}` }],
     // Micropub → fediverse syndication rides the actor's owner publish
     // endpoint, so it is only on when that endpoint is (same token).

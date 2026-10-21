@@ -1,0 +1,17 @@
+---
+// The page chrome for Micropub posts. worker/posts.ts fills the head and
+// `[data-post]` per post; the Worker answers 404 for this page itself, and the
+// sitemap leaves it out (astro.config.ts).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Webmentions from '../components/Webmentions.astro';
+
+const pageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+};
+---
+
+<BaseLayout title="Post" description="A post." schema={pageSchema}>
+  <div data-post></div>
+  <Webmentions target="" />
+</BaseLayout>

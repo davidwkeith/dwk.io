@@ -11,7 +11,8 @@ export default defineConfig({
     inlineStylesheets: 'never',
   },
   integrations: [
-    sitemap(),
+    // The Worker renders posts into /post-shell/; it isn't a page of its own.
+    sitemap({ filter: (page) => !page.includes('/post-shell/') }),
     // Keep last so it sees every file the other integrations write.
     postbuild(),
   ],

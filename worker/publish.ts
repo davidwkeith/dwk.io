@@ -1,10 +1,11 @@
-// WebSub publish pings for the static site. The feeds only change on deploy,
-// and Workers Builds gives no post-deploy hook, so the cron hashes each topic
-// as served from `dist/` and tells the hub about the ones whose content
-// changed since the last run.
+// WebSub publish pings for the site. The feeds change on a deploy or a
+// Micropub post, and Workers Builds gives no post-deploy hook, so the cron hashes each topic
+// as the site serves it (`dist/` plus any Micropub posts) and tells the hub
+// about the ones whose content changed since the last run.
 import { createPublishNotifier } from "@dwk/websub";
 import * as config from "./config";
 import type { Env } from "./env";
+import { serveSite } from "./site";
 
 // Shares the dwk-indieauth database; the name is disjoint from every package's.
 const TABLE = "dwk_websub_published";
@@ -21,7 +22,7 @@ export async function publishChangedTopics(env: Env): Promise<void> {
   await db.prepare(`CREATE TABLE IF NOT EXISTS ${TABLE} (topic TEXT PRIMARY KEY, sha256 TEXT NOT NULL)`).run();
 
   async function publishIfChanged(topic: string) {
-    const res = await env.ASSETS.fetch(new Request(topic));
+    const res = await serveSite(new Request(topic), env);
     if (!res.ok) throw new Error(`dwk: topic ${topic} answered ${res.status}`);
     const hash = await sha256(await res.arrayBuffer());
     const row = await db.prepare(`SELECT sha256 FROM ${TABLE} WHERE topic = ?`).bind(topic).first<{ sha256: string }>();
