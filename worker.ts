@@ -10,6 +10,7 @@ import * as config from "./worker/config";
 import type { Ctx, Env } from "./worker/env";
 import { dispatch, findMount } from "./worker/mounts";
 import { publishChangedTopics } from "./worker/publish";
+import { serveSite } from "./worker/site";
 
 // The Durable Objects this Worker serves (`wrangler.jsonc` binds them to
 // these exports).
@@ -59,7 +60,8 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     const mount = findMount(url);
-    if (!mount) return env.ASSETS.fetch(request);
+    // The static site, with Micropub posts and received webmentions rendered in.
+    if (!mount) return serveSite(request, env);
 
     if (url.pathname === "/webmention") {
       // Each accepted request makes the queue consumer fetch an arbitrary

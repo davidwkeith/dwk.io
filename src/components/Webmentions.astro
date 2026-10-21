@@ -1,0 +1,23 @@
+---
+// Responses to an h-entry. The Worker (worker/webmentions.ts) fills
+// `[data-webmentions]` with the verified mentions of `target` at request time,
+// so it stays empty under `npm run dev`.
+interface Props {
+  target: string;
+}
+
+const { target } = Astro.props;
+---
+
+<section class="webmentions">
+  <h3>Responses</h3>
+  <div data-webmentions={target}></div>
+  <form class="webmention-form" action="/webmention" method="post">
+    <label>
+      Wrote a response? Send its URL as a <a href="https://indieweb.org/Webmention">Webmention</a>:
+      <input type="url" name="source" required placeholder="https://your.site/reply">
+    </label>
+    <input type="hidden" name="target" value={target}>
+    <button type="submit">Send</button>
+  </form>
+</section>
