@@ -6,7 +6,7 @@ import { createIndieAuthStore } from "@dwk/indieauth";
 import { createMicropubStore } from "@dwk/micropub";
 import { createMicrosubStore } from "@dwk/microsub";
 import { createVcStatusStore } from "@dwk/vc";
-import { sendWebmention } from "@dwk/webmention";
+import { safeFetch, sendWebmention } from "@dwk/webmention";
 import type { Env } from "./env";
 
 // Compares SHA-256 digests, so the comparison takes the same time whatever
@@ -89,4 +89,45 @@ export async function webmentionSend(request: Request, env: Env) {
     return json(400, { error: "invalid_request", message: "expected a JSON body with non-empty source and target" });
   }
   return json(200, await sendWebmention(source, target));
+}
+
+/**
+ * `POST /admin/fetch` with `{"url": "...", "accept"?: "..."}`: perform one
+ * outbound fetch exactly as `@dwk/activitypub`'s key resolver does (SSRF-guarded
+ * `safeFetch`, https only, 10 s budget, `Accept: application/activity+json` by
+ * default) and report what came back, from Cloudflare's own egress. For
+ * diagnosing peers that answer the Worker differently from a terminal, such as
+ * an anti-scraper layer in front of a Mastodon instance (davidwkeith/dwk.io#11).
+ * Owner-only; the body preview is capped and nothing is stored.
+ */
+export async function adminFetch(request: Request, env: Env) {
+  const refused = await gate(env, request);
+  if (refused) return refused;
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return json(400, { error: "invalid_json" });
+  }
+  const { url, accept } = (body ?? {}) as Record<string, unknown>;
+  if (typeof url !== "string" || !url) return json(400, { error: "invalid_request", message: "expected a JSON body with a url" });
+  const started = Date.now();
+  try {
+    const { response, url: servedUrl } = await safeFetch(
+      fetch,
+      url,
+      { headers: { accept: typeof accept === "string" && accept ? accept : "application/activity+json" } },
+      { allowedSchemes: ["https:"], timeoutMs: 10_000 },
+    );
+    const preview = (await response.text()).slice(0, 400);
+    const headers: Record<string, string> = {};
+    for (const name of ["content-type", "location", "server", "cf-mitigated", "cf-ray", "retry-after", "www-authenticate"]) {
+      const value = response.headers.get(name);
+      if (value !== null) headers[name] = value;
+    }
+    return json(200, { ok: response.ok, status: response.status, servedUrl, elapsedMs: Date.now() - started, headers, preview });
+  } catch (error) {
+    const e = error as { name?: string; message?: string; reason?: string };
+    return json(200, { ok: false, elapsedMs: Date.now() - started, error: e.name ?? "Error", reason: e.reason, message: e.message });
+  }
 }
