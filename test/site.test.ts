@@ -120,3 +120,41 @@ describe("webmentions", () => {
     expect(await (await get("/anglesite/")).text()).toContain('<div data-webmentions="https://dwk.io/anglesite/"><p>No responses yet.</p></div>');
   });
 });
+
+describe("sitemap and llms.txt", () => {
+  it("lists the posts' sitemap in the index", async () => {
+    const index = await (await get("/sitemap-index.xml")).text();
+    expect(index).toContain("<loc>https://dwk.io/sitemap-0.xml</loc>");
+    expect(index).toContain("<loc>https://dwk.io/sitemap-posts.xml</loc>");
+  });
+
+  it("maps the posts index and every listed post, with lastmod", async () => {
+    const res = await get("/sitemap-posts.xml");
+    expect(res.headers.get("content-type")).toBe("application/xml; charset=utf-8");
+    const xml = await res.text();
+    expect(xml).toContain("<loc>https://dwk.io/posts/</loc>");
+    expect(xml).toContain("<url><loc>https://dwk.io/posts/hello</loc><lastmod>2025-10-09T08:53:20.000Z</lastmod></url>");
+    expect(xml).toContain("<loc>https://dwk.io/posts/note</loc>");
+    for (const slug of ["draft", "private", "unlisted"]) expect(xml).not.toContain(`/posts/${slug}`);
+  });
+
+  it("is still a valid sitemap when the posts can't be read", async () => {
+    await resetD1();
+    const xml = await (await get("/sitemap-posts.xml")).text();
+    expect(xml).toMatch(/^<\?xml[^>]*><urlset [^>]*><url><loc>https:\/\/dwk\.io\/posts\/<\/loc><\/url><\/urlset>$/);
+  });
+
+  it("adds a Posts section to llms.txt, ahead of Optional", async () => {
+    const text = await (await get("/llms.txt")).text();
+    expect(text).toContain("- [Hello IndieWeb](https://dwk.io/posts/hello): First post.");
+    expect(text).toContain("All posts: https://dwk.io/posts/");
+    expect(text.indexOf("## Projects")).toBeLessThan(text.indexOf("## Posts"));
+    expect(text.indexOf("## Posts")).toBeLessThan(text.indexOf("## Optional"));
+    expect(text).not.toContain("/posts/unlisted");
+  });
+
+  it("leaves llms.txt as built when the posts can't be read", async () => {
+    await resetD1();
+    expect(await (await get("/llms.txt")).text()).not.toContain("## Posts");
+  });
+});

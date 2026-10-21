@@ -17,7 +17,7 @@ export const GET: APIRoute = async () => {
 
 > ${site.description} A portfolio and project showcase for David W. Keith (DWK).
 
-This site is built with Astro and hosted on Cloudflare Pages. It uses a 1990s retro aesthetic with monospace typography and supports both dark and light modes.
+This site is built with Astro and served by a Cloudflare Worker, which also renders its IndieWeb posts. It uses a 1990s retro aesthetic with monospace typography and supports both dark and light modes.
 
 ## About
 
@@ -29,6 +29,6 @@ ${projectList}
 
 ## Optional
 
-- [JSON Feed](${site.url}/feed.json): RSS-like feed of project updates
+- [JSON Feed](${site.url}/feed.json): RSS-like feed of projects and posts
 - [Sitemap](${site.url}/sitemap-index.xml): XML sitemap`);
 };

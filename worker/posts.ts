@@ -233,6 +233,22 @@ function fillShell(shell: Response, page: { url: string; title: string; descript
   return r.transform(shell);
 }
 
+/** Every post that isn't deleted, newest first, whatever its status or visibility. */
+export async function allLivePosts(env: Env): Promise<PostRecord[]> {
+  const store = createMicropubStore(env);
+  const posts: PostRecord[] = [];
+  for (let offset = 0; ; offset += MAX_LIMIT) {
+    const page = await store.listPosts({ limit: MAX_LIMIT, offset });
+    posts.push(...page);
+    if (page.length < MAX_LIMIT) return posts;
+  }
+}
+
+/** Every post that belongs in a list (the sitemap), not just the latest. */
+export async function allListedPosts(env: Env): Promise<PostRecord[]> {
+  return (await allLivePosts(env)).filter(isListed);
+}
+
 export async function listPublicPosts(env: Env): Promise<PostRecord[]> {
   // Over-fetch so unlisted posts filtered out here don't shorten the list.
   const records = await createMicropubStore(env).listPosts({ limit: MAX_LIMIT, offset: 0 });

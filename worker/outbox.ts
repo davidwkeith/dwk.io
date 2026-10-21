@@ -5,12 +5,12 @@
 //   included, so they can see a link was removed (§3.1.4);
 // - re-notifies everyone a deleted, or now private, post had mentioned, once
 //   it answers 410/404, so they drop the mention (§3.1.5).
-import { createMicropubStore, MAX_LIMIT, type PostRecord } from "@dwk/micropub";
+import type { PostRecord } from "@dwk/micropub";
 import { createD1SentLog, extractLinks, resendForDeletedSource, sendWebmentions, type FetchLike } from "@dwk/webmention";
 import { site } from "../src/data/site";
 import * as config from "./config";
 import type { Env } from "./env";
-import { isPublic, outboundHtml } from "./posts";
+import { allLivePosts, isPublic, outboundHtml } from "./posts";
 
 // Shares the dwk-indieauth database; the name is disjoint from every package's.
 const TABLE = "dwk_webmention_outbox";
@@ -38,16 +38,6 @@ export async function targetsOf(record: PostRecord): Promise<string[]> {
       }),
     ),
   ];
-}
-
-async function allLivePosts(env: Env) {
-  const store = createMicropubStore(env);
-  const posts: PostRecord[] = [];
-  for (let offset = 0; ; offset += MAX_LIMIT) {
-    const page = await store.listPosts({ limit: MAX_LIMIT, offset });
-    posts.push(...page);
-    if (page.length < MAX_LIMIT) return posts;
-  }
 }
 
 export async function sendPostWebmentions(env: Env, options: { fetch?: FetchLike } = {}): Promise<void> {
