@@ -10,3 +10,6 @@ dist/
 .superpowers/
 .worktrees/
 .claude/.dev.vars
+
+# Local Worker secrets for `wrangler dev`
+.dev.vars

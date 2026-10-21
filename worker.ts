@@ -1,163 +1,117 @@
-import { createHostMeta } from "@dwk/host-meta";
-import { createIndieAuth, type IndieAuthEnv, type IndieAuthHandler } from "@dwk/indieauth";
-import { consoleLogger } from "@dwk/log";
-import { createWebfinger } from "@dwk/webfinger";
-import { createWebmention, createWebmentionQueueConsumer, type WebmentionEnv } from "@dwk/webmention";
-import { schema } from "./src/data/schema";
-import { site } from "./src/data/site";
-import { handleLogin, signLoginRequest, verifyConsent, type LoginEnv } from "./worker/login";
+// The dwk.io Worker: every @dwk/workers endpoint package composed in front of
+// the static site (Workers Static Assets in `dist/`). The mount table lives in
+// `worker/mounts.ts`, each package's config in `worker/config.ts`, and the
+// binding union in `worker/env.ts`; `wrangler.jsonc` declares the bindings.
+import { createMicrosubPoller, createMicrosubQueueConsumer } from "@dwk/microsub";
+import { createSolidPodGc, type SolidPodGcHandler } from "@dwk/solid-pod";
+import { createWebmentionQueueConsumer } from "@dwk/webmention";
+import { createWebSubQueueConsumer } from "@dwk/websub";
+import * as config from "./worker/config";
+import type { Ctx, Env } from "./worker/env";
+import { dispatch, findMount } from "./worker/mounts";
 
-// Minimal shape of the native Workers Rate Limiting binding; no published
-// package exports this type, and @cloudflare/workers-types isn't a dependency.
-interface RateLimiter {
-  limit(options: { key: string }): Promise<{ success: boolean }>;
-}
+// The Durable Objects this Worker serves (`wrangler.jsonc` binds them to
+// these exports).
+export { ActivityPubObject } from "@dwk/activitypub";
+export { AtprotoRepoObject } from "@dwk/atproto-pds";
+export { RemoteStorageObject } from "@dwk/remotestorage";
+export { SolidPodObject } from "@dwk/solid-pod";
+export { WebAuthnObject } from "@dwk/webauthn";
 
-interface Env extends IndieAuthEnv, LoginEnv, WebmentionEnv {
-  ASSETS: { fetch(request: Request): Promise<Response> };
-  WEBMENTION_RATE_LIMITER: RateLimiter;
-}
-type Ctx = Parameters<ReturnType<typeof createWebfinger>>[2];
-
-// Worker-generated responses skip `public/_headers`, so the discovery
-// endpoints get the relevant security headers here.
+// Worker-generated responses skip `public/_headers`, so they get the relevant
+// security headers here. A handler's own CSP (the login page's form-action)
+// wins, and a WebSocket upgrade is passed through untouched.
 const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
   "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
 };
 
-async function secure(pending: Promise<Response>) {
-  const original = await pending;
+function secure(original: Response) {
+  if (original.status === 101 || (original as { webSocket?: unknown }).webSocket) return original;
   const res = new Response(original.body, original);
-  for (const [name, value] of Object.entries(SECURITY_HEADERS)) res.headers.set(name, value);
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+    if (!res.headers.has(name)) res.headers.set(name, value);
+  }
   return res;
 }
 
-const logger = consoleLogger({ minLevel: "info" });
-const { handle, instance } = site.identity.webfinger;
-const profile = `https://${instance}/@${handle}`;
-const actor = `https://${instance}/users/${handle}`;
+// Queue names from wrangler.jsonc; each consumer is a package's.
+const QUEUES = {
+  webmention: "dwk-webmention-verify",
+  websub: "dwk-websub",
+  microsub: "dwk-microsub",
+} as const;
 
-// WebFinger resources dwk.io controls. They all point at the Mastodon account
-// on the instance, so `@dwk@dwk.io` resolves to it from anywhere on the fediverse.
-const account = {
-  aliases: [profile, actor],
-  links: [
-    { rel: "http://webfinger.net/rel/profile-page", type: "text/html", href: profile },
-    { rel: "self", type: "application/activity+json", href: actor },
-    { rel: "http://ostatus.org/schema/1.0/subscribe", template: `https://${instance}/authorize_interaction?uri={uri}` },
-  ],
-};
-const host = new URL(site.url).host;
-
-const webfinger = createWebfinger({
-  resources: {
-    [`acct:${handle}@${host}`]: account,
-    [`acct:${handle}@${instance}`]: account,
-    [site.url]: account,
-    [`${site.url}/`]: account,
-  },
-  logger,
-});
-
-const hostMeta = createHostMeta({
-  webfingerUrl: `${site.url}/.well-known/webfinger`,
-  logger,
-});
-
-// Webmention receiver: validates synchronously, enqueues async link
-// verification on WEBMENTION_QUEUE, and persists verified mentions to the
-// WEBMENTION_INBOX D1 database (schema created lazily, like AUTH_DB).
-const webmentionPath = "/webmention";
-const webmention = createWebmention({ baseUrl: site.url, logger });
-const webmentionQueueConsumer = createWebmentionQueueConsumer({ baseUrl: site.url, logger });
-type WebmentionBatch = Parameters<typeof webmentionQueueConsumer>[0];
-
-// IndieAuth server for https://dwk.io/. The owner signs in at /auth/login,
-// which sits behind Cloudflare Access (see worker/login.ts).
-const me = `${site.url}/`;
-const owner = { email: site.social.email.replace(/^mailto:/, ""), me, issuer: site.url };
-const auth = {
-  authorize: `${site.url}/auth/authorize`,
-  token: `${site.url}/auth/token`,
-  revocation: `${site.url}/auth/revocation`,
-  login: `${site.url}/auth/login`,
-};
-
-// `approveAuthorization` gets no `env`, so the handler is built on first use
-// with the bindings in scope; they don't change for the life of an isolate.
-let indieauth: IndieAuthHandler | undefined;
-function getIndieAuth(env: Env) {
-  return (indieauth ??= createIndieAuth({
-    baseUrl: site.url,
-    authorizationEndpoint: auth.authorize,
-    tokenEndpoint: auth.token,
-    revocationEndpoint: auth.revocation,
-    scopesSupported: ["profile", "email", "create", "update", "delete", "media"],
-    // Only issue tokens for resource servers on this site.
-    resourceIndicatorPolicy: (resource) => new URL(resource).origin === site.url,
-    async approveAuthorization(req, httpRequest) {
-      const url = new URL(httpRequest.url);
-      const consent = url.searchParams.get("consent");
-      if (consent && (await verifyConsent(env, consent, req))) {
-        return {
-          me,
-          scopes: req.scopes,
-          profile: {
-            name: schema.author.name,
-            url: me,
-            photo: schema.author.image,
-            ...(req.scopes.includes("email") ? { email: owner.email } : {}),
-          },
-        };
-      }
-      url.searchParams.delete("consent");
-      url.searchParams.set("login", await signLoginRequest(env, req));
-      return Response.redirect(`${auth.login}${url.search}`, 302);
-    },
-    logger,
-  }));
+type ScheduledController = Parameters<SolidPodGcHandler>[0];
+interface QueueBatch {
+  readonly queue: string;
 }
 
-// Redirect www.dwk.io/* to dwk.io/* (a cross-host redirect, which the
-// Workers Static Assets `_redirects` file does not support), route the
-// discovery and IndieAuth endpoints to the @dwk packages, then serve everything else from
-// the static assets.
 export default {
-  async fetch(request: Request, env: Env, ctx: Ctx) {
+  async fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
     const url = new URL(request.url);
+    // www.dwk.io/* → dwk.io/*: a cross-host redirect, which the Static Assets
+    // `_redirects` file does not support.
     if (url.hostname.startsWith("www.")) {
       url.hostname = url.hostname.slice(4);
       return Response.redirect(url.toString(), 301);
     }
-    switch (url.pathname) {
-      case "/.well-known/webfinger":
-        return secure(webfinger(request, {}, ctx));
-      case "/.well-known/host-meta":
-      case "/.well-known/host-meta.json":
-        return secure(hostMeta(request, {}, ctx));
-      case "/.well-known/oauth-authorization-server":
-      case new URL(auth.authorize).pathname:
-      case new URL(auth.token).pathname:
-      case new URL(auth.revocation).pathname:
-        return secure(getIndieAuth(env)(request, env, ctx));
-      case new URL(auth.login).pathname:
-        return handleLogin(request, env, owner, auth.authorize);
-      case webmentionPath: {
-        // Each accepted request makes the queue consumer fetch an arbitrary
-        // source URL, so cap abuse of this public endpoint per sender IP.
-        const key = request.headers.get("cf-connecting-ip") ?? "unknown";
-        const { success } = await env.WEBMENTION_RATE_LIMITER.limit({ key });
-        if (!success) {
-          return secure(Promise.resolve(new Response("Too Many Requests", { status: 429 })));
-        }
-        return secure(webmention(request, env, ctx));
-      }
+    const mount = findMount(url);
+    if (!mount) return env.ASSETS.fetch(request);
+
+    if (url.pathname === "/webmention") {
+      // Each accepted request makes the queue consumer fetch an arbitrary
+      // source URL, so cap abuse of this public endpoint per sender IP.
+      const key = request.headers.get("cf-connecting-ip") ?? "unknown";
+      const { success } = await env.WEBMENTION_RATE_LIMITER.limit({ key });
+      if (!success) return secure(new Response("Too Many Requests", { status: 429 }));
     }
-    return env.ASSETS.fetch(request);
+
+    try {
+      const response = secure(await dispatch(mount, request, env, ctx));
+      // A refused write can leave the request body unread; cancel it so the
+      // stream is marked used before `wrangler dev`'s middleware looks at it.
+      if (request.body !== null && !request.bodyUsed) ctx.waitUntil(request.body.cancel().catch(() => undefined));
+      return response;
+    } catch (error) {
+      config.logger.error("mount.unhandled_error", { mount: mount.name, error: error instanceof Error ? error.name : "unknown" });
+      console.error(`dwk: unhandled error in ${mount.name}`, error);
+      return secure(new Response("Internal Server Error", { status: 500 }));
+    }
   },
-  async queue(batch: WebmentionBatch, env: Env, ctx: Ctx) {
-    await webmentionQueueConsumer(batch, env, ctx);
+
+  async queue(batch: QueueBatch, env: Env, ctx: Ctx): Promise<void> {
+    switch (batch.queue) {
+      case QUEUES.webmention:
+        return createWebmentionQueueConsumer(config.webmention)(batch as never, env, ctx);
+      case QUEUES.websub:
+        return createWebSubQueueConsumer(config.websub)(batch as never, env, ctx);
+      case QUEUES.microsub:
+        return createMicrosubQueueConsumer(config.microsub)(batch as never, env, ctx);
+      default:
+        throw new Error(`dwk: unknown queue "${batch.queue}"`);
+    }
+  },
+
+  async scheduled(event: ScheduledController, env: Env, ctx: Ctx): Promise<void> {
+    const jobs = {
+      // solid-pod and remotestorage share the @dwk/store GC schema and the
+      // same BLOBS/GC_DB bindings, so one collector pass covers both.
+      "pod blob GC": () => createSolidPodGc(config.solidPod(env))(event, env, ctx),
+      // Enqueue a poll job per followed Microsub feed.
+      "microsub poll": () => createMicrosubPoller(config.microsub)(event as never, env, ctx as never),
+    };
+    // Each job runs to completion whatever the other does; a failure is
+    // logged, then rethrown so the invocation still reports it.
+    const results = await Promise.allSettled(Object.values(jobs).map((run) => run()));
+    const failed = results.flatMap((result, i) =>
+      result.status === "rejected" ? [{ job: Object.keys(jobs)[i], reason: result.reason as unknown }] : [],
+    );
+    for (const { job, reason } of failed) {
+      config.logger.error("scheduled.failed", { job, error: reason instanceof Error ? reason.name : "unknown" });
+      console.error(`dwk: scheduled job "${job}" failed`, reason);
+    }
+    if (failed.length) throw new Error(`dwk: ${failed.length} scheduled job(s) failed: ${failed.map((f) => f.job).join(", ")}`);
   },
 };

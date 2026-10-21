@@ -57,10 +57,17 @@ async function verifyToken(key: string, purpose: string, token: string, fields: 
   return timingSafeEqual(sig, await hmac(key, [purpose, exp, ...fields]));
 }
 
+/** Which OAuth server the sign-in is for; each has its own authorize URL. */
+export type Flow = "indieauth" | "mastodon";
+const FLOWS: readonly Flow[] = ["indieauth", "mastodon"];
+
+export type GrantRequest = Pick<AuthorizationRequest, "clientId" | "redirectUri" | "state" | "codeChallenge" | "scopes" | "resources">;
+
 // Everything the approval grants. Signing the scopes and resources (not just
-// the request identity) stops a parameter edited after consent from widening it.
-function grantFields(req: Pick<AuthorizationRequest, "clientId" | "redirectUri" | "state" | "codeChallenge" | "scopes" | "resources">) {
-  return [req.clientId, req.redirectUri, req.state, req.codeChallenge, JSON.stringify(req.scopes), JSON.stringify(req.resources ?? [])];
+// the request identity) stops a parameter edited after consent from widening
+// it, and signing the flow stops a consent for one server approving the other.
+function grantFields(req: GrantRequest, flow: Flow) {
+  return [flow, req.clientId, req.redirectUri, req.state, req.codeChallenge, JSON.stringify(req.scopes), JSON.stringify(req.resources ?? [])];
 }
 
 /**
@@ -69,24 +76,31 @@ function grantFields(req: Pick<AuthorizationRequest, "clientId" | "redirectUri" 
  * client, PKCE present) carries one, so the login page never acts on, or
  * redirects to, parameters that skipped that check.
  */
-export function signLoginRequest(env: LoginEnv, req: AuthorizationRequest) {
-  return signToken(env.TOKEN_SIGNING_KEY, "dwk-login", grantFields(req), LOGIN_TTL_SECONDS);
+export function signLoginRequest(env: LoginEnv, req: GrantRequest, flow: Flow) {
+  return signToken(env.TOKEN_SIGNING_KEY, "dwk-login", grantFields(req, flow), LOGIN_TTL_SECONDS);
 }
 
-export function verifyConsent(env: LoginEnv, token: string, req: AuthorizationRequest) {
-  return verifyToken(env.TOKEN_SIGNING_KEY, "dwk-consent", token, grantFields(req));
+export function verifyConsent(env: LoginEnv, token: string, req: GrantRequest, flow: Flow) {
+  return verifyToken(env.TOKEN_SIGNING_KEY, "dwk-consent", token, grantFields(req, flow));
 }
 
-// Mirrors how @dwk/indieauth parses the request, so the fields signed here
-// match what the hook sees when the browser comes back.
-function requestFromQuery(params: URLSearchParams) {
+function flowFromQuery(params: URLSearchParams): Flow {
+  const flow = params.get("flow");
+  return FLOWS.find((f) => f === flow) ?? "indieauth";
+}
+
+// Mirrors how each server parses the request, so the fields signed here match
+// what its approval hook sees when the browser comes back. The Mastodon app
+// flow has no PKCE challenge or resource indicators in its validated request.
+function requestFromQuery(params: URLSearchParams, flow: Flow): GrantRequest {
+  const indieauth = flow === "indieauth";
   return {
     clientId: params.get("client_id") ?? "",
     redirectUri: params.get("redirect_uri") ?? "",
     state: params.get("state") ?? "",
-    codeChallenge: params.get("code_challenge") ?? "",
+    codeChallenge: indieauth ? (params.get("code_challenge") ?? "") : "",
     scopes: (params.get("scope") ?? "").split(/\s+/).filter(Boolean),
-    resources: [...new Set(params.getAll("resource"))],
+    resources: indieauth ? [...new Set(params.getAll("resource"))] : [],
   };
 }
 
@@ -167,7 +181,7 @@ export interface Owner {
   readonly issuer: string;
 }
 
-export async function handleLogin(request: Request, env: LoginEnv, owner: Owner, authorizeUrl: string) {
+export async function handleLogin(request: Request, env: LoginEnv, owner: Owner, authorizeUrls: Readonly<Record<Flow, string>>) {
   const email = await accessEmail(request, env);
   if (!email || email.toLowerCase() !== owner.email.toLowerCase()) {
     return page("Not authorized", "<h1>Not authorized</h1><p>Sign in through Cloudflare Access as the site owner.</p>", 403, "'none'");
@@ -176,8 +190,9 @@ export async function handleLogin(request: Request, env: LoginEnv, owner: Owner,
   if (request.method === "GET") {
     const query = new URL(request.url).search.slice(1);
     const params = new URLSearchParams(query);
-    const req = requestFromQuery(params);
-    if (!(await verifyToken(env.TOKEN_SIGNING_KEY, "dwk-login", params.get("login") ?? "", grantFields(req)))) {
+    const flow = flowFromQuery(params);
+    const req = requestFromQuery(params, flow);
+    if (!(await verifyToken(env.TOKEN_SIGNING_KEY, "dwk-login", params.get("login") ?? "", grantFields(req, flow)))) {
       return page("Expired", "<h1>This request expired or is invalid</h1><p>Start the sign-in again from the app.</p>", 400, "'none'");
     }
     const redirectOrigin = new URL(req.redirectUri).origin;
@@ -185,8 +200,8 @@ export async function handleLogin(request: Request, env: LoginEnv, owner: Owner,
     const scopes = req.scopes.length
       ? `<ul>${req.scopes.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ul>`
       : "<p>No scopes: sign-in only.</p>";
-    const resources = req.resources.length
-      ? `<p>For use at:</p><ul>${req.resources.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>`
+    const resources = (req.resources ?? []).length
+      ? `<p>For use at:</p><ul>${(req.resources ?? []).map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>`
       : "";
     return page(
       "Approve sign-in",
@@ -214,7 +229,8 @@ export async function handleLogin(request: Request, env: LoginEnv, owner: Owner,
     return page("Expired", "<h1>This request expired</h1><p>Start the sign-in again from the app.</p>", 400, "'none'");
   }
   const params = new URLSearchParams(query);
-  const req = requestFromQuery(params);
+  const flow = flowFromQuery(params);
+  const req = requestFromQuery(params, flow);
 
   if (form.get("action") !== "approve") {
     const denied = new URL(req.redirectUri);
@@ -225,6 +241,7 @@ export async function handleLogin(request: Request, env: LoginEnv, owner: Owner,
   }
 
   params.delete("login");
-  params.set("consent", await signToken(env.TOKEN_SIGNING_KEY, "dwk-consent", grantFields(req)));
-  return Response.redirect(`${authorizeUrl}?${params}`, 303);
+  params.delete("flow");
+  params.set("consent", await signToken(env.TOKEN_SIGNING_KEY, "dwk-consent", grantFields(req, flow)));
+  return Response.redirect(`${authorizeUrls[flow]}?${params}`, 303);
 }
