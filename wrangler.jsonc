@@ -52,6 +52,16 @@
     "producers": [{ "queue": "dwk-webmention-verify", "binding": "WEBMENTION_QUEUE" }],
     "consumers": [{ "queue": "dwk-webmention-verify" }]
   },
+  // Caps abuse of the public POST /webmention endpoint, which triggers an
+  // outbound fetch per accepted request. namespace_id is an arbitrary
+  // account-unique id, not a created resource.
+  "ratelimits": [
+    {
+      "name": "WEBMENTION_RATE_LIMITER",
+      "namespace_id": "1",
+      "simple": { "limit": 30, "period": 60 }
+    }
+  ],
   "vars": {
     "ACCESS_TEAM_DOMAIN": "dwk-io.cloudflareaccess.com",
     "ACCESS_AUD": "62980e775a5f75c44ba9b496086f9aaf18a5d6d50b2622c5ca402ce77b721a24"

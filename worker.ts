@@ -7,8 +7,15 @@ import { schema } from "./src/data/schema";
 import { site } from "./src/data/site";
 import { handleLogin, signLoginRequest, verifyConsent, type LoginEnv } from "./worker/login";
 
+// Minimal shape of the native Workers Rate Limiting binding; no published
+// package exports this type, and @cloudflare/workers-types isn't a dependency.
+interface RateLimiter {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
+
 interface Env extends IndieAuthEnv, LoginEnv, WebmentionEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
+  WEBMENTION_RATE_LIMITER: RateLimiter;
 }
 type Ctx = Parameters<ReturnType<typeof createWebfinger>>[2];
 
@@ -137,8 +144,16 @@ export default {
         return secure(getIndieAuth(env)(request, env, ctx));
       case new URL(auth.login).pathname:
         return handleLogin(request, env, owner, auth.authorize);
-      case webmentionPath:
+      case webmentionPath: {
+        // Each accepted request makes the queue consumer fetch an arbitrary
+        // source URL, so cap abuse of this public endpoint per sender IP.
+        const key = request.headers.get("cf-connecting-ip") ?? "unknown";
+        const { success } = await env.WEBMENTION_RATE_LIMITER.limit({ key });
+        if (!success) {
+          return secure(Promise.resolve(new Response("Too Many Requests", { status: 429 })));
+        }
         return secure(webmention(request, env, ctx));
+      }
     }
     return env.ASSETS.fetch(request);
   },
