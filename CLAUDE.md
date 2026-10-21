@@ -70,7 +70,59 @@ Personal portfolio/project showcase website.
 | `/xrpc/*` | `@dwk/atproto-pds` (Durable Object `REPO`); `/.well-known/atproto-did` and `did.json` stay the static Bluesky identity |
 | `/profile/card`, `/webmention-qa-source` | the owner WebID (Turtle) and the webmention.rocks/sender source page |
 
-All D1 bindings point at the one `dwk-indieauth` database (the free-plan database limit is maxed out); the packages' table names are disjoint. R2 buckets `dwk-blobs` and `dwk-media`, queues `dwk-webmention-verify`/`dwk-websub`/`dwk-microsub`, and the `*/15 * * * *` cron (pod blob GC + Microsub polling + WebSub publish pings) are declared in `wrangler.jsonc`. Branch previews (Workers Builds runs `wrangler preview` for non-production branches) inherit nothing from the top-level config, so the `previews` block repeats every binding: Durable Object namespaces are isolated per preview, the D1 database, buckets, and queues are shared with production, and the queue consumers and cron only run in production. Preview secrets are separate too: `npx wrangler preview base-config secret put <NAME>` applies to previews created afterwards. Secrets (`wrangler secret put`, or `.dev.vars` locally, gitignored): `TOKEN_SIGNING_KEY` (required), `OWNER_TOKEN`, `ACTIVITYPUB_PUBLIC_KEY_PEM`/`ACTIVITYPUB_PRIVATE_KEY_PEM` (RSA PEMs; the ActivityPub and Mastodon mounts answer 503 without the public key), `ACTIVITYPUB_PUBLISH_TOKEN`, `ATPROTO_PASSWORD`/`ATPROTO_JWT_SECRET`, `VC_SIGNING_KEY` (P-256 private JWK), `WEBDAV_PEPPER`. The owner logs in at `/auth/login` behind a Cloudflare Access app (`ACCESS_TEAM_DOMAIN`/`ACCESS_AUD` vars); the Worker verifies the Access JWT itself because `*.workers.dev` previews bypass Access. Note that `/auth/token` requires DPoP, so most Micropub clients can sign in but can't get tokens.
+All D1 bindings point at the one `dwk-indieauth` database (the free-plan database limit is maxed out); the packages' table names are disjoint. R2 buckets `dwk-blobs` and `dwk-media`, queues `dwk-webmention-verify`/`dwk-websub`/`dwk-microsub`, and the `*/15 * * * *` cron (pod blob GC + Microsub polling) are declared in `wrangler.jsonc`. Branch previews (Workers Builds runs `wrangler preview` for non-production branches) inherit nothing from the top-level config, so the `previews` block repeats every binding: Durable Object namespaces are isolated per preview, the D1 database, buckets, and queues are shared with production, and the queue consumers and cron only run in production. The owner logs in at `/auth/login` behind a Cloudflare Access app (`ACCESS_TEAM_DOMAIN`/`ACCESS_AUD` vars); the Worker verifies the Access JWT itself because `*.workers.dev` previews bypass Access. Note that `/auth/token` requires DPoP, so most Micropub clients can sign in but can't get tokens.
+
+**Secrets:** set with `wrangler secret put` (production) or in `.dev.vars` (local, gitignored). A mount whose secret is unset answers `503 not_configured` naming the binding, so the site keeps serving. `TOKEN_SIGNING_KEY` is the only one every deploy needs.
+
+| Secret | Used by | Value |
+|---|---|---|
+| `TOKEN_SIGNING_KEY` | IndieAuth tokens, login/consent tokens, Micropub, Microsub, Mastodon API | random |
+| `OWNER_TOKEN` | `/admin/init`, `/webmention/send`, pod and remoteStorage writes, `/dav-credentials`, WebAuthn registration, VC issuance | random; keep it, it is the owner's bearer |
+| `ACTIVITYPUB_PUBLIC_KEY_PEM`, `ACTIVITYPUB_PRIVATE_KEY_PEM` | the actor's signatures (the public half is published in the actor document) | RSA 2048 PEMs |
+| `ACTIVITYPUB_PUBLISH_TOKEN` | `POST /users/test/outbox` and `/publish`; also turns on Micropub → fediverse syndication | random; keep it |
+| `ATPROTO_PASSWORD`, `ATPROTO_JWT_SECRET` | `com.atproto.server.createSession` (identifier `dwk.io`) and its JWTs | random; keep the password |
+| `VC_SIGNING_KEY` | signs credentials and status lists as `did:web:dwk.io#key-0` | P-256 private JWK |
+| `WEBDAV_PEPPER` | app-password hashing for the WebDAV door | random |
+
+One-time setup, from a checkout of `main` with `wrangler` logged in (`account_id` is pinned in `wrangler.jsonc`). Values that are needed again are kept in a shell variable and echoed once so they can go into a password manager; piping `openssl` straight into `wrangler` loses them.
+
+```sh
+# Resources the bindings reference (the deploy fails until they exist).
+npx wrangler r2 bucket create dwk-blobs
+npx wrangler r2 bucket create dwk-media
+npx wrangler queues create dwk-webmention-verify
+npx wrangler queues create dwk-websub
+npx wrangler queues create dwk-microsub
+
+# Random secrets whose value is never needed again.
+for name in TOKEN_SIGNING_KEY ATPROTO_JWT_SECRET WEBDAV_PEPPER; do
+  openssl rand -base64 32 | tr -d '\n' | npx wrangler secret put "$name"
+done
+
+# Random secrets that are also bearer tokens or passwords: keep the echoed values.
+for name in OWNER_TOKEN ACTIVITYPUB_PUBLISH_TOKEN ATPROTO_PASSWORD; do
+  value=$(openssl rand -base64 32 | tr -d '\n'); echo "$name=$value"
+  printf '%s' "$value" | npx wrangler secret put "$name"
+done
+
+# ActivityPub actor keypair: files, not the interactive prompt, so the multi-line PEM stays intact.
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out ap.pem
+openssl pkey -in ap.pem -pubout -out ap.pub.pem
+npx wrangler secret put ACTIVITYPUB_PUBLIC_KEY_PEM < ap.pub.pem
+npx wrangler secret put ACTIVITYPUB_PRIVATE_KEY_PEM < ap.pem
+rm ap.pem ap.pub.pem
+
+# VC issuer key.
+node -e "crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']).then(async k=>process.stdout.write(JSON.stringify(await crypto.subtle.exportKey('jwk',k.privateKey))))" > vc.jwk
+npx wrangler secret put VC_SIGNING_KEY < vc.jwk
+rm vc.jwk
+
+# After the first deploy with the secrets in place (a secret put redeploys; allow a few seconds):
+# create the D1 tables of the packages that expose a schema-init API. Idempotent.
+curl -X POST https://dwk.io/admin/init -H "Authorization: Bearer $OWNER_TOKEN"
+```
+
+Previews do not inherit production secrets. Set a Preview's own with `npx wrangler preview secret put <NAME> --name <branch>` (same `<` / `printf` forms as above), or once for every future Preview with `npx wrangler preview base-config secret put <NAME>`.
 
 ## Key Conventions
 
