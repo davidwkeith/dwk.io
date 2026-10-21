@@ -4,8 +4,9 @@
 // matches nothing falls through to the static site (`worker.ts`).
 //
 // Handlers are built lazily, once per isolate, on first match: a package whose
-// secret is unset (`NotConfiguredError`) answers 503 on its own paths while the
-// rest of the site keeps serving.
+// secret is unset (`NotConfiguredError`, or a listed `requires` secret the
+// package itself reads from `env`) answers 503 on its own paths while the rest
+// of the site keeps serving.
 import { createActivityPub, createActivitypubMastodonApi, resolveConfig } from "@dwk/activitypub";
 import { createAtprotoPds } from "@dwk/atproto-pds";
 import { createHostMeta } from "@dwk/host-meta";
@@ -34,7 +35,11 @@ export interface Mount {
   readonly matches: (url: URL) => boolean;
   /** Build the handler; may throw `NotConfiguredError`. */
   readonly create: (env: Env) => Handler;
+  /** Secrets the package reads from `env` at request time; unset → 503. */
+  readonly requires?: readonly (keyof Env & string)[];
 }
+
+const SIGNING = ["TOKEN_SIGNING_KEY"] as const;
 
 const exact = (...paths: readonly string[]) => (url: URL) => paths.includes(url.pathname);
 const prefix = (...roots: readonly string[]) => (url: URL) =>
@@ -96,6 +101,7 @@ export const mounts: readonly Mount[] = [
     name: "@dwk/indieauth",
     matches: exact("/.well-known/oauth-authorization-server", authPath(auth.authorize), authPath(auth.token), authPath(auth.revocation)),
     create: (env) => createIndieAuth(config.indieauth(env)),
+    requires: SIGNING,
   },
   {
     // Owner sign-in for both OAuth flows, behind Cloudflare Access.
@@ -103,6 +109,7 @@ export const mounts: readonly Mount[] = [
     matches: exact(authPath(auth.login)),
     create: () => (request, env) =>
       handleLogin(request, env, config.owner, { indieauth: auth.authorize, mastodon: auth.mastodonAuthorize }),
+    requires: SIGNING,
   },
   { name: "admin", matches: exact("/admin/init"), create: () => adminInit },
   { name: "@dwk/webmention (send trigger)", matches: exact("/webmention/send"), create: () => webmentionSend },
@@ -115,8 +122,9 @@ export const mounts: readonly Mount[] = [
     name: "@dwk/micropub",
     matches: (url) => url.pathname === "/micropub" || prefix("/media")(url),
     create: (env) => createMicropub(config.micropub(env)),
+    requires: SIGNING,
   },
-  { name: "@dwk/microsub", matches: exact("/microsub"), create: () => createMicrosub(config.microsub) },
+  { name: "@dwk/microsub", matches: exact("/microsub"), create: () => createMicrosub(config.microsub), requires: SIGNING },
   { name: "@dwk/websub", matches: exact("/websub"), create: () => createWebSub(config.websub) },
   {
     name: "@dwk/activitypub",
@@ -133,6 +141,7 @@ export const mounts: readonly Mount[] = [
         actor: env.ACTOR,
         mastodonConfig: config.mastodonApi(env),
       }),
+    requires: SIGNING,
   },
   { name: "@dwk/remotestorage", matches: prefix("/storage"), create: (env) => createRemoteStorage(config.remotestorage(env)) },
   { name: "@dwk/solid-pod", matches: prefix("/pod"), create: (env) => createSolidPod(config.solidPod(env)) },
@@ -164,20 +173,24 @@ export function findMount(url: URL) {
   return mounts.find((mount) => mount.matches(url));
 }
 
+function notConfigured(mount: Mount, binding: string) {
+  config.logger.warn("mount.not_configured", { mount: mount.name, binding });
+  return new Response(JSON.stringify({ error: "not_configured", mount: mount.name, binding }), {
+    status: 503,
+    headers: { "content-type": "application/json" },
+  });
+}
+
 /** Dispatch to a mount, building its handler on first use. */
 export async function dispatch(mount: Mount, request: Request, env: Env, ctx: Ctx) {
+  const missing = mount.requires?.find((name) => !env[name]);
+  if (missing) return notConfigured(mount, missing);
   let handler = handlers.get(mount.name);
   if (!handler) {
     try {
       handler = mount.create(env);
     } catch (error) {
-      if (error instanceof config.NotConfiguredError) {
-        config.logger.warn("mount.not_configured", { mount: mount.name, binding: error.binding });
-        return new Response(JSON.stringify({ error: "not_configured", mount: mount.name, binding: error.binding }), {
-          status: 503,
-          headers: { "content-type": "application/json" },
-        });
-      }
+      if (error instanceof config.NotConfiguredError) return notConfigured(mount, error.binding);
       throw error;
     }
     handlers.set(mount.name, handler);
