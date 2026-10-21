@@ -115,6 +115,13 @@ export const hostMeta: HostMetaConfig = { webfingerUrl: `${site.url}/.well-known
 /** Scopes the IndieAuth server issues: Micropub's plus Microsub's. */
 const scopesSupported = ["profile", "email", "create", "update", "delete", "media", "read", "follow", "mute", "block", "channels"];
 
+/**
+ * Most Micropub and Microsub clients can't do DPoP, so a token request without
+ * a proof gets an unbound Bearer token, carrying only these resource scopes and
+ * living an hour; one with a proof is still DPoP-bound.
+ */
+const bearerTokens = { lifetimeSeconds: 3600, scopes: scopesSupported.filter((s) => s !== "profile" && s !== "email") };
+
 export function indieauth(env: Env): IndieAuthConfig {
   return {
     baseUrl: site.url,
@@ -122,6 +129,7 @@ export function indieauth(env: Env): IndieAuthConfig {
     tokenEndpoint: auth.token,
     revocationEndpoint: auth.revocation,
     scopesSupported,
+    bearerTokens,
     // Only issue tokens for resource servers on this site.
     resourceIndicatorPolicy: (resource) => new URL(resource).origin === site.url,
     // The owner signs in at /auth/login behind Cloudflare Access (worker/login.ts);
@@ -159,6 +167,8 @@ export function micropub(env: Env): MicropubConfig {
     baseUrl: site.url,
     me,
     generatePostUrl,
+    // Accept the IndieAuth server's Bearer tokens (`bearerTokens` above).
+    acceptBearerTokens: true,
     syndicateTo: [{ uid: FEDIVERSE_TARGET_UID, name: `@${USERNAME}@${host}` }],
     // Micropub → fediverse syndication rides the actor's owner publish
     // endpoint, so it is only on when that endpoint is (same token).
@@ -167,7 +177,7 @@ export function micropub(env: Env): MicropubConfig {
   };
 }
 
-export const microsub: MicrosubConfig = { baseUrl: site.url, me, logger };
+export const microsub: MicrosubConfig = { baseUrl: site.url, me, acceptBearerTokens: true, logger };
 
 export const webmention: WebmentionConfig = { baseUrl: site.url, logger };
 
