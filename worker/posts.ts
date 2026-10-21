@@ -1,17 +1,22 @@
 // Micropub posts on the site itself. @dwk/micropub keeps each post's mf2 in
-// D1; the Worker renders `/posts/` (an h-feed) and each `/posts/<slug>/`
+// D1; the Worker renders `/posts/` (an h-feed) and each `/posts/<slug>`
 // permalink (an h-entry) into the static `/post-shell/` page, so a post is
 // live as soon as the Micropub request returns, with no rebuild.
-import { createMicropubStore, type GeneratePostUrl, type PostRecord } from "@dwk/micropub";
+import { createMicropubStore, MAX_LIMIT, type GeneratePostUrl, type PostRecord } from "@dwk/micropub";
 import { schema } from "../src/data/schema";
 import { site } from "../src/data/site";
 import type { Env } from "./env";
 import { escapeHtml, httpUrl, rewriter, timeTag, type RewriterElement } from "./html";
 
 export const POSTS_PATH = "/posts/";
-const SHELL_PATH = "/post-shell/";
+export const SHELL_PATH = "/post-shell/";
 /** How many posts the `/posts/` index and the feeds show. */
 const LIST_LIMIT = 50;
+
+/** The shell is not a page of its own, with or without its trailing slash. */
+export function isShellPath(pathname: string) {
+  return pathname === SHELL_PATH.slice(0, -1) || pathname.startsWith(SHELL_PATH);
+}
 
 function slugify(value: string) {
   return value
@@ -24,7 +29,10 @@ function slugify(value: string) {
     .replace(/-+$/, "");
 }
 
-/** New posts live under `/posts/`, clear of the project pages at `/<slug>/`. */
+/**
+ * New posts live under `/posts/`, clear of the project pages at `/<slug>/`.
+ * No trailing slash: on a collision @dwk/micropub appends `-xxxx` to the URL.
+ */
 export const generatePostUrl: GeneratePostUrl = (post, commands) => {
   const name = post.properties.name?.[0];
   const slug =
@@ -32,7 +40,7 @@ export const generatePostUrl: GeneratePostUrl = (post, commands) => {
     (typeof name === "string" ? slugify(name) : "") ||
     // A note has no name: a base36 timestamp keeps its slug short and unique.
     Date.now().toString(36);
-  return `${site.url}${POSTS_PATH}${slug}/`;
+  return `${site.url}${POSTS_PATH}${slug}`;
 };
 
 // --- Reading mf2 properties ------------------------------------------------
@@ -128,7 +136,12 @@ function photosHtml(props: Props) {
     .map((p) => {
       const { value, alt } = (typeof p === "string" ? { value: p } : p) as { value?: unknown; alt?: unknown };
       const src = httpUrl(value);
-      return src ? `<img class="u-photo" src="${escapeHtml(src)}" alt="${escapeHtml(typeof alt === "string" ? alt : "")}">` : "";
+      if (!src) return "";
+      const altText = escapeHtml(typeof alt === "string" ? alt : "");
+      // The CSP only loads images from this origin (e.g. `/media/` uploads); link the rest.
+      return new URL(src).origin === site.url
+        ? `<img class="u-photo" src="${escapeHtml(src)}" alt="${altText}">`
+        : `<p><a class="u-photo" href="${escapeHtml(src)}">${altText || "Photo"}</a></p>`;
     })
     .join("");
 }
@@ -212,20 +225,23 @@ function fillShell(shell: Response, page: { url: string; title: string; descript
 }
 
 export async function listPublicPosts(env: Env): Promise<PostRecord[]> {
-  const records = await createMicropubStore(env).listPosts({ limit: LIST_LIMIT, offset: 0 });
-  return records.filter(isListed);
+  // Over-fetch so unlisted posts filtered out here don't shorten the list.
+  const records = await createMicropubStore(env).listPosts({ limit: MAX_LIMIT, offset: 0 });
+  return records.filter(isListed).slice(0, LIST_LIMIT);
 }
 
-/** Serve `/posts/` and `/posts/<slug>/`; the shell itself is not a public page. */
+/** Serve `/posts/` and `/posts/<slug>`; the shell itself is not a public page. */
 export async function servePosts(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const notFound = () => env.ASSETS.fetch(new Request(new URL("/404-not-found/", url), request));
-  if (url.pathname.startsWith(SHELL_PATH)) return notFound();
+  if (isShellPath(url.pathname)) return notFound();
   if (request.method !== "GET" && request.method !== "HEAD") {
     return new Response("Method Not Allowed", { status: 405, headers: { allow: "GET, HEAD" } });
   }
-  if (!url.pathname.endsWith("/")) {
-    url.pathname += "/";
+  // The index has a trailing slash, like the static pages; permalinks don't.
+  const canonicalPath = url.pathname === POSTS_PATH || url.pathname === POSTS_PATH.slice(0, -1) ? POSTS_PATH : url.pathname.replace(/\/+$/, "");
+  if (canonicalPath !== url.pathname) {
+    url.pathname = canonicalPath;
     return Response.redirect(url.toString(), 301);
   }
   const shell = await env.ASSETS.fetch(new Request(new URL(SHELL_PATH, url)));

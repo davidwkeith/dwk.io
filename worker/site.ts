@@ -5,7 +5,7 @@
 import * as config from "./config";
 import type { Env } from "./env";
 import { escapeHtml } from "./html";
-import { listPublicPosts, POSTS_PATH, servePosts, viewOf, type PostView } from "./posts";
+import { isShellPath, listPublicPosts, POSTS_PATH, servePosts, viewOf, type PostView } from "./posts";
 import { withMentions } from "./webmentions";
 
 function atomEntry(post: PostView) {
@@ -46,16 +46,21 @@ async function withPosts(feed: Response, kind: "atom" | "json", env: Env): Promi
   const headers = new Headers(feed.headers);
   headers.delete("content-length");
   headers.delete("etag");
+  const text = await feed.text();
   let body: string;
   if (kind === "json") {
-    const json = (await feed.json()) as { items: { date_published: string }[] };
-    json.items = [...posts.map(jsonItem), ...json.items].sort((a, b) => b.date_published.localeCompare(a.date_published));
-    body = JSON.stringify(json);
+    try {
+      const json = JSON.parse(text) as { items: { date_published: string }[] };
+      json.items = [...posts.map(jsonItem), ...json.items].sort((a, b) => b.date_published.localeCompare(a.date_published));
+      body = JSON.stringify(json);
+    } catch (error) {
+      config.logger.error("posts.feed_failed", { error: error instanceof Error ? error.name : "unknown" });
+      body = text;
+    }
   } else {
-    const xml = await feed.text();
     const newest = posts.reduce((max, p) => (p.updated > max ? p.updated : max), new Date(0));
     const entries = posts.map(atomEntry).join("");
-    body = xml
+    body = text
       // The first <updated> is the feed's own; move it forward to the newest post.
       .replace(/<updated>([^<]*)<\/updated>/, (match, current: string) => (new Date(current) < newest ? `<updated>${newest.toISOString()}</updated>` : match))
       .replace(/<entry>|<\/feed>/, (match) => entries + match);
@@ -65,7 +70,7 @@ async function withPosts(feed: Response, kind: "atom" | "json", env: Env): Promi
 
 export async function serveSite(request: Request, env: Env): Promise<Response> {
   const { pathname } = new URL(request.url);
-  if (pathname === POSTS_PATH.slice(0, -1) || pathname.startsWith(POSTS_PATH) || pathname.startsWith("/post-shell")) {
+  if (pathname === POSTS_PATH.slice(0, -1) || pathname.startsWith(POSTS_PATH) || isShellPath(pathname)) {
     return withMentions(await servePosts(request, env), env);
   }
   const response = await env.ASSETS.fetch(request);
