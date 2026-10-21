@@ -1,0 +1,24 @@
+# Workers Builds only builds and deploys; this runs the type check and the
+# Vitest suite (inside workerd, see vitest.config.ts) on every PR and push to main.
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
