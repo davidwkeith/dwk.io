@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "dwk",
+  // Pins wrangler to this account when a login can reach several, which
+  // otherwise fails with "Please set the appropriate `account_id`".
+  "account_id": "a512f9f4b2868e12e6ad44a191fd5b96",
   "main": "worker.ts",
   "compatibility_date": "2026-02-18",
   "assets": {
