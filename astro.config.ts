@@ -12,7 +12,8 @@ export default defineConfig({
   },
   integrations: [
     // The Worker renders posts into /post-shell/; it isn't a page of its own.
-    sitemap({ filter: (page) => !page.includes('/post-shell/') }),
+    // It serves the posts' own sitemap (worker/site.ts), listed in the index here.
+    sitemap({ filter: (page) => !page.includes('/post-shell/'), customSitemaps: ['https://dwk.io/sitemap-posts.xml'] }),
     // Keep last so it sees every file the other integrations write.
     postbuild(),
   ],

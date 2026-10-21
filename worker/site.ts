@@ -5,7 +5,8 @@
 import * as config from "./config";
 import type { Env } from "./env";
 import { escapeHtml } from "./html";
-import { isShellPath, listPublicPosts, POSTS_PATH, servePosts, viewOf, type PostView } from "./posts";
+import { site } from "../src/data/site";
+import { allListedPosts, isShellPath, listPublicPosts, POSTS_PATH, servePosts, viewOf, type PostView } from "./posts";
 import { withMentions } from "./webmentions";
 
 function atomEntry(post: PostView) {
@@ -68,12 +69,57 @@ async function withPosts(feed: Response, kind: "atom" | "json", env: Env): Promi
   return new Response(body, { status: feed.status, headers });
 }
 
+/** Listed alongside the build's own sitemap in `sitemap-index.xml` (astro.config.ts `customSitemaps`). */
+export const POSTS_SITEMAP_PATH = "/sitemap-posts.xml";
+
+/** The posts' sitemap: the `/posts/` index and every listed post. */
+async function postsSitemap(env: Env): Promise<Response> {
+  let posts: PostView[] = [];
+  try {
+    posts = (await allListedPosts(env)).map(viewOf);
+  } catch (error) {
+    // Still a valid sitemap, of the index alone.
+    config.logger.error("posts.sitemap_failed", { error: error instanceof Error ? error.name : "unknown" });
+  }
+  const url = (loc: string, lastmod?: Date) => `<url><loc>${escapeHtml(loc)}</loc>${lastmod ? `<lastmod>${lastmod.toISOString()}</lastmod>` : ""}</url>`;
+  const body =
+    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` +
+    url(`${site.url}${POSTS_PATH}`, posts[0]?.updated) +
+    posts.map((p) => url(p.url, p.updated)).join("") +
+    `</urlset>`;
+  return new Response(body, { headers: { "content-type": "application/xml; charset=utf-8", "x-content-type-options": "nosniff" } });
+}
+
+/** Add a "Posts" section to the static `llms.txt` (the projects), ahead of its "Optional" one. */
+async function withPostsInLlms(llms: Response, env: Env): Promise<Response> {
+  let posts: PostView[];
+  try {
+    posts = (await listPublicPosts(env)).map(viewOf);
+  } catch (error) {
+    config.logger.error("posts.llms_failed", { error: error instanceof Error ? error.name : "unknown" });
+    return llms;
+  }
+  if (!posts.length || !llms.ok) return llms;
+  // Markdown link text; brackets would end it early.
+  const list = posts.map((p) => `- [${p.title.replace(/[[\]]/g, "")}](${p.url}): ${p.summary.replace(/\s+/g, " ")}`).join("\n");
+  const section = `## Posts\n\n${list}\n\nAll posts: ${site.url}${POSTS_PATH}\n\n`;
+  const text = await llms.text();
+  const at = text.indexOf("## Optional");
+  const body = at === -1 ? `${text.trimEnd()}\n\n${section.trimEnd()}\n` : text.slice(0, at) + section + text.slice(at);
+  const headers = new Headers(llms.headers);
+  headers.delete("content-length");
+  headers.delete("etag");
+  return new Response(body, { status: llms.status, headers });
+}
+
 export async function serveSite(request: Request, env: Env): Promise<Response> {
   const { pathname } = new URL(request.url);
   if (pathname === POSTS_PATH.slice(0, -1) || pathname.startsWith(POSTS_PATH) || isShellPath(pathname)) {
     return withMentions(await servePosts(request, env), env);
   }
+  if (pathname === POSTS_SITEMAP_PATH) return postsSitemap(env);
   const response = await env.ASSETS.fetch(request);
+  if (pathname === "/llms.txt") return withPostsInLlms(response, env);
   if (pathname === "/feed.xml") return withPosts(response, "atom", env);
   if (pathname === "/feed.json") return withPosts(response, "json", env);
   return withMentions(response, env);
