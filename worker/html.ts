@@ -8,6 +8,7 @@ export interface RewriterElement {
   setAttribute(name: string, value: string): RewriterElement;
   removeAttribute(name: string): RewriterElement;
   setInnerContent(content: string, options?: { html: boolean }): RewriterElement;
+  before(content: string, options?: { html: boolean }): RewriterElement;
   remove(): RewriterElement;
 }
 interface Rewriter {
