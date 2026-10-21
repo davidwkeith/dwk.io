@@ -2,6 +2,9 @@
 // the static site (Workers Static Assets in `dist/`). The mount table lives in
 // `worker/mounts.ts`, each package's config in `worker/config.ts`, and the
 // binding union in `worker/env.ts`; `wrangler.jsonc` declares the bindings.
+// Side effect: wraps the global `fetch` with a User-Agent. First, so every
+// package resolves the wrapped one (see worker/user-agent.ts).
+import "./worker/user-agent";
 import { createMicrosubPoller, createMicrosubQueueConsumer } from "@dwk/microsub";
 import { createSolidPodGc, type SolidPodGcHandler } from "@dwk/solid-pod";
 import { createWebmentionQueueConsumer } from "@dwk/webmention";
