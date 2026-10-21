@@ -94,7 +94,7 @@ export function titleOf(record: PostRecord) {
 }
 
 /** Drafts and private posts are never served; unlisted ones only at their permalink. */
-function isPublic(record: PostRecord) {
+export function isPublic(record: PostRecord) {
   return !record.deleted && first(record.properties, "post-status") !== "draft" && first(record.properties, "visibility") !== "private";
 }
 
@@ -147,6 +147,15 @@ function photosHtml(props: Props) {
 }
 
 /** "In reply to …" lines for the response properties a client sent. */
+/**
+ * The part of a post that links out on its author's behalf: the response
+ * context and the content. Its links are the post's Webmention targets
+ * (worker/outbox.ts); syndication copies and photos are left out.
+ */
+export function outboundHtml(record: PostRecord) {
+  return contextHtml(record.properties) + contentOf(record.properties).html;
+}
+
 function contextHtml(props: Props) {
   const kinds = [
     ["in-reply-to", "u-in-reply-to", "In reply to"],
@@ -260,6 +269,12 @@ export async function servePosts(request: Request, env: Env): Promise<Response> 
   }
 
   const record = await createMicropubStore(env).getPost(pageUrl);
+  // A deleted post is Gone, so receivers re-verifying its webmentions drop them
+  // (Webmention §3.1.5); a draft or private one may yet appear, so it's a 404.
+  if (record?.deleted) {
+    const page = await notFound();
+    return new Response(page.body, { status: 410, statusText: "Gone", headers: page.headers });
+  }
   if (!record || !isPublic(record)) return notFound();
   const view = viewOf(record);
   return fillShell(shell, {
