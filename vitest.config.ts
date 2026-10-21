@@ -5,7 +5,14 @@ import { cloudflareTest } from "@cloudflare/vitest-plugin";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  plugins: [cloudflareTest({ wrangler: { configPath: "./wrangler.jsonc" } })],
+  plugins: [
+    cloudflareTest({
+      wrangler: { configPath: "./wrangler.jsonc" },
+      // A test-only signing key, so the token-guarded mounts (IndieAuth,
+      // Micropub, Microsub) serve instead of answering 503 not_configured.
+      miniflare: { bindings: { TOKEN_SIGNING_KEY: "test-signing-key" } },
+    }),
+  ],
   test: {
     include: ["test/**/*.test.ts"],
     // n3 (via @dwk/solid-pod) pulls in CommonJS readable-stream, which the
