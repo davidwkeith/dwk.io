@@ -31,8 +31,17 @@ describe("withUserAgent", () => {
     expect(seen[0]?.get("user-agent")).toBe("custom/1.0");
   });
 
-  it("is installed on the global fetch", () => {
-    expect(globalThis.fetch).not.toBe(undefined);
-    expect(globalThis.fetch.name).not.toBe("fetch");
+  it("is installed on the global fetch when the module loads", async () => {
+    const real = globalThis.fetch;
+    const { base, seen } = stub();
+    globalThis.fetch = base;
+    try {
+      vi.resetModules();
+      await import("../worker/user-agent");
+      await globalThis.fetch("https://peer.example/");
+      expect(seen[0]?.get("user-agent")).toBe(USER_AGENT);
+    } finally {
+      globalThis.fetch = real;
+    }
   });
 });

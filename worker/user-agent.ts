@@ -10,7 +10,9 @@
 // `fetch`, which a config-level override cannot reach. So the global is wrapped
 // once, here, before any package resolves it; a request that already carries a
 // `User-Agent` is left alone. Remove this once the released package sends its
-// own agent on key resolution, delivery, and discovery.
+// own agent on key resolution, delivery, and discovery: that is
+// davidwkeith/workers#537, so the first @dwk/activitypub release after
+// 1.0.0-beta.6 that includes it makes this file redundant.
 import { site } from "../src/data/site";
 
 export const USER_AGENT = `dwk.io (+${site.url}/; ActivityPub, Webmention, WebSub)`;
