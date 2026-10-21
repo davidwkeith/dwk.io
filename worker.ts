@@ -2,11 +2,12 @@ import { createHostMeta } from "@dwk/host-meta";
 import { createIndieAuth, type IndieAuthEnv, type IndieAuthHandler } from "@dwk/indieauth";
 import { consoleLogger } from "@dwk/log";
 import { createWebfinger } from "@dwk/webfinger";
+import { createWebmention, createWebmentionQueueConsumer, type WebmentionEnv } from "@dwk/webmention";
 import { schema } from "./src/data/schema";
 import { site } from "./src/data/site";
 import { handleLogin, signLoginRequest, verifyConsent, type LoginEnv } from "./worker/login";
 
-interface Env extends IndieAuthEnv, LoginEnv {
+interface Env extends IndieAuthEnv, LoginEnv, WebmentionEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
 }
 type Ctx = Parameters<ReturnType<typeof createWebfinger>>[2];
@@ -57,6 +58,14 @@ const hostMeta = createHostMeta({
   webfingerUrl: `${site.url}/.well-known/webfinger`,
   logger,
 });
+
+// Webmention receiver: validates synchronously, enqueues async link
+// verification on WEBMENTION_QUEUE, and persists verified mentions to the
+// WEBMENTION_INBOX D1 database (schema created lazily, like AUTH_DB).
+const webmentionPath = "/webmention";
+const webmention = createWebmention({ baseUrl: site.url, logger });
+const webmentionQueueConsumer = createWebmentionQueueConsumer({ baseUrl: site.url, logger });
+type WebmentionBatch = Parameters<typeof webmentionQueueConsumer>[0];
 
 // IndieAuth server for https://dwk.io/. The owner signs in at /auth/login,
 // which sits behind Cloudflare Access (see worker/login.ts).
@@ -128,7 +137,12 @@ export default {
         return secure(getIndieAuth(env)(request, env, ctx));
       case new URL(auth.login).pathname:
         return handleLogin(request, env, owner, auth.authorize);
+      case webmentionPath:
+        return secure(webmention(request, env, ctx));
     }
     return env.ASSETS.fetch(request);
+  },
+  async queue(batch: WebmentionBatch, env: Env, ctx: Ctx) {
+    await webmentionQueueConsumer(batch, env, ctx);
   },
 };

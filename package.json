@@ -27,6 +27,7 @@
     "@dwk/indieauth": "1.0.0-beta.2",
     "@dwk/log": "1.0.0-beta.1",
     "@dwk/webfinger": "1.0.0-beta.2",
+    "@dwk/webmention": "1.0.0-beta.2",
     "astro": "^7.3.2",
     "cheerio": "^1.2.0",
     "openpgp": "^6.3.0",

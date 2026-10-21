@@ -18,7 +18,8 @@ export const site = {
     { rel: "indieauth-metadata", href: "https://dwk.io/.well-known/oauth-authorization-server" },
     { rel: "authorization_endpoint", href: "https://dwk.io/auth/authorize" },
     { rel: "token_endpoint", href: "https://dwk.io/auth/token" },
-    { rel: "webmention", href: "https://webmention.io/dwk.io/webmention" },
+    // Served by @dwk/webmention in worker.ts.
+    { rel: "webmention", href: "https://dwk.io/webmention" },
     { rel: "code-repository", href: "https://github.com/davidwkeith/dwk.io.git" },
     { rel: "content-repository", href: "https://github.com/davidwkeith/dwk.io.git" },
     { rel: "issues", href: "https://github.com/davidwkeith/dwk.io/issues" },
