@@ -95,12 +95,23 @@ export default {
   },
 
   async scheduled(event: ScheduledController, env: Env, ctx: Ctx): Promise<void> {
-    await Promise.all([
+    const jobs = {
       // solid-pod and remotestorage share the @dwk/store GC schema and the
       // same BLOBS/GC_DB bindings, so one collector pass covers both.
-      createSolidPodGc(config.solidPod(env))(event, env, ctx),
+      "pod blob GC": () => createSolidPodGc(config.solidPod(env))(event, env, ctx),
       // Enqueue a poll job per followed Microsub feed.
-      createMicrosubPoller(config.microsub)(event as never, env, ctx as never),
-    ]);
+      "microsub poll": () => createMicrosubPoller(config.microsub)(event as never, env, ctx as never),
+    };
+    // Each job runs to completion whatever the other does; a failure is
+    // logged, then rethrown so the invocation still reports it.
+    const results = await Promise.allSettled(Object.values(jobs).map((run) => run()));
+    const failed = results.flatMap((result, i) =>
+      result.status === "rejected" ? [{ job: Object.keys(jobs)[i], reason: result.reason as unknown }] : [],
+    );
+    for (const { job, reason } of failed) {
+      config.logger.error("scheduled.failed", { job, error: reason instanceof Error ? reason.name : "unknown" });
+      console.error(`dwk: scheduled job "${job}" failed`, reason);
+    }
+    if (failed.length) throw new Error(`dwk: ${failed.length} scheduled job(s) failed: ${failed.map((f) => f.job).join(", ")}`);
   },
 };

@@ -239,8 +239,8 @@ export function mastodonApi(env: Env): Omit<MastodonApiConfig, "backend"> {
  * to the owner WebID. Replaced by Solid-OIDC once that package is composed in.
  */
 function podAuthenticate(env: Env): SolidPodConfig["authenticate"] {
-  return (request) =>
-    isOwner(env, request) ? { webid: ownerWebId, jti: crypto.randomUUID(), jkt: "dwk-owner" } : null;
+  return async (request) =>
+    (await isOwner(env, request)) ? { webid: ownerWebId, jti: crypto.randomUUID(), jkt: "dwk-owner" } : null;
 }
 
 export function solidPod(env: Env): SolidPodConfig {
@@ -263,7 +263,8 @@ export function remotestorage(env: Env): RemoteStorageConfig {
     },
     // The OWNER_TOKEN bearer gets read-write on every module; anything else is
     // anonymous (public document reads only).
-    authenticate: (request) => (isOwner(env, request) ? { scopes: parseScopes("*:rw"), subject: ownerWebId } : null),
+    authenticate: async (request) =>
+      (await isOwner(env, request)) ? { scopes: parseScopes("*:rw"), subject: ownerWebId } : null,
     logger,
   };
 }
@@ -278,7 +279,7 @@ export function webauthn(env: Env): WebAuthnConfig {
     origin: site.url,
     // Registration binds a passkey to a caller-supplied user id, so only the
     // owner may register; authentication ceremonies are open by design.
-    authorize: (operation, request) => operation.startsWith("authenticate/") || isOwner(env, request),
+    authorize: async (operation, request) => operation.startsWith("authenticate/") || (await isOwner(env, request)),
     logger,
   };
 }

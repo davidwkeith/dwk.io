@@ -9,10 +9,18 @@ import { createVcStatusStore } from "@dwk/vc";
 import { sendWebmention } from "@dwk/webmention";
 import type { Env } from "./env";
 
-function timingSafeEqual(a: string, b: string) {
-  if (a.length !== b.length) return false;
+// Compares SHA-256 digests, so the comparison takes the same time whatever
+// the lengths of the inputs and leaks neither the token nor its length.
+async function timingSafeEqual(a: string, b: string) {
+  const encoder = new TextEncoder();
+  const [da, db] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(a)),
+    crypto.subtle.digest("SHA-256", encoder.encode(b)),
+  ]);
+  const ba = new Uint8Array(da);
+  const bb = new Uint8Array(db);
   let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  for (let i = 0; i < ba.length; i++) diff |= ba[i]! ^ bb[i]!;
   return diff === 0;
 }
 
@@ -21,17 +29,18 @@ function timingSafeEqual(a: string, b: string) {
  * outright when the secret is unset, so a literal "Bearer undefined" header can
  * never authenticate.
  */
-export function isOwner(env: Env, request: Request) {
+export async function isOwner(env: Env, request: Request) {
   const auth = request.headers.get("authorization");
-  return Boolean(env.OWNER_TOKEN) && auth !== null && timingSafeEqual(auth, `Bearer ${env.OWNER_TOKEN}`);
+  if (!env.OWNER_TOKEN || auth === null) return false;
+  return timingSafeEqual(auth, `Bearer ${env.OWNER_TOKEN}`);
 }
 
 function json(status: number, body: unknown) {
   return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 }
 
-function gate(env: Env, request: Request) {
-  if (!isOwner(env, request)) return json(401, { error: "unauthorized" });
+async function gate(env: Env, request: Request) {
+  if (!(await isOwner(env, request))) return json(401, { error: "unauthorized" });
   if (request.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405, headers: { allow: "POST" } });
   }
@@ -45,7 +54,7 @@ function gate(env: Env, request: Request) {
  * schema lazily on first use.
  */
 export async function adminInit(request: Request, env: Env) {
-  const refused = gate(env, request);
+  const refused = await gate(env, request);
   if (refused) return refused;
   const initialized: Record<string, string> = {};
   await createIndieAuthStore(env).init();
@@ -67,7 +76,7 @@ export async function adminInit(request: Request, env: Env) {
  * the target's endpoint and send one Webmention, returning the sender's result.
  */
 export async function webmentionSend(request: Request, env: Env) {
-  const refused = gate(env, request);
+  const refused = await gate(env, request);
   if (refused) return refused;
   let body: unknown;
   try {
