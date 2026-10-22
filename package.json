@@ -38,7 +38,7 @@
     "wrangler": "^4.149.0"
   },
   "dependencies": {
-    "@dwk/activitypub": "1.0.0-beta.7",
+    "@dwk/activitypub": "1.0.0-beta.9",
     "@dwk/atproto-pds": "1.0.0-beta.2",
     "@dwk/mastodon-api": "1.0.0-beta.2",
     "@dwk/micropub": "1.0.0-beta.6",
