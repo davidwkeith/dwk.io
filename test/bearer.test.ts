@@ -48,9 +48,10 @@ beforeEach(async () => {
 });
 
 describe("Bearer tokens", () => {
-  it("are issued for Micropub and Microsub scopes only, for at most an hour", () => {
+  it("are issued for Micropub and Microsub scopes only, for 30 days", () => {
     const { bearerTokens } = config.indieauth(env);
-    expect(bearerTokens?.lifetimeSeconds).toBe(3600);
+    expect(bearerTokens?.lifetimeSeconds).toBe(30 * 24 * 60 * 60);
+    expect(config.indieauth(env).accessTokenLifetimeSeconds).toBe(30 * 24 * 60 * 60);
     expect(bearerTokens?.scopes).toEqual(["create", "update", "delete", "media", "read", "follow", "mute", "block", "channels"]);
     expect(config.micropub(env).acceptBearerTokens).toBe(true);
     expect(config.microsub.acceptBearerTokens).toBe(true);
