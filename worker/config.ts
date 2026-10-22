@@ -101,10 +101,13 @@ const scopesSupported = ["profile", "email", "create", "update", "delete", "medi
 
 /**
  * Most Micropub and Microsub clients can't do DPoP, so a token request without
- * a proof gets an unbound Bearer token, carrying only these resource scopes and
- * living an hour; one with a proof is still DPoP-bound.
+ * a proof gets an unbound Bearer token, carrying only these resource scopes;
+ * one with a proof is still DPoP-bound. Clients like Quill never refresh, so
+ * tokens live 30 days (revocable at /auth/revocation; the Bearer lifetime may
+ * not exceed the access-token one).
  */
-const bearerTokens = { lifetimeSeconds: 3600, scopes: scopesSupported.filter((s) => s !== "profile" && s !== "email") };
+const TOKEN_LIFETIME_SECONDS = 30 * 24 * 60 * 60;
+const bearerTokens = { lifetimeSeconds: TOKEN_LIFETIME_SECONDS, scopes: scopesSupported.filter((s) => s !== "profile" && s !== "email") };
 
 export function indieauth(env: Env): IndieAuthConfig {
   return {
@@ -113,6 +116,7 @@ export function indieauth(env: Env): IndieAuthConfig {
     tokenEndpoint: auth.token,
     revocationEndpoint: auth.revocation,
     scopesSupported,
+    accessTokenLifetimeSeconds: TOKEN_LIFETIME_SECONDS,
     bearerTokens,
     // Token introspection (IndieAuth §6.1) for resource servers elsewhere, which
     // authenticate with the INTROSPECTION_TOKEN bearer. Served and advertised
