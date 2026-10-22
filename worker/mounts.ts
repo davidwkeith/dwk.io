@@ -25,6 +25,7 @@ import * as config from "./config";
 import type { Ctx, Env } from "./env";
 import { handleLogin } from "./login";
 import { adminInit, webmentionSend } from "./owner";
+import { serveSite } from "./site";
 
 export type Handler = (request: Request, env: Env, ctx: Ctx) => Promise<Response>;
 
@@ -121,7 +122,7 @@ export const mounts: readonly Mount[] = [
   {
     name: "@dwk/micropub",
     matches: (url) => url.pathname === "/micropub" || prefix("/media")(url),
-    create: (env) => createMicropub(config.micropub(env)),
+    create: (env) => createMicropub(config.micropub(env, siteFetch(env))),
     requires: SIGNING,
   },
   { name: "@dwk/microsub", matches: exact("/microsub"), create: () => createMicrosub(config.microsub), requires: SIGNING },
@@ -179,6 +180,26 @@ function notConfigured(mount: Mount, binding: string) {
     status: 503,
     headers: { "content-type": "application/json" },
   });
+}
+
+/**
+ * `fetch` for the Worker's requests to its own site: Micropub syndicating
+ * through the actor's publish endpoint, the WebSub hub fetching the feeds it
+ * distributes. On its Custom Domain the Worker can't reach its own hostname
+ * over the network (Cloudflare answers 522), so a request for this site goes
+ * to its mount, or the static site, in-process; anything else is an ordinary
+ * `fetch`. The callee gets no execution context of its own: only mounts that
+ * don't need `waitUntil` (the ActivityPub actor) are called so.
+ */
+export function siteFetch(env: Env): typeof fetch {
+  const ctx = { waitUntil() {}, passThroughOnException() {} } as unknown as Ctx;
+  return async (input, init) => {
+    const request = new Request(input, init);
+    const url = new URL(request.url);
+    if (url.origin !== site.url) return fetch(request);
+    const mount = findMount(url);
+    return mount ? dispatch(mount, request, env, ctx) : serveSite(request, env);
+  };
 }
 
 /** Dispatch to a mount, building its handler on first use. */
