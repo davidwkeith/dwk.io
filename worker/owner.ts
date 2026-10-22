@@ -6,7 +6,7 @@ import { createIndieAuthStore } from "@dwk/indieauth";
 import { createMicropubStore } from "@dwk/micropub";
 import { createMicrosubStore } from "@dwk/microsub";
 import { createVcStatusStore } from "@dwk/vc";
-import { assertPublicUrl, safeFetch, sendWebmention } from "@dwk/webmention";
+import { sendWebmention } from "@dwk/webmention";
 import type { Env } from "./env";
 
 // Compares SHA-256 digests, so the comparison takes the same time whatever
@@ -96,74 +96,3 @@ export async function webmentionSend(request: Request, env: Env) {
   return json(200, await sendWebmention(source, target));
 }
 
-/**
- * `POST /admin/fetch` with `{"url": "...", "accept"?: "..."}`: perform one
- * outbound fetch exactly as `@dwk/activitypub`'s key resolver does (SSRF-guarded
- * `safeFetch`, https only, 10 s budget, `Accept: application/activity+json` by
- * default) and report what came back, from Cloudflare's own egress. For
- * diagnosing peers that answer the Worker differently from a terminal, such as
- * an anti-scraper layer in front of a Mastodon instance (davidwkeith/dwk.io#11).
- * Owner-only; the body preview is capped and nothing is stored.
- */
-export async function adminFetch(request: Request, env: Env) {
-  const refused = await gate(env, request);
-  if (refused) return refused;
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return json(400, { error: "invalid_json" });
-  }
-  const { url, accept, trace } = (body ?? {}) as Record<string, unknown>;
-  if (typeof url !== "string" || !url) return json(400, { error: "invalid_request", message: "expected a JSON body with a url" });
-  const started = Date.now();
-  const acceptHeader = typeof accept === "string" && accept ? accept : "application/activity+json";
-  // `trace: true`: follow redirects by hand, one hop at a time, and report
-  // each hop's status, Location, and whether it set cookies, so a redirect
-  // loop can be read instead of just counted. Same public-https guard per hop.
-  if (trace === true) {
-    const hops: Record<string, unknown>[] = [];
-    let current = url;
-    try {
-      for (let hop = 0; hop < 8; hop++) {
-        assertPublicUrl(current, { allowedSchemes: ["https:"] });
-        const response = await fetch(current, { headers: { accept: acceptHeader }, redirect: "manual" });
-        const location = response.headers.get("location");
-        const text = await response.text();
-        hops.push({
-          url: current,
-          status: response.status,
-          location,
-          setCookie: response.headers.has("set-cookie"),
-          server: response.headers.get("server"),
-          contentType: response.headers.get("content-type"),
-          preview: text.slice(0, 160),
-        });
-        if (!location || response.status < 300 || response.status > 399) break;
-        current = new URL(location, current).href;
-      }
-      return json(200, { ok: true, elapsedMs: Date.now() - started, hops });
-    } catch (error) {
-      const e = error as { name?: string; message?: string; reason?: string };
-      return json(200, { ok: false, elapsedMs: Date.now() - started, hops, error: e.name ?? "Error", reason: e.reason, message: e.message });
-    }
-  }
-  try {
-    const { response, url: servedUrl } = await safeFetch(
-      fetch,
-      url,
-      { headers: { accept: acceptHeader } },
-      { allowedSchemes: ["https:"], timeoutMs: 10_000 },
-    );
-    const preview = (await response.text()).slice(0, 400);
-    const headers: Record<string, string> = {};
-    for (const name of ["content-type", "location", "server", "cf-mitigated", "cf-ray", "retry-after", "www-authenticate"]) {
-      const value = response.headers.get(name);
-      if (value !== null) headers[name] = value;
-    }
-    return json(200, { ok: response.ok, status: response.status, servedUrl, elapsedMs: Date.now() - started, headers, preview });
-  } catch (error) {
-    const e = error as { name?: string; message?: string; reason?: string };
-    return json(200, { ok: false, elapsedMs: Date.now() - started, error: e.name ?? "Error", reason: e.reason, message: e.message });
-  }
-}

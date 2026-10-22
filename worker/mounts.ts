@@ -24,7 +24,7 @@ import { site } from "../src/data/site";
 import * as config from "./config";
 import type { Ctx, Env } from "./env";
 import { handleLogin } from "./login";
-import { adminFetch, adminInit, webmentionSend } from "./owner";
+import { adminInit, webmentionSend } from "./owner";
 
 export type Handler = (request: Request, env: Env, ctx: Ctx) => Promise<Response>;
 
@@ -112,7 +112,6 @@ export const mounts: readonly Mount[] = [
     requires: SIGNING,
   },
   { name: "admin", matches: exact("/admin/init"), create: () => adminInit },
-  { name: "admin fetch diagnostic", matches: exact("/admin/fetch"), create: () => adminFetch },
   { name: "@dwk/webmention (send trigger)", matches: exact("/webmention/send"), create: () => webmentionSend },
   {
     name: "@dwk/webmention",
