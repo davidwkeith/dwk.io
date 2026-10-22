@@ -30,9 +30,14 @@ async function timingSafeEqual(a: string, b: string) {
  * never authenticate.
  */
 export async function isOwner(env: Env, request: Request) {
+  return hasBearer(request, env.OWNER_TOKEN);
+}
+
+/** Whether the request carries `Authorization: Bearer <secret>`; never when `secret` is unset. */
+export async function hasBearer(request: Request, secret: string | undefined) {
   const auth = request.headers.get("authorization");
-  if (!env.OWNER_TOKEN || auth === null) return false;
-  return timingSafeEqual(auth, `Bearer ${env.OWNER_TOKEN}`);
+  if (!secret || auth === null) return false;
+  return timingSafeEqual(auth, `Bearer ${secret}`);
 }
 
 function json(status: number, body: unknown) {

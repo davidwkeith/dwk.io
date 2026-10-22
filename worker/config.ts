@@ -22,7 +22,7 @@ import { site } from "../src/data/site";
 import type { Env } from "./env";
 import { generatePostUrl } from "./posts";
 import { signLoginRequest, verifyConsent, type GrantRequest } from "./login";
-import { isOwner } from "./owner";
+import { hasBearer, isOwner } from "./owner";
 
 export const logger = consoleLogger({ minLevel: "info" });
 
@@ -44,6 +44,7 @@ export const auth = {
   authorize: `${site.url}/auth/authorize`,
   token: `${site.url}/auth/token`,
   revocation: `${site.url}/auth/revocation`,
+  introspection: `${site.url}/auth/introspect`,
   login: `${site.url}/auth/login`,
   /** Mastodon-app OAuth (served by @dwk/mastodon-api). */
   mastodonAuthorize: `${site.url}/oauth/authorize`,
@@ -130,6 +131,12 @@ export function indieauth(env: Env): IndieAuthConfig {
     revocationEndpoint: auth.revocation,
     scopesSupported,
     bearerTokens,
+    // Token introspection (IndieAuth §6.1) for resource servers elsewhere, which
+    // authenticate with the INTROSPECTION_TOKEN bearer. Served and advertised
+    // only when that secret is set.
+    ...(env.INTROSPECTION_TOKEN
+      ? { introspectionEndpoint: auth.introspection, authorizeIntrospection: (req: Request) => hasBearer(req, env.INTROSPECTION_TOKEN) }
+      : {}),
     // Only issue tokens for resource servers on this site.
     resourceIndicatorPolicy: (resource) => new URL(resource).origin === site.url,
     // The owner signs in at /auth/login behind Cloudflare Access (worker/login.ts);

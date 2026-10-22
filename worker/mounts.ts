@@ -99,7 +99,7 @@ export const mounts: readonly Mount[] = [
   },
   {
     name: "@dwk/indieauth",
-    matches: exact("/.well-known/oauth-authorization-server", authPath(auth.authorize), authPath(auth.token), authPath(auth.revocation)),
+    matches: exact("/.well-known/oauth-authorization-server", authPath(auth.authorize), authPath(auth.token), authPath(auth.revocation), authPath(auth.introspection)),
     create: (env) => createIndieAuth(config.indieauth(env)),
     requires: SIGNING,
   },

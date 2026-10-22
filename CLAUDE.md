@@ -60,7 +60,7 @@ Personal portfolio/project showcase website.
 | Path | Package |
 |---|---|
 | `/.well-known/webfinger`, `/.well-known/host-meta[.json]` | `@dwk/webfinger`, `@dwk/host-meta` |
-| `/.well-known/oauth-authorization-server`, `/auth/authorize`, `/auth/token`, `/auth/revocation` | `@dwk/indieauth` (`/auth/login` is the owner sign-in) |
+| `/.well-known/oauth-authorization-server`, `/auth/authorize`, `/auth/token`, `/auth/revocation`, `/auth/introspect` | `@dwk/indieauth` (`/auth/login` is the owner sign-in; introspection only when `INTROSPECTION_TOKEN` is set) |
 | `/micropub`, `/media/*` | `@dwk/micropub` (syndicates to the actor when `ACTIVITYPUB_PUBLISH_TOKEN` is set) |
 | `/microsub` | `@dwk/microsub` (feeds polled by the cron → `dwk-microsub` queue) |
 | `/webmention` (+ `/webmention/send`) | `@dwk/webmention` (verification on the `dwk-webmention-verify` queue, inbox in D1, 30 req/60s per IP) |
@@ -82,6 +82,7 @@ All D1 bindings point at the one `dwk-indieauth` database (the free-plan databas
 |---|---|---|
 | `TOKEN_SIGNING_KEY` | IndieAuth tokens, login/consent tokens, Micropub, Microsub, Mastodon API | random |
 | `OWNER_TOKEN` | `/admin/init`, `/webmention/send`, pod and remoteStorage writes, `/dav-credentials`, WebAuthn registration, VC issuance | random; keep it, it is the owner's bearer |
+| `INTROSPECTION_TOKEN` | the bearer resource servers send to `/auth/introspect` (IndieAuth §6.1); unset, the endpoint isn't served or advertised | random; give it to the resource server |
 | `ACTIVITYPUB_PUBLIC_KEY_PEM`, `ACTIVITYPUB_PRIVATE_KEY_PEM` | the actor's signatures (the public half is published in the actor document) | RSA 2048 PEMs |
 | `ACTIVITYPUB_PUBLISH_TOKEN` | `POST /users/test/outbox` and `/publish`; also turns on Micropub → fediverse syndication | random; keep it |
 | `ATPROTO_PASSWORD`, `ATPROTO_JWT_SECRET` | `com.atproto.server.createSession` (identifier `dwk.io`) and its JWTs | random; keep the password |
@@ -104,7 +105,7 @@ for name in TOKEN_SIGNING_KEY ATPROTO_JWT_SECRET WEBDAV_PEPPER; do
 done
 
 # Random secrets that are also bearer tokens or passwords: keep the echoed values.
-for name in OWNER_TOKEN ACTIVITYPUB_PUBLISH_TOKEN ATPROTO_PASSWORD; do
+for name in OWNER_TOKEN ACTIVITYPUB_PUBLISH_TOKEN ATPROTO_PASSWORD INTROSPECTION_TOKEN; do
   value=$(openssl rand -base64 32 | tr -d '\n'); echo "$name=$value"
   printf '%s' "$value" | npx wrangler secret put "$name"
 done
