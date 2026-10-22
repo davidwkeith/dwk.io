@@ -33,7 +33,8 @@ const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month:
   <article class="h-entry">
     <h2 class="p-name">{title}</h2>
     <ul class="post-metadata">
-      <li><time class="dt-published" datetime={date.toISOString()}>{formattedDate}</time></li>
+      <li><a class="u-url" href={projectUrl}><time class="dt-published" datetime={date.toISOString()}>{formattedDate}</time></a></li>
+      <li>by <a class="p-author h-card" href={globalSchema.author.url}>{globalSchema.author.name}</a></li>
     </ul>
     {hero && (
       <figure class="project-hero-image">
@@ -44,10 +45,6 @@ const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month:
     <div class="e-content">
       <slot />
     </div>
-    <a class="u-url" href={projectUrl} hidden></a>
-    <span class="p-author h-card" hidden>
-      <a class="p-name u-url" href={globalSchema.author.url}>{globalSchema.author.name}</a>
-    </span>
   </article>
   <Webmentions target={projectUrl} />
 </BaseLayout>

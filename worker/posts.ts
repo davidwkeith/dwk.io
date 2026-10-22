@@ -188,9 +188,9 @@ function entryHtml(record: PostRecord) {
     (view.name ? `<h2 class="p-name">${escapeHtml(view.name)}</h2>` : "") +
     contextHtml(props) +
     `<div class="e-content${view.name ? "" : " p-name"}">${view.contentHtml}</div>` +
-    `<ul class="post-metadata"><li><a class="u-url u-uid" href="${escapeHtml(view.url)}">${timeTag(view.published)}</a></li>${tags}</ul>` +
+    `<ul class="post-metadata"><li><a class="u-url u-uid" href="${escapeHtml(view.url)}">${timeTag(view.published)}</a></li>` +
+    `<li>by <a class="p-author h-card" href="${escapeHtml(schema.author.url)}">${escapeHtml(schema.author.name)}</a></li>${tags}</ul>` +
     (syndication ? `<p>Also on:</p><ul class="post-metadata">${syndication}</ul>` : "") +
-    `<span class="p-author h-card" hidden><a class="p-name u-url" href="${escapeHtml(schema.author.url)}">${escapeHtml(schema.author.name)}</a></span>` +
     `</article>`
   );
 }
@@ -202,7 +202,8 @@ function indexHtml(records: readonly PostRecord[]) {
       return `<li class="h-entry"><a class="u-url p-name" href="${escapeHtml(view.url)}">${escapeHtml(view.title)}</a> · ${timeTag(view.published)}</li>`;
     })
     .join("");
-  return `<div class="h-feed"><h2 class="p-name">Posts</h2>${items ? `<ul>${items}</ul>` : "<p>Nothing posted yet.</p>"}</div>`;
+  const author = `<a class="p-author h-card" href="${escapeHtml(schema.author.url)}">${escapeHtml(schema.author.name)}</a>`;
+  return `<div class="h-feed"><h2><span class="p-name">Posts</span> by ${author}</h2>${items ? `<ul>${items}</ul>` : "<p>Nothing posted yet.</p>"}</div>`;
 }
 
 /** Fill the shell's `<head>` and `[data-post]` for one rendered page. */

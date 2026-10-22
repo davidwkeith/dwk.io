@@ -15,6 +15,7 @@ import { dispatch, findMount } from "./worker/mounts";
 import { sendPostWebmentions } from "./worker/outbox";
 import { publishChangedTopics } from "./worker/publish";
 import { serveSite } from "./worker/site";
+import { formResult, isFormSubmission } from "./worker/webmentions";
 
 // The Durable Objects this Worker serves (`wrangler.jsonc` binds them to
 // these exports).
@@ -67,16 +68,28 @@ export default {
     // The static site, with Micropub posts and received webmentions rendered in.
     if (!mount) return serveSite(request, env);
 
+    // A person submitting a page's "send a Webmention" form gets sent back to
+    // that page with a notice, not the endpoint's bare 202 (worker/webmentions.ts).
+    // The form is parsed only after the rate limiter has let the request through.
+    const browserForm = url.pathname === "/webmention" && isFormSubmission(request);
+    const readForm = () => request.clone().formData().catch(() => null);
+
     if (url.pathname === "/webmention") {
       // Each accepted request makes the queue consumer fetch an arbitrary
       // source URL, so cap abuse of this public endpoint per sender IP.
       const key = request.headers.get("cf-connecting-ip") ?? "unknown";
       const { success } = await env.WEBMENTION_RATE_LIMITER.limit({ key });
-      if (!success) return secure(new Response("Too Many Requests", { status: 429 }));
+      if (!success) {
+        const limited = new Response("Too Many Requests", { status: 429 });
+        const form = browserForm ? await readForm() : null;
+        return secure(form ? await formResult(form, limited) : limited);
+      }
     }
+    const form = browserForm ? await readForm() : null;
 
     try {
-      const response = secure(await dispatch(mount, request, env, ctx));
+      const dispatched = await dispatch(mount, request, env, ctx);
+      const response = secure(form ? await formResult(form, dispatched) : dispatched);
       // A refused write can leave the request body unread; cancel it so the
       // stream is marked used before `wrangler dev`'s middleware looks at it.
       if (request.body !== null && !request.bodyUsed) ctx.waitUntil(request.body.cancel().catch(() => undefined));

@@ -9,7 +9,7 @@ interface Props {
 const { target } = Astro.props;
 ---
 
-<section class="webmentions">
+<section class="webmentions" id="webmentions">
   <h3>Responses</h3>
   <div data-webmentions={target}></div>
   <form class="webmention-form" action="/webmention" method="post">

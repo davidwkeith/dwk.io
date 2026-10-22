@@ -346,3 +346,17 @@ h1, h2, h3, h4, h5, h6 {
     max-width: 100%;
     height: auto;
 }
+
+.h-card .u-photo {
+    vertical-align: middle;
+}
+
+.webmention-list .u-photo {
+    vertical-align: middle;
+    margin-right: 0.25em;
+}
+
+.webmention-notice {
+    border: 2px solid var(--border-color);
+    padding: 0.5em;
+}

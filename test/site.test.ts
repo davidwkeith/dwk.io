@@ -158,3 +158,19 @@ describe("sitemap and llms.txt", () => {
     expect(await (await get("/llms.txt")).text()).not.toContain("## Posts");
   });
 });
+
+describe("authorship", () => {
+  it("names the author visibly on h-feeds and h-entries, with nothing hidden", async () => {
+    for (const path of ["/", "/anglesite/", "/posts/", "/posts/hello"]) {
+      const html = await (await get(path)).text();
+      expect(html, path).toMatch(/class="p-author h-card" href="https:\/\/dwk\.io"/);
+      expect(html, path).not.toMatch(/<[^>]*class="[^"]*(p-author|u-url)[^"]*"[^>]*\shidden/);
+    }
+  });
+
+  it("gives the representative h-card a visible photo and note", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain('<img class="u-photo" src="/icon-512.png"');
+    expect(html).toContain('<span class="p-note">Independent Software Engineer</span>');
+  });
+});

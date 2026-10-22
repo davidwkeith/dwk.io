@@ -7,7 +7,7 @@ import type { Env } from "./env";
 import { escapeHtml } from "./html";
 import { site } from "../src/data/site";
 import { allListedPosts, isShellPath, listPublicPosts, POSTS_PATH, servePosts, viewOf, type PostView } from "./posts";
-import { withMentions } from "./webmentions";
+import { AVATAR_PATH, serveAvatar, withMentions } from "./webmentions";
 
 function atomEntry(post: PostView) {
   const url = escapeHtml(post.url);
@@ -115,12 +115,13 @@ async function withPostsInLlms(llms: Response, env: Env): Promise<Response> {
 export async function serveSite(request: Request, env: Env): Promise<Response> {
   const { pathname } = new URL(request.url);
   if (pathname === POSTS_PATH.slice(0, -1) || pathname.startsWith(POSTS_PATH) || isShellPath(pathname)) {
-    return withMentions(await servePosts(request, env), env);
+    return withMentions(await servePosts(request, env), env, request.url);
   }
   if (pathname === POSTS_SITEMAP_PATH) return postsSitemap(env);
+  if (pathname === AVATAR_PATH) return serveAvatar(request, env);
   const response = await env.ASSETS.fetch(request);
   if (pathname === "/llms.txt") return withPostsInLlms(response, env);
   if (pathname === "/feed.xml") return withPosts(response, "atom", env);
   if (pathname === "/feed.json") return withPosts(response, "json", env);
-  return withMentions(response, env);
+  return withMentions(response, env, request.url);
 }
