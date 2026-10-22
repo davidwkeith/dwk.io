@@ -65,6 +65,17 @@ describe("Bearer tokens", () => {
     expect(await (await SELF.fetch(location)).text()).toContain("Posted with a Bearer token");
   });
 
+  it("let Quill post, which sends the token in both the header and the form body", async () => {
+    const { token } = await mint("create");
+    const res = await SELF.fetch(MICROPUB, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, accept: "application/json" },
+      body: new URLSearchParams({ h: "entry", access_token: token, content: "Posted from Quill" }),
+      redirect: "manual",
+    });
+    expect(res.status).toBe(201);
+  });
+
   it("are refused under the DPoP scheme, and once revoked", async () => {
     const { token, claims } = await mint("create");
     expect((await post(`DPoP ${token}`)).status).toBe(401);
