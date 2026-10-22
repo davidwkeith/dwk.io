@@ -34,6 +34,7 @@
     --text-color-link-active: #ff0000;
     --text-color-link-visited: #800080;
     --border-color: #000000;
+    --shadow-color: #808080;
     --header-background: #808080;
     --header-text: #000000;
     --syntax-tab-size: 2;
@@ -47,6 +48,7 @@
         --text-color-link-active: #ff00ff;
         --text-color-link-visited: #ffa500;
         --border-color: #00ffff;
+        --shadow-color: #666666;
         --header-background: #000033;
         --header-text: #00ffff;
     }
@@ -83,7 +85,7 @@ body {
         border: 5px solid var(--border-color);
         padding: 1rem;
         margin: 1rem auto;
-        box-shadow: 5px 5px 0px var(--border-color);
+        box-shadow: 5px 5px 0px var(--shadow-color);
     }
 }
 
