@@ -155,7 +155,12 @@ export function indieauth(env: Env): IndieAuthConfig {
 // ---------------------------------------------------------------------------
 // IndieWeb publishing and reading
 
-export function micropub(env: Env): MicropubConfig {
+/**
+ * `siteFetch` carries the syndication request to the actor's publish endpoint
+ * (worker/mounts.ts): a Worker on a Custom Domain can't `fetch` its own
+ * hostname (Cloudflare answers 522), so it never goes over the network.
+ */
+export function micropub(env: Env, siteFetch?: typeof fetch): MicropubConfig {
   const publishToken = env.ACTIVITYPUB_PUBLISH_TOKEN;
   return {
     baseUrl: site.url,
@@ -166,7 +171,9 @@ export function micropub(env: Env): MicropubConfig {
     syndicateTo: [{ uid: FEDIVERSE_TARGET_UID, name: `@${USERNAME}@${host}` }],
     // Micropub → fediverse syndication rides the actor's owner publish
     // endpoint, so it is only on when that endpoint is (same token).
-    ...(publishToken ? { fediverse: { publishUrl: `${actorIri}/publish`, publishToken } } : {}),
+    ...(publishToken
+      ? { fediverse: { publishUrl: `${actorIri}/publish`, publishToken, ...(siteFetch ? { fetch: siteFetch } : {}) } }
+      : {}),
     logger,
   };
 }

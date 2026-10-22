@@ -8,7 +8,7 @@ import { createWebmentionQueueConsumer } from "@dwk/webmention";
 import { createWebSubQueueConsumer } from "@dwk/websub";
 import * as config from "./worker/config";
 import type { Ctx, Env } from "./worker/env";
-import { dispatch, findMount } from "./worker/mounts";
+import { dispatch, findMount, siteFetch } from "./worker/mounts";
 import { sendPostWebmentions } from "./worker/outbox";
 import { publishChangedTopics } from "./worker/publish";
 import { serveSite } from "./worker/site";
@@ -103,7 +103,8 @@ export default {
       case QUEUES.webmention:
         return createWebmentionQueueConsumer(config.webmention)(batch as never, env, ctx);
       case QUEUES.websub:
-        return createWebSubQueueConsumer(config.websub)(batch as never, env, ctx);
+        // The hub fetches this site's own feeds; see `siteFetch`.
+        return createWebSubQueueConsumer({ ...config.websub, fetch: siteFetch(env) })(batch as never, env, ctx);
       case QUEUES.microsub:
         return createMicrosubQueueConsumer(config.microsub)(batch as never, env, ctx);
       default:
