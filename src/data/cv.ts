@@ -40,17 +40,56 @@ export interface CV {
 }
 
 export const cv: CV = {
-  headline: "Independent Software Engineer",
+  headline: "Software Engineer & Educator — Specification Literacy",
   location: "San Francisco Bay Area",
   summary:
-    "Software engineer and educator with 30+ years of industry experience spanning individual contribution at Apple and senior engineering management at Nest (Google), with a focused practice in curriculum design, developer documentation, and technical education. Actively developing a framework for teaching Specification Literacy — the ability to write unambiguous requirements that AI and distributed engineering teams can implement without ambiguity — as an 8th-grade curriculum unit: Introduction to Problem Architecture: Specification Literacy Through Algorithms and AI. Currently applying spec-driven principles in high school CS instruction through TEALS and in production agentic engineering workflows.",
-  skills: ["TypeScript", "Cloudflare", "Agentic AI Development"],
+    "Engineer, engineering manager, and developer educator with 30 years in industry, from Apple Developer Publications to leading a 50-person engineering and technical writing org at Nest (Google). I build Specification Literacy: teaching people to state what they want precisely enough that another person — or an AI — can build it without guessing. I practice it daily (a 30-plus-package open-standards monorepo written spec-first with Claude Code, conformance tests as the release bar), teach it in high school CS through TEALS, and am writing it up as [Specification Literacy](https://github.com/davidwkeith/specification-literacy/blob/main/index.md), a K–12+ framework whose first pilot is a [course for working professionals](https://github.com/davidwkeith/specification-literacy/blob/main/docs/de-anza-course-outline.md) at De Anza College.",
+  skills: [
+    "Specification writing",
+    "Curriculum design",
+    "Developer education & documentation",
+    "API & protocol design",
+    "Agentic AI development (Claude Code, Codex)",
+    "Engineering management",
+    "Open web standards (IndieWeb, ActivityPub, Solid)",
+    "TypeScript",
+    "Cloudflare Workers",
+  ],
   patents: [
     "[Systems and methods of determining a type and feature set of a light source, and the control thereof](https://patents.google.com/patent/US9894735)",
     "[Rule-based rate limiting](https://patents.google.com/patent/US9660948)",
     "[Selectively restricting communications from third party applications/devices to electronic devices](https://patents.google.com/patent/US10084783)",
   ],
   experience: [
+    {
+      org: "Self-employed",
+      roles: [
+        {
+          title: "Independent Software Engineer",
+          start: "2021-11",
+          location: "Santa Clara, California",
+          summary:
+            "Spec-first agentic engineering with Claude Code, Codex, and LM Studio: requirements and research are written with the AI before any code is generated, and human review plus conformance tests are the quality gate.",
+          highlights: [
+            "Wrote and built [@dwk/workers](https://github.com/davidwkeith/workers), 30+ TypeScript packages implementing open web standards (IndieAuth, Micropub, Webmention, ActivityPub, Solid, AT Protocol). Each package is generated from its own [written spec](https://github.com/davidwkeith/workers/tree/main/spec), and none can ship a stable release until it passes its standard's conformance suite",
+            "Runs the whole stack on this site: [dwk.io](https://dwk.io) is a working personal server for the open social web",
+            "Created [Anglesite](https://anglesite.dwk.io), an open source Claude Code and Claude Cowork plugin that acts as webmaster for small organizations, candidates, and local governments",
+          ],
+        },
+      ],
+    },
+    {
+      org: "TEALS (Microsoft Philanthropies)",
+      url: "https://www.microsoft.com/en-us/teals",
+      roles: [
+        {
+          title: "Volunteer Computer Science Teacher",
+          start: "2018-08",
+          location: "Thomas Jefferson High School, Los Angeles, California",
+          summary: "Co-teaches high school computer science, applying specification-first problem solving in the classroom.",
+        },
+      ],
+    },
     {
       org: "Silicon Valley Bicycle Coalition",
       url: "https://bikesiliconvalley.org",
@@ -66,18 +105,6 @@ export const cv: CV = {
             "Replaced a paid event calendar SaaS product with a [custom-built equivalent](https://events.bikesiliconvalley.org/widget) running on Cloudflare's free tier",
             "Built a Gemini-powered Help Desk agent with knowledge of SVBC's SaaS stack, enabling staff to self-serve technical support previously handled by volunteer time",
           ],
-        },
-      ],
-    },
-    {
-      org: "Self-employed",
-      roles: [
-        {
-          title: "Independent Software Engineer",
-          start: "2021-11",
-          location: "Santa Clara, California",
-          summary:
-            "Agentic engineering practice using Claude Code, Codex, and LM Studio. Development workflow has transitioned from code-first to specification-first: research and spec are built collaboratively with AI before generation begins, with human evaluation as the quality gate. Active contributor to open source civic technology, including [Anglesite](https://anglesite.dwk.io), an AI-powered webmaster for small organizations, candidates, and local governments.",
         },
       ],
     },
@@ -135,12 +162,12 @@ export const cv: CV = {
           end: "2017-06",
           location: "Palo Alto, CA",
           summary:
-            "Managed a team of 50 engineers and writers across Nest's web app, online store, marketing site, B2B portals, and developer programs. Co-designed the [Works with Nest API](https://web.archive.org/web/20160708075828/https://developers.nest.com/) — a behavior-driven specification for IoT device interoperability that became the conceptual model for [Matter](https://csa-iot.org/all-solutions/matter/), the open industry standard for home automation. Owned all developer curriculum and documentation for the program.",
+            "Managed a team of 50 engineers and writers across Nest's web app, online store, marketing site, B2B portals, and developer programs. Co-designed the [Works with Nest API](https://web.archive.org/web/20160708075828/https://developers.nest.com/), a behavior-driven specification for IoT device interoperability and a precursor of [Matter](https://csa-iot.org/all-solutions/matter/), the open home automation standard. Owned all developer curriculum and documentation for the program.",
           highlights: [
             "Built and managed the technical writing team responsible for educating hundreds of third-party engineers on a novel device-first home automation paradigm",
-            "Iterated documentation from API reference to full theoretical framework after identifying that developers needed the why, not just the what — modeled on scrum's feedback-driven development cycle",
-            "Measurable outcomes: support questions about HVAC control, error responses, and rate limiting dropped significantly with each documentation iteration; third-party integration bugs declined after simulators replaced the need for physical test environments",
-            "Program scaled to hundreds of developers and became the foundation for Matter",
+            "Rebuilt the docs from an API reference into a conceptual framework once support data showed developers needed the why, not just the what; iterated each release on that feedback",
+            "Support questions about HVAC control, error responses, and rate limiting fell with each documentation release, and third-party integration bugs declined once simulators replaced physical test hardware",
+            "Program scaled to hundreds of third-party developers",
             "Secured two patents related to the Works with Nest platform",
           ],
         },
@@ -192,22 +219,6 @@ export const cv: CV = {
           summary:
             "Led contract engineering team to streamline the Genius Bar repair workflow in PeopleSoft, saving five minutes per repair and scaling to support iPhone launch across hundreds of stores by providing inline documentation at the point of use to retail staff.",
         },
-        {
-          title: "Genius",
-          start: "2004-06",
-          end: "2006-06",
-          location: "Bloomington, MN",
-          summary:
-            "Successfully managed a 300% growth in business, with a proven track record of quickly fixing customers' broken devices and restoring relationships with Apple in under 15 minutes. Developed time-saving systems to optimize workflow, and provided mentorship to new Geniuses in troubleshooting techniques and system usage.",
-        },
-        {
-          title: "Assistant Manager",
-          start: "2002-10",
-          end: "2004-06",
-          location: "Edina, MN",
-          summary:
-            "Managed visual merchandising and demo inventory, creating a database to improve inventory accuracy and streamline display merchandise movements for a new store opening. Demonstrated expertise in technical skills.",
-        },
       ],
     },
     {
@@ -224,54 +235,14 @@ export const cv: CV = {
       ],
     },
     {
-      org: "Ultimate Electronics",
-      url: "https://web.archive.org/web/20020523010818/http://www.ultimateelectronics.com/",
+      org: "Earlier career",
       roles: [
         {
-          title: "Assistant Manager",
-          start: "2000-05",
-          end: "2002-10",
-          location: "Brooklyn Park, MN",
-          summary:
-            "Developed top-performing sales teams in two departments during the company's biggest growth period. Achieved highest dollars sold per square foot in store and earned recognition for outstanding customer service. Consulted with the training department on developing employees with technical skills.",
-        },
-      ],
-    },
-    {
-      org: "Self-employed",
-      roles: [
-        {
-          title: "UX Engineer — Independent Web Design",
-          start: "1997-01",
-          end: "2000-05",
-          location: "Northeast Kingdom, Vermont",
-          summary:
-            "Provided web development solutions to companies of varied sizes on a contractual basis. Specialized in resolving issues on existing websites and successfully migrated legacy content to online platforms.",
-        },
-      ],
-    },
-    {
-      org: "Merrill Information Systems Inc.",
-      roles: [
-        {
-          title: "SysOp",
+          title: "Retail management, web development, and ISP support",
           start: "1996-06",
-          end: "1997-08",
-          location: "St Johnsbury, VT",
+          end: "2006-06",
           summary:
-            "Managed and provided technical support for the [Kingdom Connection](https://web.archive.org/web/19970107023506/http://www.kingcon.com/) dial-up internet service, while also designing and creating websites for clients.",
-        },
-      ],
-    },
-    {
-      org: "Zigzag Productions",
-      roles: [
-        {
-          title: "Second Assistant Camera Person",
-          start: "1997-06",
-          end: "1997-06",
-          location: "Willoughby, VT",
-          summary: 'Oversaw and maintained lenses for camera operator using 35MM during production of ["Spin The Bottle"](https://www.imdb.com/title/tt0131596/).',
+            "Apple Genius and Apple Store assistant manager (mentored new Geniuses in troubleshooting); Ultimate Electronics assistant manager; freelance web developer; SysOp for the [Kingdom Connection](https://web.archive.org/web/19970107023506/http://www.kingcon.com/) dial-up ISP in Vermont.",
         },
       ],
     },
