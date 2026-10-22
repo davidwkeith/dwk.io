@@ -3,7 +3,7 @@ export const site = {
   description: "David W. Keith's personal website.",
   url: "https://dwk.io",
   language: "en",
-  fediverseCreator: "@dwk@xn--4t8h.dwk.io",
+  fediverseCreator: "@dwk@dwk.io",
   copyright: `CC-BY-4.0 David W. Keith ${new Date().getFullYear()}`,
   rating: "general",
   colorScheme: { content: "dark light" },
@@ -40,7 +40,6 @@ export const site = {
     gitlab: "https://gitlab.com/davidwkeith",
     keybase: "https://keybase.io/dwkeith",
     linkedin: "https://www.linkedin.com/in/davidwkeith",
-    mastodon: "https://xn--4t8h.dwk.io/@Dwk",
     reddit: "https://www.reddit.com/user/dwkeith",
     email: "mailto:me@dwk.io",
   },
@@ -51,13 +50,19 @@ export const site = {
       "https://keys.openpgp.org/vks/v1/by-fingerprint/DFE7AF6BB47A3B7580F50C1D2D75DC350399F54C",
       "https://keybase.io/dwkeith/pgp_keys.asc?fingerprint=dfe7af6bb47a3b7580f50c1d2d75dc350399f54c",
     ],
-    webfinger: { handle: "dwk", instance: "xn--4t8h.dwk.io" },
+    // The self-hosted ActivityPub actor (worker/config.ts), `@dwk@dwk.io`.
+    fediverse: {
+      handle: "dwk",
+      bio: "<p>Former engineer at Apple, Nest, Google, and Tara AI. Now supporting AP CS education, non-profits, leftist political candidates, and open source.</p><p>AI is a tool exploited by capitalists. Don’t hate the tool; hate the system.</p>",
+      // Accounts this actor migrated from: Mastodon's `Move` requires the
+      // origin's actor IRI here before it redirects followers.
+      alsoKnownAs: ["https://xn--4t8h.dwk.io/users/dwk"],
+    },
     nostr: { handle: "dwk", pubkey: "096a5ff28249cae96026c34167163991fb6e9729fe6257c688b40fa7e684698c" },
     atprotoDid: "did:plc:rxtknc5m5ixmscnq3xdamqxc",
     didDocument: {
       services: [
         { id: "website", type: "LinkedDomains", endpoint: "https://dwk.io" },
-        { id: "mastodon", type: "LinkedDomains", endpoint: "https://xn--4t8h.dwk.io/@dwk" },
         { id: "bluesky", type: "LinkedDomains", endpoint: "https://bsky.app/profile/dwk.io" },
       ],
     },

@@ -27,11 +27,10 @@ import { hasBearer, isOwner } from "./owner";
 export const logger = consoleLogger({ minLevel: "info" });
 
 /**
- * Local part of the test identity's `acct:` handle and ActivityPub username.
- * `acct:dwk@dwk.io` stays delegated to the Mastodon account (see `webfinger`
- * below), so the self-hosted actor gets its own handle.
+ * Local part of the owner's `acct:` handle (`@dwk@dwk.io`) and the self-hosted
+ * ActivityPub actor's username.
  */
-export const USERNAME = "test";
+export const USERNAME = site.identity.fediverse.handle;
 
 export const host = new URL(site.url).host;
 /** The owner's IndieAuth profile URL. */
@@ -69,24 +68,10 @@ function requireSecret<K extends keyof Env & string>(env: Env, name: K): NonNull
 // ---------------------------------------------------------------------------
 // Discovery
 
-const { handle, instance } = site.identity.webfinger;
-const mastodonProfile = `https://${instance}/@${handle}`;
-const mastodonActor = `https://${instance}/users/${handle}`;
-
-// The owner's handle (`@dwk@dwk.io`) resolves to the Mastodon account on the
-// instance, so it works from anywhere on the fediverse.
+// The owner's handle (`@dwk@dwk.io`): the self-hosted ActivityPub actor plus
+// remoteStorage discovery for the `/storage/<USERNAME>` account. The site's
+// URLs resolve to it too, so IndieWeb profiles discover the actor.
 const ownerAccount: ResourceRecord = {
-  aliases: [mastodonProfile, mastodonActor],
-  links: [
-    { rel: "http://webfinger.net/rel/profile-page", type: "text/html", href: mastodonProfile },
-    { rel: "self", type: "application/activity+json", href: mastodonActor },
-    { rel: "http://ostatus.org/schema/1.0/subscribe", template: `https://${instance}/authorize_interaction?uri={uri}` },
-  ],
-};
-
-// The test identity: the self-hosted ActivityPub actor plus remoteStorage
-// discovery for the `/storage/<USERNAME>` account.
-const testAccount: ResourceRecord = {
   subject: `acct:${USERNAME}@${host}`,
   aliases: [actorIri],
   links: [
@@ -98,12 +83,10 @@ const testAccount: ResourceRecord = {
 
 export const webfinger: WebfingerConfig = {
   resources: {
-    [`acct:${handle}@${host}`]: ownerAccount,
-    [`acct:${handle}@${instance}`]: ownerAccount,
+    [`acct:${USERNAME}@${host}`]: ownerAccount,
+    [actorIri]: ownerAccount,
     [site.url]: ownerAccount,
     [me]: ownerAccount,
-    [`acct:${USERNAME}@${host}`]: testAccount,
-    [actorIri]: testAccount,
   },
   logger,
 };
@@ -204,10 +187,13 @@ export function activitypub(env: Env): ActivityPubConfig {
     baseUrl: site.url,
     actor: {
       username: USERNAME,
-      name: `${schema.author.name} (test actor)`,
-      summary: "Test actor for the self-hosted @dwk/workers composition on dwk.io.",
+      name: schema.author.name,
+      summary: site.identity.fediverse.bio,
       icon: schema.author.image,
       url: me,
+      discoverable: true,
+      // The Mastodon account this actor is the `Move` target of.
+      alsoKnownAs: site.identity.fediverse.alsoKnownAs,
     },
     publicKeyPem: requireSecret(env, "ACTIVITYPUB_PUBLIC_KEY_PEM"),
     privateKeyPem: env.ACTIVITYPUB_PRIVATE_KEY_PEM,
@@ -223,6 +209,7 @@ export function mastodonApi(env: Env): Omit<MastodonApiConfig, "backend"> {
     account: {
       username: USERNAME,
       displayName: schema.author.name,
+      note: site.identity.fediverse.bio,
       url: me,
       avatar: schema.author.image,
       // First deploy of this composition; without it clients render the epoch.

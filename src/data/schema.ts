@@ -20,7 +20,7 @@ export const schema = {
       "https://www.facebook.com/davidwkeith",
       "https://www.linkedin.com/in/davidwkeith",
       "https://www.reddit.com/user/dwkeith",
-      "https://xn--4t8h.dwk.io/@dwk",
+      "https://dwk.io/users/dwk",
     ],
     affiliation: { "@type": "Organization", name: "Silicon Valley Bicycle Coalition", url: "https://bikesiliconvalley.org" },
     birthDate: "1978-12-14",
