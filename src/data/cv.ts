@@ -40,17 +40,44 @@ export interface CV {
 }
 
 export const cv: CV = {
-  headline: "Independent Software Engineer",
+  headline: "Software Engineer & Educator — Specification Literacy",
   location: "San Francisco Bay Area",
   summary:
-    "Software engineer and educator with 30+ years of industry experience spanning individual contribution at Apple and senior engineering management at Nest (Google), with a focused practice in curriculum design, developer documentation, and technical education. Actively developing a framework for teaching Specification Literacy — the ability to write unambiguous requirements that AI and distributed engineering teams can implement without ambiguity — as an 8th-grade curriculum unit: Introduction to Problem Architecture: Specification Literacy Through Algorithms and AI. Currently applying spec-driven principles in high school CS instruction through TEALS and in production agentic engineering workflows.",
-  skills: ["TypeScript", "Cloudflare", "Agentic AI Development"],
+    "Engineer, engineering manager, and developer educator with 30 years in industry, from Apple Developer Publications to leading a 50-person engineering and technical writing org at Nest (Google). I build Specification Literacy: teaching people to state what they want precisely enough that another person — or an AI — can build it without guessing. I practice it daily (a 30-plus-package open-standards monorepo written spec-first with Claude Code, conformance tests as the release bar), teach it in high school CS through TEALS, and am turning it into an 8th-grade unit, Introduction to Problem Architecture: Specification Literacy Through Algorithms and AI.",
+  skills: [
+    "Specification writing",
+    "Curriculum design",
+    "Developer education & documentation",
+    "API & protocol design",
+    "Agentic AI development (Claude Code, Codex)",
+    "Engineering management",
+    "Open web standards (IndieWeb, ActivityPub, Solid)",
+    "TypeScript",
+    "Cloudflare Workers",
+  ],
   patents: [
     "[Systems and methods of determining a type and feature set of a light source, and the control thereof](https://patents.google.com/patent/US9894735)",
     "[Rule-based rate limiting](https://patents.google.com/patent/US9660948)",
     "[Selectively restricting communications from third party applications/devices to electronic devices](https://patents.google.com/patent/US10084783)",
   ],
   experience: [
+    {
+      org: "Self-employed",
+      roles: [
+        {
+          title: "Independent Software Engineer",
+          start: "2021-11",
+          location: "Santa Clara, California",
+          summary:
+            "Spec-first agentic engineering with Claude Code, Codex, and LM Studio: requirements and research are written with the AI before any code is generated, and human review plus conformance tests are the quality gate.",
+          highlights: [
+            "Wrote and built [@dwk/workers](https://github.com/davidwkeith/workers), 30+ TypeScript packages implementing open web standards (IndieAuth, Micropub, Webmention, ActivityPub, Solid, AT Protocol). Each package is generated from its own [written spec](https://github.com/davidwkeith/workers/tree/main/spec), and none can ship a stable release until it passes its standard's conformance suite",
+            "Runs the whole stack on this site: [dwk.io](https://dwk.io) is a working personal server for the open social web",
+            "Created [Anglesite](https://anglesite.dwk.io), an open source Claude Code and Claude Cowork plugin that acts as webmaster for small organizations, candidates, and local governments",
+          ],
+        },
+      ],
+    },
     {
       org: "Silicon Valley Bicycle Coalition",
       url: "https://bikesiliconvalley.org",
@@ -66,18 +93,6 @@ export const cv: CV = {
             "Replaced a paid event calendar SaaS product with a [custom-built equivalent](https://events.bikesiliconvalley.org/widget) running on Cloudflare's free tier",
             "Built a Gemini-powered Help Desk agent with knowledge of SVBC's SaaS stack, enabling staff to self-serve technical support previously handled by volunteer time",
           ],
-        },
-      ],
-    },
-    {
-      org: "Self-employed",
-      roles: [
-        {
-          title: "Independent Software Engineer",
-          start: "2021-11",
-          location: "Santa Clara, California",
-          summary:
-            "Agentic engineering practice using Claude Code, Codex, and LM Studio. Development workflow has transitioned from code-first to specification-first: research and spec are built collaboratively with AI before generation begins, with human evaluation as the quality gate. Active contributor to open source civic technology, including [Anglesite](https://anglesite.dwk.io), an AI-powered webmaster for small organizations, candidates, and local governments.",
         },
       ],
     },
@@ -135,12 +150,12 @@ export const cv: CV = {
           end: "2017-06",
           location: "Palo Alto, CA",
           summary:
-            "Managed a team of 50 engineers and writers across Nest's web app, online store, marketing site, B2B portals, and developer programs. Co-designed the [Works with Nest API](https://web.archive.org/web/20160708075828/https://developers.nest.com/) — a behavior-driven specification for IoT device interoperability that became the conceptual model for [Matter](https://csa-iot.org/all-solutions/matter/), the open industry standard for home automation. Owned all developer curriculum and documentation for the program.",
+            "Managed a team of 50 engineers and writers across Nest's web app, online store, marketing site, B2B portals, and developer programs. Co-designed the [Works with Nest API](https://web.archive.org/web/20160708075828/https://developers.nest.com/), a behavior-driven specification for IoT device interoperability and a precursor of [Matter](https://csa-iot.org/all-solutions/matter/), the open home automation standard. Owned all developer curriculum and documentation for the program.",
           highlights: [
             "Built and managed the technical writing team responsible for educating hundreds of third-party engineers on a novel device-first home automation paradigm",
-            "Iterated documentation from API reference to full theoretical framework after identifying that developers needed the why, not just the what — modeled on scrum's feedback-driven development cycle",
+            "Rebuilt the docs from an API reference into a conceptual framework once support data showed developers needed the why, not just the what; iterated each release on that feedback",
             "Measurable outcomes: support questions about HVAC control, error responses, and rate limiting dropped significantly with each documentation iteration; third-party integration bugs declined after simulators replaced the need for physical test environments",
-            "Program scaled to hundreds of developers and became the foundation for Matter",
+            "Program scaled to hundreds of third-party developers",
             "Secured two patents related to the Works with Nest platform",
           ],
         },
