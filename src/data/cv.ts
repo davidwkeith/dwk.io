@@ -207,22 +207,6 @@ export const cv: CV = {
           summary:
             "Led contract engineering team to streamline the Genius Bar repair workflow in PeopleSoft, saving five minutes per repair and scaling to support iPhone launch across hundreds of stores by providing inline documentation at the point of use to retail staff.",
         },
-        {
-          title: "Genius",
-          start: "2004-06",
-          end: "2006-06",
-          location: "Bloomington, MN",
-          summary:
-            "Successfully managed a 300% growth in business, with a proven track record of quickly fixing customers' broken devices and restoring relationships with Apple in under 15 minutes. Developed time-saving systems to optimize workflow, and provided mentorship to new Geniuses in troubleshooting techniques and system usage.",
-        },
-        {
-          title: "Assistant Manager",
-          start: "2002-10",
-          end: "2004-06",
-          location: "Edina, MN",
-          summary:
-            "Managed visual merchandising and demo inventory, creating a database to improve inventory accuracy and streamline display merchandise movements for a new store opening. Demonstrated expertise in technical skills.",
-        },
       ],
     },
     {
@@ -239,54 +223,14 @@ export const cv: CV = {
       ],
     },
     {
-      org: "Ultimate Electronics",
-      url: "https://web.archive.org/web/20020523010818/http://www.ultimateelectronics.com/",
+      org: "Earlier career",
       roles: [
         {
-          title: "Assistant Manager",
-          start: "2000-05",
-          end: "2002-10",
-          location: "Brooklyn Park, MN",
-          summary:
-            "Developed top-performing sales teams in two departments during the company's biggest growth period. Achieved highest dollars sold per square foot in store and earned recognition for outstanding customer service. Consulted with the training department on developing employees with technical skills.",
-        },
-      ],
-    },
-    {
-      org: "Self-employed",
-      roles: [
-        {
-          title: "UX Engineer — Independent Web Design",
-          start: "1997-01",
-          end: "2000-05",
-          location: "Northeast Kingdom, Vermont",
-          summary:
-            "Provided web development solutions to companies of varied sizes on a contractual basis. Specialized in resolving issues on existing websites and successfully migrated legacy content to online platforms.",
-        },
-      ],
-    },
-    {
-      org: "Merrill Information Systems Inc.",
-      roles: [
-        {
-          title: "SysOp",
+          title: "Retail management, web development, and ISP support",
           start: "1996-06",
-          end: "1997-08",
-          location: "St Johnsbury, VT",
+          end: "2006-06",
           summary:
-            "Managed and provided technical support for the [Kingdom Connection](https://web.archive.org/web/19970107023506/http://www.kingcon.com/) dial-up internet service, while also designing and creating websites for clients.",
-        },
-      ],
-    },
-    {
-      org: "Zigzag Productions",
-      roles: [
-        {
-          title: "Second Assistant Camera Person",
-          start: "1997-06",
-          end: "1997-06",
-          location: "Willoughby, VT",
-          summary: 'Oversaw and maintained lenses for camera operator using 35MM during production of ["Spin The Bottle"](https://www.imdb.com/title/tt0131596/).',
+            "Apple Genius and Apple Store assistant manager (mentored new Geniuses in troubleshooting); Ultimate Electronics assistant manager; freelance web developer; SysOp for the [Kingdom Connection](https://web.archive.org/web/19970107023506/http://www.kingcon.com/) dial-up ISP in Vermont.",
         },
       ],
     },
