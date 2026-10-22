@@ -171,6 +171,6 @@ describe("authorship", () => {
   it("gives the representative h-card a visible photo and note", async () => {
     const html = await (await get("/")).text();
     expect(html).toContain('<img class="u-photo" src="/icon-512.png"');
-    expect(html).toContain('<span class="p-note">Independent Software Engineer</span>');
+    expect(html).toContain('<span class="p-note">Software Engineer &amp; Educator — Specification Literacy</span>');
   });
 });
