@@ -57,6 +57,8 @@ export interface Env
    * issuance. Interim until those packages authenticate via Solid-OIDC.
    */
   readonly OWNER_TOKEN?: string;
+  /** Bearer that resource servers present to the IndieAuth introspection endpoint; unset, it isn't served. */
+  readonly INTROSPECTION_TOKEN?: string;
   /** ActivityPub actor keypair (PEM; the private half signs deliveries). */
   readonly ACTIVITYPUB_PUBLIC_KEY_PEM?: string;
   readonly ACTIVITYPUB_PRIVATE_KEY_PEM?: string;

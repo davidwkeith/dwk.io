@@ -10,7 +10,7 @@ export default defineConfig({
       wrangler: { configPath: "./wrangler.jsonc" },
       // A test-only signing key, so the token-guarded mounts (IndieAuth,
       // Micropub, Microsub) serve instead of answering 503 not_configured.
-      miniflare: { bindings: { TOKEN_SIGNING_KEY: "test-signing-key" } },
+      miniflare: { bindings: { TOKEN_SIGNING_KEY: "test-signing-key", INTROSPECTION_TOKEN: "test-introspection-token" } },
     }),
   ],
   test: {
