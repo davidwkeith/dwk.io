@@ -79,6 +79,18 @@ export const cv: CV = {
       ],
     },
     {
+      org: "TEALS (Microsoft Philanthropies)",
+      url: "https://www.microsoft.com/en-us/teals",
+      roles: [
+        {
+          title: "Volunteer Computer Science Teacher",
+          start: "2018-08",
+          location: "Thomas Jefferson High School, Los Angeles, California",
+          summary: "Co-teaches high school computer science, applying specification-first problem solving in the classroom.",
+        },
+      ],
+    },
+    {
       org: "Silicon Valley Bicycle Coalition",
       url: "https://bikesiliconvalley.org",
       roles: [
@@ -154,7 +166,7 @@ export const cv: CV = {
           highlights: [
             "Built and managed the technical writing team responsible for educating hundreds of third-party engineers on a novel device-first home automation paradigm",
             "Rebuilt the docs from an API reference into a conceptual framework once support data showed developers needed the why, not just the what; iterated each release on that feedback",
-            "Measurable outcomes: support questions about HVAC control, error responses, and rate limiting dropped significantly with each documentation iteration; third-party integration bugs declined after simulators replaced the need for physical test environments",
+            "Support questions about HVAC control, error responses, and rate limiting fell with each documentation release, and third-party integration bugs declined once simulators replaced physical test hardware",
             "Program scaled to hundreds of third-party developers",
             "Secured two patents related to the Works with Nest platform",
           ],
