@@ -49,7 +49,7 @@ Personal portfolio/project showcase website.
 **@dwk/workers composition:** every endpoint package from [davidwkeith/workers](https://github.com/davidwkeith/workers) is mounted in this one Worker, mirroring that repo's `packages/conformance-target` (the reference composition) with this site's identity:
 
 - `worker/env.ts` — `Env`, the union of every package's binding fragment plus this site's secrets.
-- `worker/config.ts` — one config per package, built from `src/data/site.ts`. `USERNAME` (`test`) is the self-hosted ActivityPub actor's handle: `acct:dwk@dwk.io` stays delegated to the Mastodon account, so the actor at `/users/test` gets its own.
+- `worker/config.ts` — one config per package, built from `src/data/site.ts`. `USERNAME` (`dwk`, from `site.identity.fediverse`) is the self-hosted ActivityPub actor's handle: `acct:dwk@dwk.io` resolves to the actor at `/users/dwk`, whose `alsoKnownAs` names the Mastodon account at `xn--4t8h.dwk.io` it is the `Move` target of.
 - `worker/mounts.ts` — the mount table (path → package handler, first match wins; unmatched paths fall through to the static site). Handlers build lazily, so a mount whose secret is unset answers 503 while the rest of the site keeps serving.
 - `worker/owner.ts` — the owner-only test surfaces behind the `OWNER_TOKEN` bearer: `POST /admin/init` (one-time D1 schema init; run it after the first deploy) and `POST /webmention/send`.
 - `worker/posts.ts` — Micropub posts on the site: new posts get `/posts/<slug>` URLs (no trailing slash: on a slug collision `@dwk/micropub` appends `-xxxx`); the Worker renders `/posts/` (h-feed) and each permalink (h-entry) from the `@dwk/micropub` D1 store into the static `/post-shell/` page (itself a 404 and left out of the sitemap), and `worker/site.ts` adds them to `feed.xml`/`feed.json` and `llms.txt` and serves `/sitemap-posts.xml` (listed in `sitemap-index.xml` through `@astrojs/sitemap`'s `customSitemaps`). Drafts and `visibility: private` posts are never served; unlisted ones only at their permalink.
@@ -65,7 +65,7 @@ Personal portfolio/project showcase website.
 | `/microsub` | `@dwk/microsub` (feeds polled by the cron → `dwk-microsub` queue) |
 | `/webmention` (+ `/webmention/send`) | `@dwk/webmention` (verification on the `dwk-webmention-verify` queue, inbox in D1, 30 req/60s per IP) |
 | `/websub` | `@dwk/websub` hub for `/`, `/feed.xml`, `/feed.json` (`dwk-websub` queue; the cron pings it when a deploy changes a topic, via `worker/publish.ts`) |
-| `/users/test*`, `/inbox`, `/.well-known/nodeinfo`, `/nodeinfo/*` | `@dwk/activitypub` (per-actor Durable Object `ACTOR`) |
+| `/users/dwk*`, `/inbox`, `/.well-known/nodeinfo`, `/nodeinfo/*` | `@dwk/activitypub` (per-actor Durable Object `ACTOR`) |
 | `/api/v1/*`, `/api/v2/*`, `/oauth/{authorize,token,revoke}` | `@dwk/mastodon-api` over the same actor |
 | `/storage/<account>/*` | `@dwk/remotestorage` (Durable Object `STORAGE`) |
 | `/pod/*`, `/dav/*`, `/dav-credentials` | `@dwk/solid-pod` LDP door, its WebDAV door (a separate pod), app passwords (Durable Object `POD`) |
@@ -84,7 +84,7 @@ All D1 bindings point at the one `dwk-indieauth` database (the free-plan databas
 | `OWNER_TOKEN` | `/admin/init`, `/webmention/send`, pod and remoteStorage writes, `/dav-credentials`, WebAuthn registration, VC issuance | random; keep it, it is the owner's bearer |
 | `INTROSPECTION_TOKEN` | the bearer resource servers send to `/auth/introspect` (IndieAuth §6.1); unset, the endpoint isn't served or advertised | random; give it to the resource server |
 | `ACTIVITYPUB_PUBLIC_KEY_PEM`, `ACTIVITYPUB_PRIVATE_KEY_PEM` | the actor's signatures (the public half is published in the actor document) | RSA 2048 PEMs |
-| `ACTIVITYPUB_PUBLISH_TOKEN` | `POST /users/test/outbox` and `/publish`; also turns on Micropub → fediverse syndication | random; keep it |
+| `ACTIVITYPUB_PUBLISH_TOKEN` | `POST /users/dwk/outbox` and `/publish`; also turns on Micropub → fediverse syndication | random; keep it |
 | `ATPROTO_PASSWORD`, `ATPROTO_JWT_SECRET` | `com.atproto.server.createSession` (identifier `dwk.io`) and its JWTs | random; keep the password |
 | `VC_SIGNING_KEY` | signs credentials and status lists as `did:web:dwk.io#key-0` | P-256 private JWK |
 | `WEBDAV_PEPPER` | app-password hashing for the WebDAV door | random |
