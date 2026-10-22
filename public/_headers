@@ -8,6 +8,28 @@
   Content-Security-Policy: default-src 'none'; script-src 'self' 'inline-speculation-rules' https://static.cloudflareinsights.com; style-src 'self'; img-src 'self' https://app.greenweb.org https://s3.nl-ams.scw.cloud; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
 
+# Images other sites embed (the IndieAuth profile photo shown by Quill and
+# other clients, feed and h-entry images): readable cross-origin.
+/icon-512.png
+  ! Cross-Origin-Resource-Policy
+  Cross-Origin-Resource-Policy: cross-origin
+
+/icon-192.png
+  ! Cross-Origin-Resource-Policy
+  Cross-Origin-Resource-Policy: cross-origin
+
+/apple-touch-icon.png
+  ! Cross-Origin-Resource-Policy
+  Cross-Origin-Resource-Policy: cross-origin
+
+/favicon.ico
+  ! Cross-Origin-Resource-Policy
+  Cross-Origin-Resource-Policy: cross-origin
+
+/img/*
+  ! Cross-Origin-Resource-Policy
+  Cross-Origin-Resource-Policy: cross-origin
+
 /.well-known/nostr.json
   Content-Type: application/json; charset=utf-8
   Access-Control-Allow-Origin: *

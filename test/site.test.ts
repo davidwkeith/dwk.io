@@ -159,6 +159,15 @@ describe("sitemap and llms.txt", () => {
   });
 });
 
+describe("cross-origin embedding", () => {
+  it("lets other sites show the profile photo and images, but not embed pages", async () => {
+    for (const path of ["/icon-512.png", "/img/memoji.png"]) {
+      expect((await get(path)).headers.get("cross-origin-resource-policy"), path).toBe("cross-origin");
+    }
+    expect((await get("/")).headers.get("cross-origin-resource-policy")).toBe("same-origin");
+  });
+});
+
 describe("authorship", () => {
   it("names the author visibly on h-feeds and h-entries, with nothing hidden", async () => {
     for (const path of ["/", "/anglesite/", "/posts/", "/posts/hello"]) {
