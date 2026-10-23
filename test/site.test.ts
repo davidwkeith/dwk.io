@@ -58,7 +58,8 @@ describe("posts", () => {
     expect(html).toContain('"@type":"BlogPosting"');
     expect(html).toContain('<article class="h-entry"><h2 class="p-name">Hello IndieWeb</h2>');
     expect(html).toContain('<span class="p-category">indieweb</span>');
-    expect(html).toContain('class="u-syndication" rel="syndication" href="https://bsky.app/profile/dwk.io/post/abc"');
+    // Other sites are labelled by host.
+    expect(html).toContain('class="u-syndication" rel="syndication" href="https://bsky.app/profile/dwk.io/post/abc">bsky.app</a>');
     expect(html).toContain('data-webmentions="https://dwk.io/posts/hello"');
     expect(html).toContain('<input type="hidden" name="target" value="https://dwk.io/posts/hello">');
   });

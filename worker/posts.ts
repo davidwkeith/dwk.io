@@ -173,6 +173,10 @@ function contextHtml(props: Props) {
     .join("");
 }
 
+/** The self-hosted actor's own copies (its outbox objects), labelled for what they are rather than by host. */
+const actorPrefix = `${site.url}/users/${site.identity.fediverse.handle}/`;
+const syndicationLabel = (url: string) => (url.startsWith(actorPrefix) ? "Fediverse" : new URL(url).host);
+
 function entryHtml(record: PostRecord) {
   const view = viewOf(record);
   const props = record.properties;
@@ -180,7 +184,7 @@ function entryHtml(record: PostRecord) {
   const syndication = strings(props, "syndication")
     .flatMap((s) => {
       const url = httpUrl(s);
-      return url ? [`<li><a class="u-syndication" rel="syndication" href="${escapeHtml(url)}">${escapeHtml(new URL(url).host)}</a></li>`] : [];
+      return url ? [`<li><a class="u-syndication" rel="syndication" href="${escapeHtml(url)}">${escapeHtml(syndicationLabel(url))}</a></li>`] : [];
     })
     .join("");
   return (

@@ -93,7 +93,7 @@ describe("Micropub → fediverse syndication", () => {
     const browser = await siteFetch(apEnv)(copy!, { headers: { accept: "text/html" }, redirect: "manual" });
     expect(browser.status).toBe(302);
     expect(browser.headers.get("location")).toBe(permalink);
-    expect(await (await siteFetch(apEnv)(permalink)).text()).toContain(`class="u-syndication" rel="syndication" href="${copy}"`);
+    expect(await (await siteFetch(apEnv)(permalink)).text()).toContain(`class="u-syndication" rel="syndication" href="${copy}">Fediverse</a>`);
     const toSelf = networkFetch.mock.calls.filter(([input]) => new URL(input instanceof Request ? input.url : String(input)).origin === "https://dwk.io");
     expect(toSelf).toEqual([]);
   });
