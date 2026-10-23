@@ -80,6 +80,16 @@ describe("Micropub → fediverse syndication", () => {
 
     const outbox = await siteFetch(apEnv)("https://dwk.io/users/dwk/outbox", { headers: { accept: "application/activity+json" } });
     expect(((await outbox.json()) as { totalItems: number }).totalItems).toBe(1);
+
+    // The post records its fediverse copy (u-syndication), and the copy
+    // dereferences, linking back to the post.
+    const permalink = res.headers.get("location")!;
+    const post = await createMicropubStore(apEnv).getPost(permalink);
+    const [copy] = (post?.properties.syndication ?? []) as string[];
+    expect(copy).toMatch(/^https:\/\/dwk\.io\/users\/dwk\/outbox\/[0-9a-f-]+\/object$/);
+    const note = await siteFetch(apEnv)(copy!, { headers: { accept: "application/activity+json" } });
+    expect(await note.json()).toMatchObject({ id: copy, type: "Note", url: permalink });
+    expect(await (await siteFetch(apEnv)(permalink)).text()).toContain(`class="u-syndication" rel="syndication" href="${copy}"`);
     const toSelf = networkFetch.mock.calls.filter(([input]) => new URL(input instanceof Request ? input.url : String(input)).origin === "https://dwk.io");
     expect(toSelf).toEqual([]);
   });
