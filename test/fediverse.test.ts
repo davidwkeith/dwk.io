@@ -2,6 +2,7 @@
 // up as the target of a Mastodon `Move` from the old instance account.
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { buildActorDocument, deriveIris } from "@dwk/activitypub";
 import { activitypub } from "../worker/config";
 import type { Env } from "../worker/env";
 
@@ -22,5 +23,16 @@ describe("actor", () => {
     const config = activitypub({ ACTIVITYPUB_PUBLIC_KEY_PEM: "test-pem" } as Env);
     expect(config.actor.username).toBe("dwk");
     expect(config.actor.alsoKnownAs).toEqual(["https://xn--4t8h.dwk.io/users/dwk"]);
+  });
+
+  it("lists the site as a rel=me Website field, which the site links back to", async () => {
+    const config = activitypub({ ACTIVITYPUB_PUBLIC_KEY_PEM: "test-pem" } as Env);
+    const doc = buildActorDocument(deriveIris(config.baseUrl, "dwk"), config.actor, "test-pem");
+    expect(doc.attachment).toEqual([
+      { type: "PropertyValue", name: "Website", value: '<a href="https://dwk.io/" rel="me nofollow noopener" target="_blank">dwk.io</a>' },
+    ]);
+    // Mastodon marks the field verified when the page links back to the actor's url with rel="me".
+    const home = await (await SELF.fetch("https://dwk.io/")).text();
+    expect(home).toMatch(/<a rel="[^"]*\bme\b[^"]*"[^>]*href="https:\/\/dwk\.io"/);
   });
 });
