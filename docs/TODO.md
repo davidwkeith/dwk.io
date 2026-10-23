@@ -21,7 +21,8 @@ Move:
 
 - [ ] Export from the 📟 account (Preferences → Import and export → Data
       export): Follows CSV, plus lists, mutes, blocks, bookmarks and the
-      archive, none of which move
+      archive, none of which move; keep them out of the repo (`.gitignore`
+      covers `following_accounts*.csv` and the script's `*.sent.json`)
 - [ ] Start the move from the 📟 account (Account → Move to a different
       account) to `@dwk@dwk.io`
 - [ ] `ACTIVITYPUB_PUBLISH_TOKEN=… node scripts/refollow.mjs following_accounts.csv --dry-run`,
