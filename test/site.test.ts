@@ -45,6 +45,14 @@ describe("posts", () => {
     for (const slug of ["draft", "private", "unlisted"]) expect(html).not.toContain(`/posts/${slug}`);
     // The index takes no webmentions.
     expect(html).not.toContain("data-webmentions");
+    // Each entry carries its content, for readers following the h-feed: a
+    // named post keeps its name apart, a note's content is its name.
+    expect(html).toContain('<h3 class="p-name"><a href="https://dwk.io/posts/hello">Hello IndieWeb</a></h3><div class="e-content"><p>First post.</p></div>');
+    expect(html).toContain('<div class="e-content p-name"><p>A note &quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;</p></div>');
+    expect(html).toContain('<a class="u-url u-uid" href="https://dwk.io/posts/note">');
+    // It's a WebSub topic, so it names its hub.
+    expect(res.headers.get("link")).toBe('<https://dwk.io/websub>; rel="hub", <https://dwk.io/posts/>; rel="self"');
+    expect(res.headers.get("content-type")).toBe("text/html; charset=utf-8");
   });
 
   it("renders a permalink as an h-entry with its head filled in", async () => {
@@ -94,6 +102,13 @@ describe("feeds", () => {
     const dates = feed.items.map((i) => i.date_published);
     expect([...dates].sort().reverse()).toEqual(dates);
     expect(feed.hubs).toEqual([{ type: "WebSub", url: "https://dwk.io/websub" }]);
+  });
+
+  it("serves the JSON Feed as application/feed+json and HTML with its charset", async () => {
+    expect((await get("/feed.json")).headers.get("content-type")).toBe("application/feed+json; charset=utf-8");
+    for (const path of ["/", "/anglesite/", "/posts/hello"]) {
+      expect((await get(path)).headers.get("content-type"), path).toBe("text/html; charset=utf-8");
+    }
   });
 
   it("adds public posts to the Atom feed as entries", async () => {

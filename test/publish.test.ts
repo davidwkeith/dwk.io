@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { publishChangedTopics } from "../worker/publish";
 import { resetD1 } from "./reset";
 
-const TOPICS = ["https://dwk.io/", "https://dwk.io/feed.xml", "https://dwk.io/feed.json"];
+const TOPICS = ["https://dwk.io/", "https://dwk.io/feed.xml", "https://dwk.io/feed.json", "https://dwk.io/posts/"];
 
 /** The topics the cron enqueued a WebSub distribution for. */
 function published(send: { mock: { calls: unknown[][] } }) {
@@ -30,11 +30,11 @@ describe("publishChangedTopics", () => {
     await publishChangedTopics(env);
     expect(send).not.toHaveBeenCalled();
 
-    // A new post changes both feeds, not the static home page.
+    // A new post changes both feeds and the posts h-feed, not the static home page.
     await createMicropubStore(env).insertPost({ url: "https://dwk.io/posts/new", type: "h-entry", properties: { content: ["New"] }, now: 1_760_000_000 });
     send.mockClear();
     await publishChangedTopics(env);
-    expect(published(send)).toEqual(["https://dwk.io/feed.json", "https://dwk.io/feed.xml"]);
+    expect(published(send)).toEqual(["https://dwk.io/feed.json", "https://dwk.io/feed.xml", "https://dwk.io/posts/"]);
   });
 
   it("still pings the other topics when one fails, and retries the failed one next run", async () => {

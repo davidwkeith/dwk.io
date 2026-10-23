@@ -51,6 +51,7 @@
   Link: <https://dwk.io/websub>; rel="hub", <https://dwk.io/feed.xml>; rel="self"
 
 /feed.json
+  Content-Type: application/feed+json; charset=utf-8
   Link: <https://dwk.io/websub>; rel="hub", <https://dwk.io/feed.json>; rel="self"
 
 /_astro/*
