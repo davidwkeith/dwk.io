@@ -10,6 +10,7 @@ Personal portfolio/project showcase website.
 - `npm test` — Build, then run the Vitest suite in `test/` inside workerd (`@cloudflare/vitest-plugin`, bindings from `wrangler.jsonc`); CI runs `check` and `test` on every PR (`.github/workflows/test.yml`)
 - `npm run preview` — Preview production build locally
 - `npm run deploy` — Build and deploy to the `dwk` Cloudflare Worker (static assets)
+- `ACTIVITYPUB_PUBLISH_TOKEN=… node scripts/refollow.mjs following_accounts.csv [--dry-run]` — after the Mastodon `Move`, re-follow from `/users/dwk` every account in the old account's Follows export (WebFinger, falling back to the old instance's lookup API; skips accounts already in `/users/dwk/following`, so rerun it to retry)
 
 ## Architecture
 
