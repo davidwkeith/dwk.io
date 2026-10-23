@@ -133,7 +133,7 @@ Previews do not inherit production secrets. Set a Preview's own with `npx wrangl
 ## Testing
 
 - Unit tests import `worker/` modules directly; integration tests drive the whole Worker through `SELF.fetch` with local D1 seeded via the packages' own stores. Local D1 persists across tests, so call `resetD1()` (`test/reset.ts`) in `beforeEach`.
-- Test secrets are fixed values in `miniflare.bindings` (`vitest.config.ts`: `TOKEN_SIGNING_KEY`, `INTROSPECTION_TOKEN`), which win over a local `.dev.vars`; tests that need keypairs (`test/syndication.test.ts`) generate them and pass their own `env`. No secret file is needed, locally or in CI.
+- Test secrets are fixed values in `miniflare.bindings` (`vitest.config.ts`: `TOKEN_SIGNING_KEY`, `INTROSPECTION_TOKEN`); tests that need keypairs (`test/syndication.test.ts`) generate them and pass their own `env`. No secret file is needed, locally or in CI. The suite is hermetic: wrangler would otherwise fill the test `env` from a local `.dev.vars` or `.env` (GPG key and API token included), so `vitest.config.ts` turns `.env` loading off and blanks every key a `.dev.vars` defines.
 - `cloudflare:test` is typed by the minimal `test/cloudflare-test.d.ts`, not `@cloudflare/workers-types`: installing that package makes the `@dwk` packages' binding types disagree in `worker/env.ts`.
 - Spy on `env.WEBSUB_QUEUE.send` (see `test/publish.test.ts`) so the hub's queue consumer doesn't fetch the real dwk.io.
 - With npm 10, `npm install` of vitest packages fails with `Cannot read properties of null (reading 'edgesOut')` (an arborist bug); use `npx npm@11 install …`. `npm ci` is unaffected.
