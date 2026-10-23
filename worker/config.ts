@@ -205,6 +205,8 @@ export function activitypub(env: Env): ActivityPubConfig {
       discoverable: true,
       // The Mastodon account this actor is the `Move` target of.
       alsoKnownAs: site.identity.fediverse.alsoKnownAs,
+      // Profile fields; the site links back with rel="me", so Mastodon shows it verified.
+      fields: [{ name: "Website", value: me }],
     },
     publicKeyPem: requireSecret(env, "ACTIVITYPUB_PUBLIC_KEY_PEM"),
     privateKeyPem: env.ACTIVITYPUB_PRIVATE_KEY_PEM,
