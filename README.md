@@ -23,7 +23,7 @@ The `src/integrations/postbuild.ts` Astro integration runs at the end of every b
 Signing happens at build time, so `GPG_PRIVATE_KEY` (and `GPG_PASSPHRASE`, if the key has one) must be
 **build** secrets: Cloudflare dashboard → Workers → `dwk` → Settings → Build → Variables and secrets.
 Runtime secrets (`wrangler secret put`) are only visible to `worker.js` and won't work. Production builds
-on `main` fail if the key is missing. For local `npm run deploy`, put the same values in `.env`.
+on `main` fail if the key is missing. For local `npm run deploy`, put the same values in `.env` (template: `.env.example`).
 
 Variables are capped at 5 KB and the dashboard strips newlines, so store a minimal export of the
 Ed25519 signing subkey, base64-encoded on one line (`.env` may hold the armored key as-is):
