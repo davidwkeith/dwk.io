@@ -1,0 +1,35 @@
+# Local Worker secrets for `npx wrangler dev`. Copy to `.dev.vars` (gitignored)
+# and fill in. Production uses `npx wrangler secret put <NAME>`; CLAUDE.md →
+# "Secrets" has what each one does and the commands that generate them.
+# Build-time and deploy variables (GPG key, wrangler auth) are in `.env.example`.
+#
+# A mount whose secret is empty answers 503 `not_configured`; only
+# TOKEN_SIGNING_KEY is needed for the site to serve. Random values:
+# `openssl rand -base64 32`. Multi-line PEMs go in double quotes with real
+# line breaks. ACCESS_TEAM_DOMAIN/ACCESS_AUD are vars in wrangler.jsonc.
+
+TOKEN_SIGNING_KEY=
+# Owner bearer: /admin/init (run once against local D1), /webmention/send,
+# pod and remoteStorage writes, /dav-credentials, WebAuthn registration, VC issuance.
+OWNER_TOKEN=
+# Optional: enables /auth/introspect.
+INTROSPECTION_TOKEN=
+
+# ActivityPub actor keypair:
+#   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out ap.pem
+#   openssl pkey -in ap.pem -pubout -out ap.pub.pem
+ACTIVITYPUB_PUBLIC_KEY_PEM="-----BEGIN PUBLIC KEY-----
+...
+-----END PUBLIC KEY-----"
+ACTIVITYPUB_PRIVATE_KEY_PEM="-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----"
+# Owner publish endpoints; also turns on Micropub → fediverse syndication.
+ACTIVITYPUB_PUBLISH_TOKEN=
+
+ATPROTO_PASSWORD=
+ATPROTO_JWT_SECRET=
+
+# P-256 private JWK, one line, single-quoted (CLAUDE.md has the node one-liner).
+VC_SIGNING_KEY='{"kty":"EC","crv":"P-256","x":"…","y":"…","d":"…"}'
+WEBDAV_PEPPER=
