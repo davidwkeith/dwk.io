@@ -13,3 +13,7 @@ dist/
 
 # Local Worker secrets for `wrangler dev`
 .dev.vars
+
+# Mastodon data exports and scripts/refollow.mjs state (personal data)
+following_accounts*.csv
+*.sent.json
