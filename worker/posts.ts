@@ -199,11 +199,16 @@ function entryHtml(record: PostRecord) {
   );
 }
 
+// Each entry carries its content, so a reader following the h-feed gets the
+// posts themselves, not just their titles.
 function indexHtml(records: readonly PostRecord[]) {
   const items = records
     .map((record) => {
       const view = viewOf(record);
-      return `<li class="h-entry"><a class="u-url p-name" href="${escapeHtml(view.url)}">${escapeHtml(view.title)}</a> · ${timeTag(view.published)}</li>`;
+      const permalink = `<a class="u-url u-uid" href="${escapeHtml(view.url)}">${timeTag(view.published)}</a>`;
+      return view.name
+        ? `<li class="h-entry"><h3 class="p-name"><a href="${escapeHtml(view.url)}">${escapeHtml(view.name)}</a></h3><div class="e-content">${view.contentHtml}</div><p>${permalink}</p></li>`
+        : `<li class="h-entry"><div class="e-content p-name">${view.contentHtml}</div><p>${permalink}</p></li>`;
     })
     .join("");
   const author = `<a class="p-author h-card" href="${escapeHtml(schema.author.url)}">${escapeHtml(schema.author.name)}</a>`;
@@ -279,7 +284,7 @@ export async function servePosts(request: Request, env: Env): Promise<Response> 
 
   if (url.pathname === POSTS_PATH) {
     const records = await listPublicPosts(env);
-    return fillShell(shell, {
+    const page = fillShell(shell, {
       url: pageUrl,
       title: "Posts",
       description: `Posts by ${schema.author.name}.`,
@@ -287,6 +292,10 @@ export async function servePosts(request: Request, env: Env): Promise<Response> 
       jsonLd: { "@context": "https://schema.org", "@type": "Blog", name: `${site.title}: Posts`, url: pageUrl, author: schema.author },
       isEntry: false,
     });
+    // The h-feed is a WebSub topic (worker/config.ts), so it names its hub.
+    const res = new Response(page.body, page);
+    res.headers.set("link", `<${site.hub}>; rel="hub", <${pageUrl}>; rel="self"`);
+    return res;
   }
 
   const record = await createMicropubStore(env).getPost(pageUrl);

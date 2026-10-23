@@ -65,7 +65,7 @@ Personal portfolio/project showcase website.
 | `/micropub`, `/media/*` | `@dwk/micropub` (syndicates to the actor when `ACTIVITYPUB_PUBLISH_TOKEN` is set: the Note links back to the post as its `url`, and the post records the Note as its `u-syndication`) |
 | `/microsub` | `@dwk/microsub` (feeds polled by the cron → `dwk-microsub` queue) |
 | `/webmention` (+ `/webmention/send`) | `@dwk/webmention` (verification on the `dwk-webmention-verify` queue, inbox in D1, 30 req/60s per IP) |
-| `/websub` | `@dwk/websub` hub for `/`, `/feed.xml`, `/feed.json` (`dwk-websub` queue; the cron pings it when a deploy changes a topic, via `worker/publish.ts`) |
+| `/websub` | `@dwk/websub` hub for `/`, `/feed.xml`, `/feed.json`, `/posts/` (`dwk-websub` queue; the cron pings it when a deploy changes a topic, via `worker/publish.ts`) |
 | `/users/dwk*`, `/inbox`, `/.well-known/nodeinfo`, `/nodeinfo/*` | `@dwk/activitypub` (per-actor Durable Object `ACTOR`) |
 | `/api/v1/*`, `/api/v2/*`, `/oauth/{authorize,token,revoke}` | `@dwk/mastodon-api` over the same actor |
 | `/storage/<account>/*` | `@dwk/remotestorage` (Durable Object `STORAGE`) |

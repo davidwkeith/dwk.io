@@ -112,7 +112,19 @@ async function withPostsInLlms(llms: Response, env: Env): Promise<Response> {
   return new Response(body, { status: llms.status, headers });
 }
 
+// Workers Static Assets sends HTML as a bare `text/html`; name the encoding.
+function withCharset(response: Response) {
+  if (response.headers.get("content-type") !== "text/html") return response;
+  const res = new Response(response.body, response);
+  res.headers.set("content-type", "text/html; charset=utf-8");
+  return res;
+}
+
 export async function serveSite(request: Request, env: Env): Promise<Response> {
+  return withCharset(await serveSiteContent(request, env));
+}
+
+async function serveSiteContent(request: Request, env: Env): Promise<Response> {
   const { pathname } = new URL(request.url);
   if (pathname === POSTS_PATH.slice(0, -1) || pathname.startsWith(POSTS_PATH) || isShellPath(pathname)) {
     return withMentions(await servePosts(request, env), env, request.url);

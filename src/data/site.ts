@@ -13,7 +13,7 @@ export const site = {
     alt: "Memoji of DWK's head",
   },
   defaultOgImage: "/img/memoji.png",
-  // WebSub hub; only the home page and feeds are its topics (worker/config.ts).
+  // WebSub hub; the home page, the feeds, and /posts/ are its topics (worker/config.ts).
   hub: "https://dwk.io/websub",
   headLinks: [
     // Served by @dwk/indieauth in worker.ts.

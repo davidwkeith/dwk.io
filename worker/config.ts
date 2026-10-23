@@ -186,7 +186,7 @@ export const websub: WebSubConfig = {
   baseUrl: site.url,
   hubUrl: site.hub,
   // The site's feeds are the topics this hub distributes.
-  allowedTopics: [me, `${site.url}/feed.xml`, `${site.url}/feed.json`],
+  allowedTopics: [me, `${site.url}/feed.xml`, `${site.url}/feed.json`, `${site.url}/posts/`],
   logger,
 };
 
