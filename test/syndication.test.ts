@@ -59,7 +59,7 @@ beforeEach(async () => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("Micropub → fediverse syndication", () => {
-  it("publishes the post to the actor's outbox without fetching dwk.io over the network", async () => {
+  it("publishes the post to the actor's outbox, and retracts it on delete, without fetching dwk.io over the network", async () => {
     const apEnv = await actorEnv();
     const networkFetch = vi.spyOn(globalThis, "fetch");
     const pending: Promise<unknown>[] = [];
@@ -94,6 +94,24 @@ describe("Micropub → fediverse syndication", () => {
     expect(browser.status).toBe(302);
     expect(browser.headers.get("location")).toBe(permalink);
     expect(await (await siteFetch(apEnv)(permalink)).text()).toContain(`class="u-syndication" rel="syndication" href="${copy}">Fediverse</a>`);
+
+    // Deleting the post retracts its fediverse copy: the Note becomes a Tombstone.
+    const deleted = await micropub(
+      new Request("https://dwk.io/micropub", {
+        method: "POST",
+        headers: { authorization: `Bearer ${await bearer("delete")}` },
+        body: new URLSearchParams({ action: "delete", url: permalink }),
+      }),
+      apEnv,
+      ctx,
+    );
+    expect(deleted.status).toBe(204);
+    await Promise.all(pending);
+    expect((await siteFetch(apEnv)(permalink)).status).toBe(410);
+    const gone = await siteFetch(apEnv)(copy!, { headers: { accept: "application/activity+json" } });
+    expect(gone.status).toBe(410);
+    expect(await gone.json()).toMatchObject({ id: copy, type: "Tombstone", formerType: "Note" });
+
     const toSelf = networkFetch.mock.calls.filter(([input]) => new URL(input instanceof Request ? input.url : String(input)).origin === "https://dwk.io");
     expect(toSelf).toEqual([]);
   });

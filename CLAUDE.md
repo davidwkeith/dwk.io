@@ -62,7 +62,7 @@ Personal portfolio/project showcase website.
 |---|---|
 | `/.well-known/webfinger`, `/.well-known/host-meta[.json]` | `@dwk/webfinger`, `@dwk/host-meta` |
 | `/.well-known/oauth-authorization-server`, `/auth/authorize`, `/auth/token`, `/auth/revocation`, `/auth/introspect` | `@dwk/indieauth` (`/auth/login` is the owner sign-in; introspection only when `INTROSPECTION_TOKEN` is set) |
-| `/micropub`, `/media/*` | `@dwk/micropub` (syndicates to the actor when `ACTIVITYPUB_PUBLISH_TOKEN` is set: the Note links back to the post as its `url`, and the post records the Note as its `u-syndication`) |
+| `/micropub`, `/media/*` | `@dwk/micropub` (syndicates to the actor when `ACTIVITYPUB_PUBLISH_TOKEN` is set: the Note links back to the post as its `url`, and the post records the Note as its `u-syndication`; deleting the post retracts the Note with a `Delete`) |
 | `/microsub` | `@dwk/microsub` (feeds polled by the cron → `dwk-microsub` queue) |
 | `/webmention` (+ `/webmention/send`) | `@dwk/webmention` (verification on the `dwk-webmention-verify` queue, inbox in D1, 30 req/60s per IP) |
 | `/websub` | `@dwk/websub` hub for `/`, `/feed.xml`, `/feed.json`, `/posts/` (`dwk-websub` queue; the cron pings it when a deploy changes a topic, via `worker/publish.ts`) |
