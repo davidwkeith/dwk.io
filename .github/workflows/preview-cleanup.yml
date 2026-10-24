@@ -17,6 +17,8 @@ jobs:
   cleanup:
     # Forks get no secrets, and Workers Builds doesn't preview their branches.
     if: github.event.pull_request.head.repo.full_name == github.repository
+    # CLOUDFLARE_API_TOKEN is a secret of this environment, not of the repository.
+    environment: Cloudflare
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

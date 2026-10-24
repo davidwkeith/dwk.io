@@ -135,7 +135,7 @@ rm oidc.jwk
 curl -X POST https://dwk.io/admin/init -H "Authorization: Bearer $OWNER_TOKEN"
 ```
 
-Each Preview holds its own copy of the five Durable Object namespaces, and the free plan allows 100 per account: past about 19 Previews, new ones fail to deploy (`code: 10067`). `.github/workflows/preview-cleanup.yml` deletes a PR's Preview when the PR is merged or closed (repository secret `CLOUDFLARE_API_TOKEN`, Workers Scripts: Edit); delete older ones by hand with `npx wrangler preview delete --name <branch> --skip-confirmation`.
+Each Preview holds its own copy of the five Durable Object namespaces, and the free plan allows 100 per account: past about 19 Previews, new ones fail to deploy (`code: 10067`). `.github/workflows/preview-cleanup.yml` deletes a PR's Preview when the PR is merged or closed (secret `CLOUDFLARE_API_TOKEN`, Workers Scripts: Edit, in the repository's `Cloudflare` environment); delete older ones by hand with `npx wrangler preview delete --name <branch> --skip-confirmation`.
 
 Previews do not inherit production secrets. Set a Preview's own with `npx wrangler preview secret put <NAME> --name <branch>` (same `<` / `printf` forms as above), or once for every future Preview with `npx wrangler preview base-config secret put <NAME>`.
 
