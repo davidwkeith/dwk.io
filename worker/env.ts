@@ -10,6 +10,7 @@ import type { MastodonApiEnv } from "@dwk/mastodon-api";
 import type { MicropubEnv } from "@dwk/micropub";
 import type { MicrosubEnv } from "@dwk/microsub";
 import type { RemoteStorageEnv } from "@dwk/remotestorage";
+import type { SolidOidcEnv } from "@dwk/solid-oidc";
 import type { SolidPodEnv } from "@dwk/solid-pod";
 import type { VcEnv } from "@dwk/vc";
 import type { WebAuthnEnv } from "@dwk/webauthn";
@@ -38,6 +39,7 @@ export interface Env
     MastodonApiEnv,
     RemoteStorageEnv,
     SolidPodEnv,
+    SolidOidcEnv,
     WebAuthnEnv,
     VcEnv,
     AtprotoPdsEnv {
@@ -54,7 +56,7 @@ export interface Env
    * Shared-secret bearer that acts as the site owner on the test surfaces:
    * `/admin/init`, `/webmention/send`, the Solid pods (`/pod`, `/dav`,
    * `/dav-credentials`), remoteStorage writes, WebAuthn registration, and VC
-   * issuance. Interim until those packages authenticate via Solid-OIDC.
+   * issuance. The `/pod` door also accepts Solid-OIDC tokens from `/oidc`.
    */
   readonly OWNER_TOKEN?: string;
   /** Bearer that resource servers present to the IndieAuth introspection endpoint; unset, it isn't served. */
@@ -67,4 +69,6 @@ export interface Env
   /** AT Protocol session credentials. */
   readonly ATPROTO_PASSWORD?: string;
   readonly ATPROTO_JWT_SECRET?: string;
+  /** The Solid-OIDC provider's ES256 signing key: a P-256 private JWK (JSON). */
+  readonly OIDC_SIGNING_KEY?: string;
 }

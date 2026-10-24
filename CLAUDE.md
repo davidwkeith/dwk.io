@@ -56,12 +56,13 @@ Personal portfolio/project showcase website.
 - `worker/posts.ts` — Micropub posts on the site: new posts get `/posts/<slug>` URLs (no trailing slash: on a slug collision `@dwk/micropub` appends `-xxxx`); the Worker renders `/posts/` (h-feed) and each permalink (h-entry) from the `@dwk/micropub` D1 store into the static `/post-shell/` page (itself a 404 and left out of the sitemap), and `worker/site.ts` adds them to `feed.xml`/`feed.json` and `llms.txt` and serves `/sitemap-posts.xml` (listed in `sitemap-index.xml` through `@astrojs/sitemap`'s `customSitemaps`). Drafts and `visibility: private` posts are never served; unlisted ones only at their permalink.
 - `worker/outbox.ts` — outgoing webmentions for posts. `@dwk/micropub` has no publish hook, so the cron compares each post with the version it last sent for (`dwk_webmention_outbox` table) and notifies the links in its response context and content (other sites only; not syndication links or photos): new and edited posts' old and new targets, and, via `resendForDeletedSource` and the `webmentions_sent` log, a deleted (410) or now-private (404) post's targets. At most 10 targets per run; failed deliveries are logged, not retried.
 - `worker/webmentions.ts` — fills each `[data-webmentions]` element (the `Webmentions.astro` component, on project pages and posts) with that page's verified mentions from the `@dwk/webmention` inbox. Authors' photos go through `/webmention-avatar` (the CSP keeps images on this origin): only photos of mentions in the inbox, raster types under 256 KB, cached a day. The component's form posts to `/webmention`; a browser submission (`Accept: text/html`) is redirected back to the page with `?webmention=<outcome>#webmentions`, which the page shows as a notice, while senders' own requests still get the endpoint's 202/400. Both modules use `HTMLRewriter`, so none of this shows under `npm run dev`.
-- `worker/login.ts` — the Cloudflare Access-guarded owner sign-in used by both OAuth servers (IndieAuth and the Mastodon-app flow, kept apart by a signed `flow` field).
+- `worker/login.ts` — the Cloudflare Access-guarded owner sign-in used by all three OAuth servers (IndieAuth, the Mastodon-app flow, and Solid-OIDC, kept apart by a signed `flow` field).
 
 | Path | Package |
 |---|---|
 | `/.well-known/webfinger`, `/.well-known/host-meta[.json]` | `@dwk/webfinger`, `@dwk/host-meta` |
 | `/.well-known/oauth-authorization-server`, `/auth/authorize`, `/auth/token`, `/auth/revocation`, `/auth/introspect` | `@dwk/indieauth` (`/auth/login` is the owner sign-in; introspection only when `INTROSPECTION_TOKEN` is set) |
+| `/.well-known/openid-configuration`, `/oidc/{authorize,token,jwks}` | `@dwk/solid-oidc` (issuer `https://dwk.io`, named as `solid:oidcIssuer` in the WebID at `/profile/card`; CORS-open for browser Solid apps; consent through `/auth/login`) |
 | `/micropub`, `/media/*` | `@dwk/micropub` (syndicates to the actor when `ACTIVITYPUB_PUBLISH_TOKEN` is set: the Note links back to the post as its `url`, and the post records the Note as its `u-syndication`; deleting the post retracts the Note with a `Delete`) |
 | `/microsub` | `@dwk/microsub` (feeds polled by the cron → `dwk-microsub` queue) |
 | `/webmention` (+ `/webmention/send`) | `@dwk/webmention` (verification on the `dwk-webmention-verify` queue, inbox in D1, 30 req/60s per IP) |
@@ -69,7 +70,7 @@ Personal portfolio/project showcase website.
 | `/users/dwk*`, `/inbox`, `/.well-known/nodeinfo`, `/nodeinfo/*` | `@dwk/activitypub` (per-actor Durable Object `ACTOR`) |
 | `/api/v1/*`, `/api/v2/*`, `/oauth/{authorize,token,revoke}` | `@dwk/mastodon-api` over the same actor |
 | `/storage/<account>/*` | `@dwk/remotestorage` (Durable Object `STORAGE`) |
-| `/pod/*`, `/dav/*`, `/dav-credentials` | `@dwk/solid-pod` LDP door, its WebDAV door (a separate pod), app passwords (Durable Object `POD`) |
+| `/pod/*`, `/dav/*`, `/dav-credentials` | `@dwk/solid-pod` LDP door, its WebDAV door (a separate pod), app passwords (Durable Object `POD`). `/pod` accepts the `OWNER_TOKEN` bearer or a DPoP-bound Solid-OIDC token from `/oidc` (two handlers over one pod: a package `authenticate` hook replaces the token verifier); the pod fetches the JWKS through `siteFetch` |
 | `/webauthn/*` | `@dwk/webauthn` (Durable Object `WEBAUTHN`; registration is owner-only) |
 | `/credentials/*` | `@dwk/vc` (issuance/status owner-only; `did:web:dwk.io` resolves to the static `did.json`) |
 | `/xrpc/*` | `@dwk/atproto-pds` (Durable Object `REPO`); `/.well-known/atproto-did` and `did.json` stay the static Bluesky identity |
@@ -88,6 +89,7 @@ All D1 bindings point at the one `dwk-indieauth` database (the free-plan databas
 | `ACTIVITYPUB_PUBLISH_TOKEN` | `POST /users/dwk/outbox` and `/publish`; also turns on Micropub → fediverse syndication | random; keep it |
 | `ATPROTO_PASSWORD`, `ATPROTO_JWT_SECRET` | `com.atproto.server.createSession` (identifier `dwk.io`) and its JWTs | random; keep the password |
 | `VC_SIGNING_KEY` | signs credentials and status lists as `did:web:dwk.io#key-0` | P-256 private JWK |
+| `OIDC_SIGNING_KEY` | the Solid-OIDC provider's ES256 access and ID tokens (public half at `/oidc/jwks`) | P-256 private JWK; rotating it invalidates outstanding tokens |
 | `WEBDAV_PEPPER` | app-password hashing for the WebDAV door | random |
 
 One-time setup, from a checkout of `main` with `wrangler` logged in (`account_id` is pinned in `wrangler.jsonc`). Values that are needed again are kept in a shell variable and echoed once so they can go into a password manager; piping `openssl` straight into `wrangler` loses them.
@@ -123,17 +125,24 @@ node -e "crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign
 npx wrangler secret put VC_SIGNING_KEY < vc.jwk
 rm vc.jwk
 
+# Solid-OIDC provider key (same one-liner, a separate key).
+node -e "crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']).then(async k=>process.stdout.write(JSON.stringify(await crypto.subtle.exportKey('jwk',k.privateKey))))" > oidc.jwk
+npx wrangler secret put OIDC_SIGNING_KEY < oidc.jwk
+rm oidc.jwk
+
 # After the first deploy with the secrets in place (a secret put redeploys; allow a few seconds):
 # create the D1 tables of the packages that expose a schema-init API. Idempotent.
 curl -X POST https://dwk.io/admin/init -H "Authorization: Bearer $OWNER_TOKEN"
 ```
+
+Each Preview holds its own copy of the five Durable Object namespaces, and the free plan allows 100 per account: past about 19 Previews, new ones fail to deploy (`code: 10067`). `.github/workflows/preview-cleanup.yml` deletes a PR's Preview when the PR is merged or closed (repository secret `CLOUDFLARE_API_TOKEN`, Workers Scripts: Edit); delete older ones by hand with `npx wrangler preview delete --name <branch> --skip-confirmation`.
 
 Previews do not inherit production secrets. Set a Preview's own with `npx wrangler preview secret put <NAME> --name <branch>` (same `<` / `printf` forms as above), or once for every future Preview with `npx wrangler preview base-config secret put <NAME>`.
 
 ## Testing
 
 - Unit tests import `worker/` modules directly; integration tests drive the whole Worker through `SELF.fetch` with local D1 seeded via the packages' own stores. Local D1 persists across tests, so call `resetD1()` (`test/reset.ts`) in `beforeEach`.
-- Test secrets are fixed values in `miniflare.bindings` (`vitest.config.ts`: `TOKEN_SIGNING_KEY`, `INTROSPECTION_TOKEN`); tests that need keypairs (`test/syndication.test.ts`) generate them and pass their own `env`. No secret file is needed, locally or in CI. The suite is hermetic: wrangler would otherwise fill the test `env` from a local `.dev.vars` or `.env` (GPG key and API token included), so `vitest.config.ts` turns `.env` loading off and blanks every key a `.dev.vars` defines.
+- Test secrets are fixed values in `miniflare.bindings` (`vitest.config.ts`: `TOKEN_SIGNING_KEY`, `INTROSPECTION_TOKEN`, `OIDC_SIGNING_KEY`); tests that need keypairs (`test/syndication.test.ts`) generate them and pass their own `env`. No secret file is needed, locally or in CI. The suite is hermetic: wrangler would otherwise fill the test `env` from a local `.dev.vars` or `.env` (GPG key and API token included), so `vitest.config.ts` turns `.env` loading off and blanks every key a `.dev.vars` defines.
 - `cloudflare:test` is typed by the minimal `test/cloudflare-test.d.ts`, not `@cloudflare/workers-types`: installing that package makes the `@dwk` packages' binding types disagree in `worker/env.ts`.
 - Spy on `env.WEBSUB_QUEUE.send` (see `test/publish.test.ts`) so the hub's queue consumer doesn't fetch the real dwk.io.
 - With npm 10, `npm install` of vitest packages fails with `Cannot read properties of null (reading 'edgesOut')` (an arborist bug); use `npx npm@11 install …`. `npm ci` is unaffected.

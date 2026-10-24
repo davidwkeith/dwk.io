@@ -1,0 +1,43 @@
+# Workers Builds creates a Worker Preview for every non-production branch, named
+# after the branch, and never deletes it. Each Preview holds its own copy of the
+# five Durable Object namespaces, and the free plan allows 100 per account, so
+# stale Previews block new ones (code 10067). Delete a PR's Preview once the PR
+# is merged or closed.
+# https://developers.cloudflare.com/workers/previews/examples/#delete-closed-pull-request-previews
+name: Delete closed PR Preview
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    # Forks get no secrets, and Workers Builds doesn't preview their branches.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # The Worker name and account_id come from wrangler.jsonc.
+      - name: Delete the Preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if ! out=$(npx wrangler preview delete --name "$BRANCH" --skip-confirmation 2>&1); then
+            echo "$out"
+            # A branch whose Preview was never built, or already deleted, is not an error.
+            if grep -qiE "not (be )?found|does not exist" <<<"$out"; then
+              echo "::notice::No Preview named $BRANCH"
+            else
+              exit 1
+            fi
+          fi
+          echo "$out"

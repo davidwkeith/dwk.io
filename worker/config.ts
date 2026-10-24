@@ -11,6 +11,7 @@ import type { MastodonApiConfig } from "@dwk/mastodon-api";
 import { FEDIVERSE_TARGET_UID, type MicropubConfig } from "@dwk/micropub";
 import type { MicrosubConfig } from "@dwk/microsub";
 import { parseScopes, remoteStorageLink, type RemoteStorageConfig } from "@dwk/remotestorage";
+import type { Jwk, SolidOidcConfig } from "@dwk/solid-oidc";
 import type { SolidPodConfig } from "@dwk/solid-pod";
 import type { VcConfig } from "@dwk/vc";
 import type { WebAuthnConfig } from "@dwk/webauthn";
@@ -37,7 +38,7 @@ export const host = new URL(site.url).host;
 export const me = `${site.url}/`;
 /** The owner's WebID (owner of the Solid pods); served from `/profile/card`. */
 export const ownerWebId = `${site.url}/profile/card#me`;
-export const owner = { email: site.social.email.replace(/^mailto:/, ""), me, issuer: site.url };
+export const owner = { email: site.social.email.replace(/^mailto:/, ""), me, webid: ownerWebId, issuer: site.url };
 
 export const auth = {
   authorize: `${site.url}/auth/authorize`,
@@ -47,6 +48,20 @@ export const auth = {
   login: `${site.url}/auth/login`,
   /** Mastodon-app OAuth (served by @dwk/mastodon-api). */
   mastodonAuthorize: `${site.url}/oauth/authorize`,
+};
+
+/**
+ * The Solid-OIDC provider (@dwk/solid-oidc), under `/oidc` so its authorize and
+ * token endpoints stay clear of IndieAuth's. The issuer is the site origin,
+ * which the WebID profile names as its `solid:oidcIssuer`.
+ */
+export const oidc = {
+  issuer: site.url,
+  mountPath: "/oidc",
+  authorize: `${site.url}/oidc/authorize`,
+  token: `${site.url}/oidc/token`,
+  jwks: `${site.url}/oidc/jwks`,
+  discovery: `${site.url}/.well-known/openid-configuration`,
 };
 
 export const actorIri = `${site.url}/users/${USERNAME}`;
@@ -250,12 +265,41 @@ export function mastodonApi(env: Env): Omit<MastodonApiConfig, "backend"> {
   };
 }
 
+export function solidOidc(env: Env): SolidOidcConfig {
+  return {
+    issuer: oidc.issuer,
+    mountPath: oidc.mountPath,
+    signingKey: JSON.parse(requireSecret(env, "OIDC_SIGNING_KEY")) as Jwk,
+    // Same Access-guarded login again, under its own flow name. The package
+    // checks only that redirect_uri is an absolute URL, so the consent page,
+    // which shows the client and where it redirects, is the gate.
+    async approveAuthorization(req, httpRequest) {
+      const url = new URL(httpRequest.url);
+      const grant: GrantRequest = {
+        clientId: req.clientId,
+        redirectUri: req.redirectUri,
+        state: req.state ?? "",
+        codeChallenge: req.codeChallenge,
+        scopes: req.scope.split(/\s+/).filter(Boolean),
+        resources: [],
+      };
+      const consent = url.searchParams.get("consent");
+      if (consent && (await verifyConsent(env, consent, grant, "solid-oidc"))) return { webid: ownerWebId, scope: req.scope };
+      url.searchParams.delete("consent");
+      url.searchParams.set("flow", "solid-oidc");
+      url.searchParams.set("login", await signLoginRequest(env, grant, "solid-oidc"));
+      return Response.redirect(`${auth.login}${url.search}`, 302);
+    },
+    logger,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Storage: Solid pods, remoteStorage, WebDAV
 
 /**
- * Interim owner authentication for the pods: the OWNER_TOKEN bearer resolves
- * to the owner WebID. Replaced by Solid-OIDC once that package is composed in.
+ * Owner authentication for the test surfaces: the OWNER_TOKEN bearer resolves
+ * to the owner WebID.
  */
 function podAuthenticate(env: Env): SolidPodConfig["authenticate"] {
   return async (request) =>
@@ -264,6 +308,15 @@ function podAuthenticate(env: Env): SolidPodConfig["authenticate"] {
 
 export function solidPod(env: Env): SolidPodConfig {
   return { baseUrl: `${site.url}/pod`, owner: ownerWebId, authenticate: podAuthenticate(env), logger };
+}
+
+/**
+ * The same `/pod`, verifying DPoP-bound Solid-OIDC access tokens from this
+ * site's provider (`solidPod` above serves the OWNER_TOKEN bearer). `siteFetch`
+ * carries the JWKS fetch in-process (worker/mounts.ts).
+ */
+export function solidPodOidc(siteFetch: typeof fetch): SolidPodConfig {
+  return { baseUrl: `${site.url}/pod`, owner: ownerWebId, issuer: oidc.issuer, jwksUri: oidc.jwks, fetch: siteFetch, logger };
 }
 
 // The WebDAV door gets its own pod: the per-pod Durable Object is keyed by
