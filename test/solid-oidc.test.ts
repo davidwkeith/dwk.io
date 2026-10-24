@@ -103,6 +103,8 @@ describe("Solid-OIDC provider", () => {
     expect(`${login.origin}${login.pathname}`).toBe(config.auth.login);
     expect(login.searchParams.get("flow")).toBe("solid-oidc");
     expect(login.searchParams.get("login")).toBeTruthy();
+    // A navigation, not a cross-origin fetch: no CORS on the authorize endpoint.
+    expect(res.headers.get("access-control-allow-origin")).toBeNull();
   });
 
   it("is named as the issuer in the WebID profile", async () => {

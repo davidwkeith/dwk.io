@@ -50,8 +50,9 @@ const prefix = (...roots: readonly string[]) => (url: URL) =>
 const { USERNAME, auth, oidc } = config;
 const authPath = (href: string) => new URL(href).pathname;
 
-// Browser Solid apps call the provider cross-origin. Its responses carry no
-// cookies or ambient credentials, so any origin may read them.
+// Browser Solid apps call the provider's discovery, JWKS, and token endpoints
+// cross-origin. Their responses carry no cookies or ambient credentials, so any
+// origin may read them. The authorize endpoint is a top-level navigation.
 const OIDC_CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
@@ -61,6 +62,7 @@ const OIDC_CORS = {
 
 function withCors(handler: Handler): Handler {
   return async (request, env, ctx) => {
+    if (new URL(request.url).pathname === authPath(oidc.authorize)) return handler(request, env, ctx);
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: OIDC_CORS });
     const original = await handler(request, env, ctx);
     const response = new Response(original.body, original);
