@@ -14,6 +14,7 @@ import { createIndieAuth } from "@dwk/indieauth";
 import { createMicropub } from "@dwk/micropub";
 import { createMicrosub } from "@dwk/microsub";
 import { createRemoteStorage } from "@dwk/remotestorage";
+import { createSolidOidc } from "@dwk/solid-oidc";
 import { createSolidPod, createSolidPodWebdav, createSolidPodWebdavCredentials } from "@dwk/solid-pod";
 import { createVc } from "@dwk/vc";
 import { createWebAuthn } from "@dwk/webauthn";
@@ -24,7 +25,7 @@ import { site } from "../src/data/site";
 import * as config from "./config";
 import type { Ctx, Env } from "./env";
 import { handleLogin } from "./login";
-import { adminInit, webmentionSend } from "./owner";
+import { adminInit, isOwner, webmentionSend } from "./owner";
 import { serveSite } from "./site";
 
 export type Handler = (request: Request, env: Env, ctx: Ctx) => Promise<Response>;
@@ -46,8 +47,27 @@ const exact = (...paths: readonly string[]) => (url: URL) => paths.includes(url.
 const prefix = (...roots: readonly string[]) => (url: URL) =>
   roots.some((root) => url.pathname === root || url.pathname.startsWith(`${root}/`));
 
-const { USERNAME, auth } = config;
+const { USERNAME, auth, oidc } = config;
 const authPath = (href: string) => new URL(href).pathname;
+
+// Browser Solid apps call the provider cross-origin. Its responses carry no
+// cookies or ambient credentials, so any origin may read them.
+const OIDC_CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, DPoP",
+  "Access-Control-Max-Age": "86400",
+};
+
+function withCors(handler: Handler): Handler {
+  return async (request, env, ctx) => {
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: OIDC_CORS });
+    const original = await handler(request, env, ctx);
+    const response = new Response(original.body, original);
+    for (const [name, value] of Object.entries(OIDC_CORS)) response.headers.set(name, value);
+    return response;
+  };
+}
 
 /** The WebID profile document for the owner of the Solid pods. */
 function profileCard() {
@@ -61,7 +81,8 @@ function profileCard() {
 <${config.ownerWebId}>
     a foaf:Person ;
     foaf:name "${site.title}" ;
-    foaf:homepage <${config.me}> .
+    foaf:homepage <${config.me}> ;
+    solid:oidcIssuer <${config.oidc.issuer}> .
 `;
 }
 
@@ -109,7 +130,14 @@ export const mounts: readonly Mount[] = [
     name: "login",
     matches: exact(authPath(auth.login)),
     create: () => (request, env) =>
-      handleLogin(request, env, config.owner, { indieauth: auth.authorize, mastodon: auth.mastodonAuthorize }),
+      handleLogin(request, env, config.owner, { indieauth: auth.authorize, mastodon: auth.mastodonAuthorize, "solid-oidc": oidc.authorize }),
+    requires: SIGNING,
+  },
+  {
+    name: "@dwk/solid-oidc",
+    matches: exact(...[oidc.discovery, oidc.jwks, oidc.authorize, oidc.token].map(authPath)),
+    create: (env) => withCors(createSolidOidc(config.solidOidc(env))),
+    // The owner sign-in signs its consent tokens with this.
     requires: SIGNING,
   },
   { name: "admin", matches: exact("/admin/init"), create: () => adminInit },
@@ -145,7 +173,18 @@ export const mounts: readonly Mount[] = [
     requires: SIGNING,
   },
   { name: "@dwk/remotestorage", matches: prefix("/storage"), create: (env) => createRemoteStorage(config.remotestorage(env)) },
-  { name: "@dwk/solid-pod", matches: prefix("/pod"), create: (env) => createSolidPod(config.solidPod(env)) },
+  {
+    // One pod, two verifiers: the OWNER_TOKEN bearer, or a Solid-OIDC token
+    // from /oidc. A package `authenticate` hook replaces the built-in token
+    // verifier outright, so each gets its own handler over the same pod.
+    name: "@dwk/solid-pod",
+    matches: prefix("/pod"),
+    create: (env) => {
+      const ownerPod = createSolidPod(config.solidPod(env));
+      const oidcPod = createSolidPod(config.solidPodOidc(siteFetch(env)));
+      return async (request, env, ctx) => ((await isOwner(env, request)) ? ownerPod : oidcPod)(request, env, ctx);
+    },
+  },
   { name: "@dwk/webdav (pod door)", matches: prefix("/dav"), create: (env) => createSolidPodWebdav(config.davPod(env)) },
   {
     name: "@dwk/webdav (credentials)",

@@ -1,5 +1,6 @@
-// Owner login for @dwk/indieauth. The library leaves authentication to the
-// site: its `approveAuthorization` hook sends the browser here, Cloudflare
+// Owner login for @dwk/indieauth, the Mastodon-app OAuth server, and
+// @dwk/solid-oidc. Each library leaves authentication to the
+// site: their `approveAuthorization` hooks send the browser here, Cloudflare
 // Access authenticates the owner, and an approval redirects back to the
 // authorization endpoint with a short-lived signed consent token.
 import type { AuthorizationRequest } from "@dwk/indieauth";
@@ -58,8 +59,8 @@ async function verifyToken(key: string, purpose: string, token: string, fields: 
 }
 
 /** Which OAuth server the sign-in is for; each has its own authorize URL. */
-export type Flow = "indieauth" | "mastodon";
-const FLOWS: readonly Flow[] = ["indieauth", "mastodon"];
+export type Flow = "indieauth" | "mastodon" | "solid-oidc";
+const FLOWS: readonly Flow[] = ["indieauth", "mastodon", "solid-oidc"];
 
 export type GrantRequest = Pick<AuthorizationRequest, "clientId" | "redirectUri" | "state" | "codeChallenge" | "scopes" | "resources">;
 
@@ -91,14 +92,15 @@ function flowFromQuery(params: URLSearchParams): Flow {
 
 // Mirrors how each server parses the request, so the fields signed here match
 // what its approval hook sees when the browser comes back. The Mastodon app
-// flow has no PKCE challenge or resource indicators in its validated request.
+// flow has no PKCE challenge or resource indicators in its validated request,
+// and the Solid-OIDC one no resource indicators.
 function requestFromQuery(params: URLSearchParams, flow: Flow): GrantRequest {
   const indieauth = flow === "indieauth";
   return {
     clientId: params.get("client_id") ?? "",
     redirectUri: params.get("redirect_uri") ?? "",
     state: params.get("state") ?? "",
-    codeChallenge: indieauth ? (params.get("code_challenge") ?? "") : "",
+    codeChallenge: flow === "mastodon" ? "" : (params.get("code_challenge") ?? ""),
     scopes: (params.get("scope") ?? "").split(/\s+/).filter(Boolean),
     resources: indieauth ? [...new Set(params.getAll("resource"))] : [],
   };
@@ -177,6 +179,8 @@ export interface Owner {
   readonly email: string;
   /** Canonical profile URL the approval signs in as. */
   readonly me: string;
+  /** WebID a Solid-OIDC approval signs in as. */
+  readonly webid: string;
   /** Issuer identifier, sent as `iss` on denial redirects (RFC 9207). */
   readonly issuer: string;
 }
@@ -206,7 +210,7 @@ export async function handleLogin(request: Request, env: LoginEnv, owner: Owner,
     return page(
       "Approve sign-in",
       `<h1>Approve sign-in</h1>
-<p><strong>${escapeHtml(req.clientId)}</strong> wants to sign you in as <strong>${escapeHtml(owner.me)}</strong>.</p>
+<p><strong>${escapeHtml(req.clientId)}</strong> wants to sign you in as <strong>${escapeHtml(flow === "solid-oidc" ? owner.webid : owner.me)}</strong>.</p>
 <p>Requested scopes:</p>${scopes}${resources}
 <p>You'll be sent back to ${escapeHtml(req.redirectUri)}</p>
 <p>Signed in through Cloudflare Access as ${escapeHtml(email)}.</p>

@@ -32,4 +32,6 @@ ATPROTO_JWT_SECRET=
 
 # P-256 private JWK, one line, single-quoted (CLAUDE.md has the node one-liner).
 VC_SIGNING_KEY='{"kty":"EC","crv":"P-256","x":"…","y":"…","d":"…"}'
+# The Solid-OIDC provider's key: another P-256 private JWK, same form.
+OIDC_SIGNING_KEY='{"kty":"EC","crv":"P-256","x":"…","y":"…","d":"…"}'
 WEBDAV_PEPPER=

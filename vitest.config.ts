@@ -18,10 +18,21 @@ export default defineConfig({
   plugins: [
     cloudflareTest({
       wrangler: { configPath: "./wrangler.jsonc" },
-      // A test-only signing key, so the token-guarded mounts (IndieAuth,
-      // Micropub, Microsub) serve instead of answering 503 not_configured.
+      // Test-only signing keys, so the token-guarded mounts (IndieAuth,
+      // Micropub, Microsub, Solid-OIDC) serve instead of answering 503 not_configured.
       miniflare: {
-        bindings: { ...localDevVars, TOKEN_SIGNING_KEY: "test-signing-key", INTROSPECTION_TOKEN: "test-introspection-token" },
+        bindings: {
+          ...localDevVars,
+          TOKEN_SIGNING_KEY: "test-signing-key",
+          INTROSPECTION_TOKEN: "test-introspection-token",
+          OIDC_SIGNING_KEY: JSON.stringify({
+            kty: "EC",
+            crv: "P-256",
+            x: "TxlOPVrcLOll3ZGWHihz77vkfFKxVsV7Ho6yDuX0FYM",
+            y: "bGMp1HFSpRabVnMPlhkxoWUzEsBROXXmCBXauJ74tac",
+            d: "aaLq1jTu0Pad9mZHYDb3FjNKCHkSEr7Jt5r-6GDg6KY",
+          }),
+        },
       },
     }),
   ],
